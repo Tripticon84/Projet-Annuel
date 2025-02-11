@@ -4,7 +4,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 function getDatabaseConnection(): PDO {
     try {
         $host = 'localhost';
-        $db = 'vikings';
+        $db = 'bussinesscare';
         $user = 'root';
         $pass = 'root';
         $port = '8889';
