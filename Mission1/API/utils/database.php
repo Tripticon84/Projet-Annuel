@@ -13,3 +13,4 @@ function getDatabaseConnection(): PDO {
         returnError(500, 'Could not connect to the database. ' . $e->getMessage());
         die();
     }
+}
