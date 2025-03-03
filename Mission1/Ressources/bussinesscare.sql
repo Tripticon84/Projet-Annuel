@@ -20,6 +20,8 @@ SET time_zone = "+00:00";
 --
 -- Base de données : `bussinesscare`
 --
+CREATE DATABASE IF NOT EXISTS `bussinesscare` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `bussinesscare`;
 
 -- --------------------------------------------------------
 
