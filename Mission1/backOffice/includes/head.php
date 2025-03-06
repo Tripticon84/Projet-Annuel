@@ -1,9 +1,11 @@
 <?php
+
 session_start();
 if (!isset($_SESSION["admin_id"]) && $title != "Connexion") {
     header("location: /backOffice/index.php");
     exit();
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -17,6 +19,11 @@ if (!isset($_SESSION["admin_id"]) && $title != "Connexion") {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome pour les icônes -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <style>
         :root {
             --primary-color: #3a86ff;

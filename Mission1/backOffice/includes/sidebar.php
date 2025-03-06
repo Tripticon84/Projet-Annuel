@@ -51,6 +51,11 @@
                                 <i class="fas fa-chart-line"></i> Statistiques
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/backOffice/admin/admin.php">
+                                <i class="fas fa-home"></i> Gestion Admins
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>

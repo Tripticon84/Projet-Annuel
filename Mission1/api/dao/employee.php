@@ -15,7 +15,7 @@ function createUser(string $email, int $password)
 function getUser(int $id)
 {
     $db = getDatabaseConnection();
-    $sql = "GET * FROM users WHERE id=:id";
+    $sql = "GET email, password FROM users WHERE id=:id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute();
     if (!$res) {

@@ -12,6 +12,8 @@ function methodIsAllowed(string $action): bool
             return $method == 'GET';
         case 'delete':
             return $method == 'DELETE';
+        case 'login':
+            return $method == 'POST';
         default:
             return false;
     }
@@ -30,6 +32,12 @@ function returnError(int $code, string $message)
     exit();
 }
 
+function returnSuccess($data, $code = 200) {
+    http_response_code($code);
+    echo json_encode($data);
+}
+
+
 function validateMandatoryParams(array $data, array $mandatoryParams): bool
 {
     foreach ($mandatoryParams as $param) {
@@ -38,4 +46,29 @@ function validateMandatoryParams(array $data, array $mandatoryParams): bool
         }
     }
     return true;
+}
+
+function makeApiRequest(string $url, array $postData = null): array
+{
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL, "localhost/" . $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+    if ($postData !== null) {
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+    }
+
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        $error = 'Erreur cURL : ' . curl_error($ch);
+        curl_close($ch);
+        returnError(500, $error);
+    } else {
+        $data = json_decode($response, true);
+        curl_close($ch);
+        return $data;
+    }
 }
