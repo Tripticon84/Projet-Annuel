@@ -1,5 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/hashPassword.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 
 function createAdmin(string $email, string $password){
     $password = hashPassword($password);

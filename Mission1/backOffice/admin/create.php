@@ -3,6 +3,7 @@ $title = "Creation des Administrateurs";
 include_once "../includes/head.php";
 ?>
 <body class="container mt-5">
+    <a href="admin.php" class="btn btn-secondary mb-3">&larr; Retour</a>  
     <div class="card p-4 shadow-sm">
         <h2 class="text-center mb-4">Créer un Administrateur</h2>
         <form id="adminForm">
@@ -29,22 +30,33 @@ include_once "../includes/head.php";
             const password = document.getElementById('password').value;
             const responseMessage = document.getElementById('responseMessage');
 
+            console.log("Envoi des données :", { email, password }); // Log the data being sent
+
             fetch('../../api/admin/create.php', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    responseMessage.textContent = "Admin créé avec succès. ID: " + data.id;
-                    responseMessage.classList.add("text-success");
-                    responseMessage.classList.remove("text-danger");
-                } else {
-                    responseMessage.textContent = "Erreur: " + data.error;
+            .then(response => response.text()) // Get raw response text
+            .then(text => {
+                console.log("Réponse brute :", text); // Log raw response text
+                try {
+                    const data = JSON.parse(text); // Attempt to parse JSON
+                    console.log("Réponse JSON :", data); // Log the data object
+                    if (data && data.success) {
+                        responseMessage.textContent = "Admin créé avec succès. ID: " + data.id;
+                        responseMessage.classList.add("text-success");
+                        responseMessage.classList.remove("text-danger");
+                    } else if (data && data.error) {
+                        responseMessage.textContent = "Erreur: " + data.error;
+                        responseMessage.classList.add("text-danger");
+                        responseMessage.classList.remove("text-success");
+                    }
+                } catch (error) {
+                    console.error("Erreur JSON :", error); // Log JSON parsing error
+                    responseMessage.textContent = "Erreur de serveur. Voir la console pour plus de détails.";
                     responseMessage.classList.add("text-danger");
                     responseMessage.classList.remove("text-success");
-
                 }
             })
             .catch(error => {
