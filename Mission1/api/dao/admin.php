@@ -32,7 +32,7 @@ function updateAdmin(int $id, string $username, string $password = null) {      
     // Si username et mot de passe sont fournis
     else {
         $password = hashPassword($password);
-        $sql = "UPDATE admin SET username = :username, password = :password WHERE id = :id";
+        $sql = "UPDATE admin SET username = :username, password = :password WHERE admin_id = :id";
         $stmt = $db->prepare($sql);
         $res = $stmt->execute([
             'admin_id' => $id,
@@ -48,19 +48,23 @@ function updateAdmin(int $id, string $username, string $password = null) {      
 
 function deleteAdmin(int $id){
     $db=getDatabaseConnection();
-    $sql = "DELETE FROM admin WHERE id=:id";
+    $sql = "DELETE FROM admin WHERE admin_id=:id";
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute();
-    if (!$res) {
-        return 404;
+    $res = $stmt->execute([
+        "id" => $id
+    ]);
+
+    if ($res) {
+        return $stmt->rowCount();
     }
+    return null;
 }
 
 
 function getAdmin(int $id)
 {
     $db = getDatabaseConnection();
-    $sql = "GET username FROM username WHERE id=:id";
+    $sql = "SELECT username FROM username WHERE admin_id =:id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute();
     if (!$res) {
@@ -100,12 +104,12 @@ function getAllAdmin(string $username = "", int $limit = null, int $offset = nul
 
 /* Authentification */
 
-function findAdminByCredentials($name, $password) {
+function findAdminByCredentials($username, $password) {
     $connection = getDatabaseConnection();
     $sql = "SELECT admin_id FROM admin WHERE username = :username AND password = :password";
     $query = $connection->prepare($sql);
     $res = $query->execute([
-        'name' => $name,
+        'username' => $username,
         'password' => $password
     ]);
     if ($res) {
@@ -116,10 +120,10 @@ function findAdminByCredentials($name, $password) {
 
 function setAdminSession ($id, $token) {
     $connection = getDatabaseConnection();
-    $sql = "UPDATE admin SET token = :token, expiration = DATE_ADD(NOW(), INTERVAL 5 HOUR) WHERE id = :id";
+    $sql = "UPDATE admin SET token = :token, expiration = DATE_ADD(NOW(), INTERVAL 5 HOUR) WHERE admin_id = :id";
     $query = $connection->prepare($sql);
     $res = $query->execute([
-        'admin_id' => $id,
+        'id' => $id,
         'token' => $token
     ]);
     if ($res) {

@@ -130,15 +130,13 @@ include_once "../includes/head.php";
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th scope="col">
+                                        <th scope="col" width="40">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="selectAll">
                                             </div>
                                         </th>
                                         <th scope="col">Administrateur</th>
-                                        <th scope="col">ID</th>
-                                        <th scope="col">username</th>
-                                        <th scope="col" class="text-end">Actions</th>
+                                        <th scope="col" class="text-end" width="80">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="adminList">
@@ -167,22 +165,22 @@ include_once "../includes/head.php";
                             </div>
                         </td>
                         <td>
-                            <div class="d-flex align-items-center">
-                                <div>
-                                    <h6 class="mb-0">${admin.username}</h6>
-                                    <span class="text-muted small">ID-${admin.id}</span>
+                            <div class="admin-card">
+                                <div class="admin-avatar">${admin.username.charAt(0).toUpperCase()}</div>
+                                <div class="admin-info">
+                                    <div class="admin-username">${admin.username}</div>
+                                    <div class="admin-id">ID-${admin.id}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="text-end">
                             <div class="dropdown">
-                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Supprimer</a></li>
-
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteAdmin(${admin.id}); return false;"><i class="fas fa-trash me-2"></i>Supprimer</a></li>
                                 </ul>
                             </div>
                         </td>
@@ -191,6 +189,67 @@ include_once "../includes/head.php";
                 });
             })
             .catch(error => console.error('Erreur lors de la récupération des administrateurs:', error));
+
+        // Function to delete admin with POST request
+        function deleteAdmin(adminId) {
+            if(confirm('Êtes-vous sûr de vouloir supprimer cet administrateur ?')) {
+                fetch('../../api/admin/delete.php', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: adminId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Vérifie si la réponse contient un indicateur de succès ou un message contenant "deleted"
+                    if(data.success || (data.message && (data.message.includes('deleted') || data.message.includes('supprimé')))) {
+                        alert('Administrateur supprimé avec succès.');
+                        location.reload();
+                    } else {
+                        alert('Erreur lors de la suppression. Veuillez réessayer.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la suppression.');
+                });
+            }
+        }
     </script>
+    <style>
+        .admin-card {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+        }
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .admin-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .admin-username {
+            font-weight: 600;
+            color: #333;
+        }
+        .admin-id {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .table tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+    </style>
 </body>
 </html>
