@@ -8,7 +8,10 @@ function createAdmin(string $username, string $password){
     $db = getDatabaseConnection();
     $sql = "INSERT INTO admin (username, password) VALUES (:username, :password)";
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute(['username' => $username, 'username' => $password]);
+    $res = $stmt->execute([
+        'username' => $username,
+        'password' => $password
+    ]);
     if ($res) {
         return $db->lastInsertId();
     }
@@ -64,7 +67,7 @@ function getAllAdmin(string $username = "", int $limit = null, int $offset = nul
 {
     $db = getDatabaseConnection();
     $params = [];
-    $sql = "SELECT id, username FROM admin";
+    $sql = "SELECT admin_id, username FROM admin";
     if ($username) {
         $sql .= " WHERE username LIKE :username";
         $params['username'] = "%".$username."%";

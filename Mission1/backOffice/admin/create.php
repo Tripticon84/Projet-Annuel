@@ -37,24 +37,15 @@ include_once "../includes/head.php";
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             })
-            .then(response => response.text()) // Get raw response text
-            .then(text => {
-                console.log("Réponse brute :", text); // Log raw response text
-                try {
-                    const data = JSON.parse(text); // Attempt to parse JSON
-                    console.log("Réponse JSON :", data); // Log the data object
-                    if (data && data.success) {
-                        responseMessage.textContent = "Admin créé avec succès. ID: " + data.id;
-                        responseMessage.classList.add("text-success");
-                        responseMessage.classList.remove("text-danger");
-                    } else if (data && data.error) {
-                        responseMessage.textContent = "Erreur: " + data.error;
-                        responseMessage.classList.add("text-danger");
-                        responseMessage.classList.remove("text-success");
-                    }
-                } catch (error) {
-                    console.error("Erreur JSON :", error); // Log JSON parsing error
-                    responseMessage.textContent = "Erreur de serveur. Voir la console pour plus de détails.";
+            .then(response => response.json())
+            .then(data => {
+                console.log("Réponse JSON :", data);
+                if (data) {
+                    responseMessage.textContent = "Admin créé avec succès. ID: " + data.id;
+                    responseMessage.classList.add("text-success");
+                    responseMessage.classList.remove("text-danger");
+                } else {
+                    responseMessage.textContent = "Erreur: " + data.error;
                     responseMessage.classList.add("text-danger");
                     responseMessage.classList.remove("text-success");
                 }

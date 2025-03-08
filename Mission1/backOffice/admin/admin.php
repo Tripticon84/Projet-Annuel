@@ -168,32 +168,21 @@ include_once "../includes/head.php";
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
                                 <div>
-                                    <h6 class="mb-0">${admin.name}</h6>
+                                    <h6 class="mb-0">${admin.username}</h6>
                                     <span class="text-muted small">ID-${admin.id}</span>
                                 </div>
                             </div>
                         </td>
-                        <td><span class="badge bg-${admin.roleColor}">${admin.role}</span></td>
-                        <td>${admin.username}</td>
-                        <td>${admin.department}</td>
-                        <td>${admin.dateAdded}</td>
-                        <td>${admin.lastLogin}</td>
-                        <td><span class="badge bg-${admin.statusColor}">${admin.status}</span></td>
                         <td class="text-end">
                             <div class="dropdown">
                                 <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
                                     <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Permissions</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Supprimer</a></li>
+
                                 </ul>
                             </div>
                         </td>

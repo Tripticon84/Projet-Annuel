@@ -14,16 +14,16 @@ $data = getBody();
 
 if (validateMandatoryParams($data, ['username', 'password'])) {
     // Vérification de l'email (optionnel, selon vos besoins)
-    if (!filter_var($data['username'], FILTER_VALIDATE_EMAIL)) {
-        returnError(400, 'Invalid email format');
-        return;
-    }
+    // if (!filter_var($data['username'], FILTER_VALIDATE_EMAIL)) {
+    //     returnError(400, 'Invalid email format');
+    //     return;
+    // }
 
     // Vérification de la longueur du mot de passe (optionnel, selon vos besoins)
-    if (strlen($data['password']) < 8) {
-        returnError(400, 'Password must be at least 8 characters long');
-        return;
-    }
+    // if (strlen($data['password']) < 8) {
+    //     returnError(400, 'Password must be at least 8 characters long');
+    //     return;
+    // }
 
     // Création de l'administrateur
     $newAdminId = createAdmin($data['username'], $data['password']);

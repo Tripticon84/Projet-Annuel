@@ -34,8 +34,8 @@ $result = []; // Initialize the result array
 
 foreach ($admins as $admin) {
     $result[] = [
-        "id" => $admin['id'],
-        "email" => $admin['username'],
+        "id" => $admin['admin_id'],
+        "username" => $admin['username'],
     ];
 }
 
