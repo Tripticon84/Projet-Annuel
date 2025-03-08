@@ -1,12 +1,12 @@
 <?php
 $title = "Gestion des Administrateurs";
-include_once "../includes/head.php"
+include_once "../includes/head.php";
 ?>
 
 <body>
     <div class="container-fluid">
         <div class="row">
-            <?php include_once "../includes/sidebar.php" ?>
+            <?php include_once "../includes/sidebar.php"; ?>
             <!-- Main Content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
                 <!-- Header -->
@@ -20,7 +20,7 @@ include_once "../includes/head.php"
                             </button>
                         </div>
                         <a type="button" class="btn btn-sm btn-primary" href="create.php">
-                        <i class="fas fa-plus"></i> Nouvel Administrateur
+                            <i class="fas fa-plus"></i> Nouvel Administrateur
                         </a>
                     </div>
                 </div>
@@ -136,378 +136,72 @@ include_once "../includes/head.php"
                                             </div>
                                         </th>
                                         <th scope="col">Administrateur</th>
-                                        <th scope="col">Niveau d'accès</th>
+                                        <th scope="col">ID</th>
                                         <th scope="col">Email</th>
-                                        <th scope="col">Département</th>
-                                        <th scope="col">Date d'ajout</th>
-                                        <th scope="col">Dernière connexion</th>
-                                        <th scope="col">Statut</th>
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Alexandre Dupont</h6>
-                                                    <span class="text-muted small">ID-1001</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-danger">Super Admin</span></td>
-                                        <td>a.dupont@businesscare.fr</td>
-                                        <td>Direction IT</td>
-                                        <td>05/01/2024</td>
-                                        <td>Aujourd'hui 09:45</td>
-                                        <td><span class="badge bg-success">Actif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Permissions</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Marie Laurent</h6>
-                                                    <span class="text-muted small">ID-1002</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-primary">Admin Système</span></td>
-                                        <td>m.laurent@businesscare.fr</td>
-                                        <td>Infrastructure</td>
-                                        <td>12/01/2024</td>
-                                        <td>Aujourd'hui 08:30</td>
-                                        <td><span class="badge bg-success">Actif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Permissions</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Philippe Martin</h6>
-                                                    <span class="text-muted small">ID-1003</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-info">Admin Base de données</span></td>
-                                        <td>p.martin@businesscare.fr</td>
-                                        <td>Données</td>
-                                        <td>18/01/2024</td>
-                                        <td>Hier 16:20</td>
-                                        <td><span class="badge bg-success">Actif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Permissions</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Claire Dubois</h6>
-                                                    <span class="text-muted small">ID-1004</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-warning text-dark">Admin Sécurité</span></td>
-                                        <td>c.dubois@businesscare.fr</td>
-                                        <td>Sécurité</td>
-                                        <td>25/01/2024</td>
-                                        <td>Aujourd'hui 10:15</td>
-                                        <td><span class="badge bg-success">Actif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Permissions</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Thomas Bernard</h6>
-                                                    <span class="text-muted small">ID-1005</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-primary">Admin Système</span></td>
-                                        <td>t.bernard@businesscare.fr</td>
-                                        <td>Infrastructure</td>
-                                        <td>02/02/2024</td>
-                                        <td>Hier 14:50</td>
-                                        <td><span class="badge bg-warning text-dark">En attente</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Permissions</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-success" href="#"><i class="fas fa-user-check me-2"></i>Activer</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Sophie Richard</h6>
-                                                    <span class="text-muted small">ID-1006</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-secondary">Admin Support</span></td>
-                                        <td>s.richard@businesscare.fr</td>
-                                        <td>Support</td>
-                                        <td>10/02/2024</td>
-                                        <td>Il y a 3 jours</td>
-                                        <td><span class="badge bg-danger">Inactif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Permissions</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-success" href="#"><i class="fas fa-user-check me-2"></i>Réactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                <tbody id="adminList">
+                                    <!-- Les administrateurs seront insérés ici par JavaScript -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-muted small">Affichage de 1-6 sur 42 administrateurs</span>
-                        </div>
-                        <nav aria-label="Table navigation">
-                            <ul class="pagination pagination-sm mb-0">
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#" aria-label="Previous">
-                                        <span aria-hidden="true">«</span>
-                                    </a>
-                                </li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#" aria-label="Next">
-                                        <span aria-hidden="true">»</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
                 </div>
 
-                <!-- Charts Row -->
-                <div class="row mt-4">
-                    <!-- Admin Distribution By Department -->
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title">Répartition par département</h5>
+            </main>
+        </div>
+    </div>
+    <script>
+        // Fetch Admin List
+        fetch('../../api/admin/getAll.php')
+            .then(response => response.json())
+            .then(data => {
+                const adminList = document.getElementById('adminList');
+                data.forEach(admin => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox">
                             </div>
-                            <div class="card-body">
-                                <canvas id="departmentChart" height="260"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Login Activity -->
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title">Activité de connexion</h5>
-                                <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-outline-secondary active">Semaine</button>
-                                    <button type="button" class="btn btn-outline-secondary">Mois</button>
-                                    <button type="button" class="btn btn-outline-secondary">Année</button>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
+                                <div>
+                                    <h6 class="mb-0">${admin.name}</h6>
+                                    <span class="text-muted small">ID-${admin.id}</span>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <canvas id="activityChart" height="260"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Third Row -->
-                <div class="row mt-4">
-                    <!-- Admin Permissions -->
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title">Administrateurs avec le plus de permissions</h5>
-                            </div>
-                            <div class="card-body p-0">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Alexandre Dupont</h6>
-                                                <p class="mb-0 small text-muted">Super Admin | Direction IT</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <span class="badge bg-danger">42 permissions</span>
-                                            </div>
-                                        </div>
+                        </td>
+                        <td><span class="badge bg-${admin.roleColor}">${admin.role}</span></td>
+                        <td>${admin.email}</td>
+                        <td>${admin.department}</td>
+                        <td>${admin.dateAdded}</td>
+                        <td>${admin.lastLogin}</td>
+                        <td><span class="badge bg-${admin.statusColor}">${admin.status}</span></td>
+                        <td class="text-end">
+                            <div class="dropdown">
+                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i>Permissions</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
                                     </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Claire Dubois</h6>
-                                                <p class="mb-0 small text-muted">Admin Sécurité | Sécurité</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <span class="badge bg-warning text-dark">36 permissions</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Marie Laurent</h6>
-                                                <p class="mb-0 small text-muted">Admin Système | Infrastructure</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <span class="badge bg-primary">31 permissions</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Philippe Martin</h6>
-                                                <p class="mb-0 small text-muted">Admin Base de données | Données</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <span class="badge bg-info">28 permissions</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Thomas Bernard</h6>
-                                                <p class="mb-0 small text-muted">Admin Système | Infrastructure</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <span class="badge bg-primary">24 permissions</span>
-                                            </div>
-                                        </div>
-                                    </li>
+                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
                                 </ul>
                             </div>
-                            <div class="card-footer text-center">
-                                <a href="#" class="btn btn-sm btn-primary">Gérer les permissions</a>
-                            </div>
-                        </div>
-                    </div>
+                        </td>
+                    `;
+                    adminList.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Erreur lors de la récupération des administrateurs:', error));
+    </script>
+</body>
+</html>

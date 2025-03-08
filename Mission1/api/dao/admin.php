@@ -60,7 +60,7 @@ function getAdmin(int $id)
     }
 }
 
-function getAllAdmin(string $email = "", int $limit = null, int $offset = null)        //tout les params sont optionnels le premier est pour filter par email, le deuxieme est pour definier la limite de resultat et le last est pour definir ou on commence->utile pour la pagination
+function getAllAdmin(string $email = "", int $limit = null, int $offset = null): array|null        //tout les params sont optionnels le premier est pour filter par email, le deuxieme est pour definier la limite de resultat et le last est pour definir ou on commence->utile pour la pagination
 {
     $db = getDatabaseConnection();
     $params = [];

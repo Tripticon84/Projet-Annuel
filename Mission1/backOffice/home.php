@@ -578,6 +578,8 @@ include_once "includes/head.php"
                     </div>
                 </div>
 
+                
+
                 <!-- Footer -->
                 <footer class="pt-4 my-4 border-top">
                     <div class="row">
@@ -673,6 +675,8 @@ include_once "includes/head.php"
                 }
             }
         });
+
+        
     </script>
 </body>
 
