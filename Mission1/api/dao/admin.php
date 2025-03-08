@@ -23,16 +23,21 @@ function updateAdmin(int $id, string $username, string $password = null) {      
 
     // Si seul l'username est fourni (pas de mot de passe)
     if ($password === null) {
-        $sql = "UPDATE admin SET username = :username WHERE id = :id";
+        $sql = "UPDATE admin SET username = :username WHERE admin_id = :id";
         $stmt = $db->prepare($sql);
-        $res = $stmt->execute(['id' => $id, 'username' => $username]);
+        $res = $stmt->execute([
+            'admin_id' => $id,
+            'username' => $username]);
     }
     // Si username et mot de passe sont fournis
     else {
         $password = hashPassword($password);
         $sql = "UPDATE admin SET username = :username, password = :password WHERE id = :id";
         $stmt = $db->prepare($sql);
-        $res = $stmt->execute(['id' => $id, 'username' => $username, 'password' => $password]);
+        $res = $stmt->execute([
+            'admin_id' => $id,
+            'username' => $username,
+            'password' => $password]);
     }
 
     if ($res) {
@@ -63,29 +68,33 @@ function getAdmin(int $id)
     }
 }
 
-function getAllAdmin(string $username = "", int $limit = null, int $offset = null): array|null        //tout les params sont optionnels le premier est pour filter par username, le deuxieme est pour definier la limite de resultat et le last est pour definir ou on commence->utile pour la pagination
+function getAllAdmin(string $username = "", int $limit = null, int $offset = null)        //tout les params sont optionnels: le premier pour filtrer par username, le deuxième pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
 {
     $db = getDatabaseConnection();
-    $params = [];
     $sql = "SELECT admin_id, username FROM admin";
-    if ($username) {
+    $params = [];
+
+    if (!empty($username)) {
         $sql .= " WHERE username LIKE :username";
         $params['username'] = "%".$username."%";
     }
+
+    // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
-        $sql .= " LIMIT $limit";
+        $sql .= " LIMIT ".$limit;  // Utilisation directe des valeurs dans la chaîne SQL
 
         if ($offset !== null) {
-            $sql .= " OFFSET $offset";
+            $sql .= " OFFSET ". (string) $offset;
         }
     }
+
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute($params);
+    $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
+
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    return null;
-}
+    return null;}
 
 
 /* Authentification */
@@ -109,7 +118,7 @@ function setAdminSession ($id, $token) {
     $sql = "UPDATE admin SET token = :token, expiration = DATE_ADD(NOW(), INTERVAL 5 HOUR) WHERE id = :id";
     $query = $connection->prepare($sql);
     $res = $query->execute([
-        'id' => $id,
+        'admin_id' => $id,
         'token' => $token
     ]);
     if ($res) {

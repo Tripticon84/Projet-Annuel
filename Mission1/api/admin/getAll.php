@@ -12,8 +12,9 @@ if (!methodIsAllowed('read')) {
 $username = '';
 $limit = 0;
 $offset = 0;
+
 if (isset($_GET['username'])) {
-    $email = trim($_GET['username']); // Fix the parameter name
+    $username = trim($_GET['username']); // Fix the parameter name
 }
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
