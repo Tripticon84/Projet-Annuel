@@ -10,8 +10,8 @@ if (!methodIsAllowed('read')) {
 }
 
 $username = '';
-$limit = 0;
-$offset = 0;
+$limit = null;
+$offset = null;
 
 if (isset($_GET['username'])) {
     $username = trim($_GET['username']); // Fix the parameter name

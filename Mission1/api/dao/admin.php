@@ -81,7 +81,7 @@ function getAllAdmin(string $username = "", int $limit = null, int $offset = nul
 
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
-        $sql .= " LIMIT ".$limit;  // Utilisation directe des valeurs dans la chaîne SQL
+        $sql .= " LIMIT ". (string) $limit;  // Utilisation directe des valeurs dans la chaîne SQL
 
         if ($offset !== null) {
             $sql .= " OFFSET ". (string) $offset;
@@ -94,7 +94,8 @@ function getAllAdmin(string $username = "", int $limit = null, int $offset = nul
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    return null;}
+    return null;
+}
 
 
 /* Authentification */
@@ -145,6 +146,17 @@ function getAdminByToken($token) {
     $sql = "SELECT admin_id, username, password FROM admin WHERE token = :token";
     $query = $connection->prepare($sql);
     $res = $query->execute(['token' => $token]);
+    if ($res) {
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getAdminById($id) {
+    $connection = getDatabaseConnection();
+    $sql = "SELECT admin_id, username, password FROM admin WHERE admin_id = :id";
+    $query = $connection->prepare($sql);
+    $res = $query->execute(['id' => $id]);
     if ($res) {
         return $query->fetch(PDO::FETCH_ASSOC);
     }
