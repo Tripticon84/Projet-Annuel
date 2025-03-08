@@ -45,8 +45,10 @@ CREATE TABLE `activity` (
 
 CREATE TABLE `admin` (
   `admin_id` int(11) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL
+  `username` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `token` varchar(255) NULL,
+  `expiration` datetime NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -577,6 +579,10 @@ ALTER TABLE `participe_evenement`
 ALTER TABLE `signalement`
   ADD CONSTRAINT `signalement_ibfk_1` FOREIGN KEY (`id_societe`) REFERENCES `societe` (`societe_id`);
 COMMIT;
+
+/* Ajout de données */
+
+INSERT INTO admin (admin_id, username, password, token, expiration) VALUES (1, 'root@root.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

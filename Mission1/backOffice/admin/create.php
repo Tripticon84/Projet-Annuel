@@ -3,13 +3,13 @@ $title = "Creation des Administrateurs";
 include_once "../includes/head.php";
 ?>
 <body class="container mt-5">
-    <a href="admin.php" class="btn btn-secondary mb-3">&larr; Retour</a>  
+    <a href="admin.php" class="btn btn-secondary mb-3">&larr; Retour</a>
     <div class="card p-4 shadow-sm">
         <h2 class="text-center mb-4">Créer un Administrateur</h2>
         <form id="adminForm">
             <div class="mb-3">
-                <label for="email" class="form-label">Email :</label>
-                <input type="email" id="email" name="email" class="form-control" required>
+                <label for="username" class="form-label">Identifiant :</label>
+                <input type="text" id="username" name="username" class="form-control" required>
             </div>
 
             <div class="mb-3">
@@ -26,16 +26,16 @@ include_once "../includes/head.php";
         document.getElementById('adminForm').addEventListener('submit', function(event) {  //Ajoute un écouteur d'événements sur le formulaire qui s'exécute lorsque l'utilisateur le soumet.
             event.preventDefault();  //Empêche le rechargement de la page, qui est le comportement par défaut d'un formulaire HTML.
 
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const responseMessage = document.getElementById('responseMessage');
 
-            console.log("Envoi des données :", { email, password }); // Log the data being sent
+            console.log("Envoi des données :", { username, password }); // Log the data being sent
 
             fetch('../../api/admin/create.php', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ username, password })
             })
             .then(response => response.text()) // Get raw response text
             .then(text => {

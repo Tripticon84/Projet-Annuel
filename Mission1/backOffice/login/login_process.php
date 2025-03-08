@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Valider les paramètres
-$required = ['email', 'password'];
+$required = ['username', 'password'];
 if (!validateMandatoryParams($_POST, $required)) {
     error("Les paramètres ne sont pas les bons.");
 }
@@ -30,16 +30,16 @@ if (!validateMandatoryParams($_POST, $required)) {
 // Connexion a la base de données
 $db = getDatabaseConnection();
 
-$email = $_POST['email'];
+$username = $_POST['username'];
 $salt = 'quoicoube';
 $password_salt = $_POST['password'] . $salt;
 $password_hash = hash("sha256", $password_salt);
 
 
-$q = "SELECT admin_id, email, password FROM admin WHERE email = :email AND password = :password";
+$q = "SELECT admin_id, username, password FROM admin WHERE username = :username AND password = :password";
 $req = $db->prepare($q);
 $req->execute([
-    'email' => $email,
+    'username' => $username,
     'password' => $password_hash
 ]);
 
@@ -56,7 +56,7 @@ if (!$result) {
 session_start();
 
 $_SESSION["admin_id"] = $result["admin_id"];
-$_SESSION["email"] = $result["email"];
+$_SESSION["username"] = $result["username"];
 
 // Redirection vers la page d'accueil
 header("location:../home.php");

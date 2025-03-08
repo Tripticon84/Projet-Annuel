@@ -3,33 +3,33 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/hashPassword.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 
-function createAdmin(string $email, string $password){
+function createAdmin(string $username, string $password){
     $password = hashPassword($password);
     $db = getDatabaseConnection();
-    $sql = "INSERT INTO admin (email, password) VALUES (:email, :password)";
+    $sql = "INSERT INTO admin (username, password) VALUES (:username, :password)";
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute(['email' => $email, 'password' => $password]);
+    $res = $stmt->execute(['username' => $username, 'username' => $password]);
     if ($res) {
         return $db->lastInsertId();
     }
     return null;
 }
 
-function updateAdmin(int $id, string $email, string $password = null) {              //password est definit a null par defaut si password n est pas preciser
+function updateAdmin(int $id, string $username, string $password = null) {              //password est definit a null par defaut si password n est pas preciser
     $db = getDatabaseConnection();
 
-    // Si seul l'email est fourni (pas de mot de passe)
+    // Si seul l'username est fourni (pas de mot de passe)
     if ($password === null) {
-        $sql = "UPDATE admin SET email = :email WHERE id = :id";
+        $sql = "UPDATE admin SET username = :username WHERE id = :id";
         $stmt = $db->prepare($sql);
-        $res = $stmt->execute(['id' => $id, 'email' => $email]);
+        $res = $stmt->execute(['id' => $id, 'username' => $username]);
     }
-    // Si email et mot de passe sont fournis
+    // Si username et mot de passe sont fournis
     else {
         $password = hashPassword($password);
-        $sql = "UPDATE admin SET email = :email, password = :password WHERE id = :id";
+        $sql = "UPDATE admin SET username = :username, password = :password WHERE id = :id";
         $stmt = $db->prepare($sql);
-        $res = $stmt->execute(['id' => $id, 'email' => $email, 'password' => $password]);
+        $res = $stmt->execute(['id' => $id, 'username' => $username, 'password' => $password]);
     }
 
     if ($res) {
@@ -52,7 +52,7 @@ function deleteAdmin(int $id){
 function getAdmin(int $id)
 {
     $db = getDatabaseConnection();
-    $sql = "GET email FROM admin WHERE id=:id";
+    $sql = "GET username FROM username WHERE id=:id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute();
     if (!$res) {
@@ -60,14 +60,14 @@ function getAdmin(int $id)
     }
 }
 
-function getAllAdmin(string $email = "", int $limit = null, int $offset = null)        //tout les params sont optionnels le premier est pour filter par email, le deuxieme est pour definier la limite de resultat et le last est pour definir ou on commence->utile pour la pagination
+function getAllAdmin(string $username = "", int $limit = null, int $offset = null): array|null        //tout les params sont optionnels le premier est pour filter par username, le deuxieme est pour definier la limite de resultat et le last est pour definir ou on commence->utile pour la pagination
 {
     $db = getDatabaseConnection();
     $params = [];
-    $sql = "SELECT id, email FROM admin";
-    if ($email) {
-        $sql .= " WHERE email LIKE :email";
-        $params['email'] = "%".$email."%";
+    $sql = "SELECT id, username FROM admin";
+    if ($username) {
+        $sql .= " WHERE username LIKE :username";
+        $params['username'] = "%".$username."%";
     }
     if ($limit !== null) {
         $sql .= " LIMIT $limit";
@@ -89,7 +89,7 @@ function getAllAdmin(string $email = "", int $limit = null, int $offset = null) 
 
 function findAdminByCredentials($name, $password) {
     $connection = getDatabaseConnection();
-    $sql = "SELECT admin_id FROM admin WHERE email = :email AND password = :password";
+    $sql = "SELECT admin_id FROM admin WHERE username = :username AND password = :password";
     $query = $connection->prepare($sql);
     $res = $query->execute([
         'name' => $name,
@@ -130,7 +130,7 @@ function getTokenByExpiration($token) {
 
 function getAdminByToken($token) {
     $connection = getDatabaseConnection();
-    $sql = "SELECT admin_id, email, password FROM admin WHERE token = :token";
+    $sql = "SELECT admin_id, username, password FROM admin WHERE token = :token";
     $query = $connection->prepare($sql);
     $res = $query->execute(['token' => $token]);
     if ($res) {

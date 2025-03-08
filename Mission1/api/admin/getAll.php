@@ -9,11 +9,11 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-$email = '';
+$username = '';
 $limit = 0;
 $offset = 0;
-if (isset($_GET['email'])) {
-    $email = trim($_GET['email']); // Fix the parameter name
+if (isset($_GET['username'])) {
+    $email = trim($_GET['username']); // Fix the parameter name
 }
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
@@ -28,14 +28,14 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$admins = getAllAdmin($email, $limit, $offset);
+$admins = getAllAdmin($username, $limit, $offset);
 
 $result = []; // Initialize the result array
 
 foreach ($admins as $admin) {
     $result[] = [
         "id" => $admin['id'],
-        "email" => $admin['email'],
+        "email" => $admin['username'],
     ];
 }
 

@@ -137,7 +137,7 @@ include_once "../includes/head.php";
                                         </th>
                                         <th scope="col">Administrateur</th>
                                         <th scope="col">ID</th>
-                                        <th scope="col">Email</th>
+                                        <th scope="col">username</th>
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
                                 </thead>
@@ -176,7 +176,7 @@ include_once "../includes/head.php";
                             </div>
                         </td>
                         <td><span class="badge bg-${admin.roleColor}">${admin.role}</span></td>
-                        <td>${admin.email}</td>
+                        <td>${admin.username}</td>
                         <td>${admin.department}</td>
                         <td>${admin.dateAdded}</td>
                         <td>${admin.lastLogin}</td>

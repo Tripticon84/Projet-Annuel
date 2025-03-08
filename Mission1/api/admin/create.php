@@ -12,9 +12,9 @@ if (!methodIsAllowed('create')) {
 
 $data = getBody();
 
-if (validateMandatoryParams($data, ['email', 'password'])) {
+if (validateMandatoryParams($data, ['username', 'password'])) {
     // Vérification de l'email (optionnel, selon vos besoins)
-    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+    if (!filter_var($data['username'], FILTER_VALIDATE_EMAIL)) {
         returnError(400, 'Invalid email format');
         return;
     }
@@ -26,7 +26,7 @@ if (validateMandatoryParams($data, ['email', 'password'])) {
     }
 
     // Création de l'administrateur
-    $newAdminId = createAdmin($data['email'], $data['password']);
+    $newAdminId = createAdmin($data['username'], $data['password']);
 
     if (!$newAdminId) {
         returnError(500, 'Could not create the admin');
@@ -38,5 +38,5 @@ if (validateMandatoryParams($data, ['email', 'password'])) {
     exit();
 
 } else {
-    returnError(412, 'Mandatory parameters: email, password');
+    returnError(412, 'Mandatory parameters: username, password');
 }

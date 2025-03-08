@@ -20,8 +20,8 @@ if (isset($_SESSION['admin_id'])) {
                 <div class="card-body">
                     <form action="login/login_process.php" method="post">
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <label for="username" class="form-label">Identifiant</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Mot de passe</label>
