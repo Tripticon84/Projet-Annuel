@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/admin.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/employee.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 header('Content-Type: application/json');
@@ -14,6 +14,7 @@ if (!methodIsAllowed('read')) {
 $username = '';
 $limit = null;
 $offset = null;
+$id_societe = null;
 
 if (isset($_GET['username'])) {
     $username = trim($_GET['username']); // Fix the parameter name
@@ -30,15 +31,27 @@ if (isset($_GET['offset'])) {
         returnError(400, 'Offset must be a positive number');
     }
 }
+if (isset($_GET['id_societe'])) {
+    $offset = intval($_GET['id_societe']);
+    if ($offset < 0) {
+        returnError(400, 'id_societe must be a positive number');
+    }
+}
 
-$admins = getAllAdmin($username, $limit, $offset);
+$employees = getAllEmployees($username, $limit, $offset, $id_societe);
 
 $result = []; // Initialize the result array
 
-foreach ($admins as $admin) {
+foreach ($employees as $employee) {
     $result[] = [
-        "id" => $admin['admin_id'],
-        "username" => $admin['username'],
+        "collaborateur_id" => $employee['collaborateur_id'],
+        "nom" => $employee['nom'],
+        "prenom" => $employee['prenom'],
+        "username" => $employee['username'],
+        "role" => $employee['role'],
+        "email" => $employee['email'],
+        "telephone" => $employee['telephone'],
+        "id_societe" => $employee['id_societe'],
     ];
 }
 

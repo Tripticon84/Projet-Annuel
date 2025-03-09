@@ -1,5 +1,6 @@
 <?php
 
+
 function methodIsAllowed(string $action): bool
 {
     $method = $_SERVER['REQUEST_METHOD'];
@@ -32,7 +33,8 @@ function returnError(int $code, string $message)
     exit();
 }
 
-function returnSuccess($data, $code = 200) {
+function returnSuccess($data, $code = 200)
+{
     http_response_code($code);
     echo json_encode($data);
 }
@@ -48,27 +50,26 @@ function validateMandatoryParams(array $data, array $mandatoryParams): bool
     return true;
 }
 
-function makeApiRequest(string $url, array $postData = null): array
+function tokenVerification($token)
 {
-    $ch = curl_init();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/admin.php';
 
-    curl_setopt($ch, CURLOPT_URL, "localhost/" . $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-    if ($postData !== null) {
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+    if (!isset($token)) {
+        returnError(401, 'Unauthorized: Missing token');
+        return;
     }
-
-    $response = curl_exec($ch);
-
-    if (curl_errno($ch)) {
-        $error = 'Erreur cURL : ' . curl_error($ch);
-        curl_close($ch);
-        returnError(500, $error);
-    } else {
-        $data = json_decode($response, true);
-        curl_close($ch);
-        return $data;
+    $adminToken = getAdminByToken($token);
+    if (!$adminToken) {
+        returnError(401, 'Unauthorized: Invalid token');
+        return;
+    }
+    $expirationDate = getExpirationByToken($token);
+    if ($expirationDate) {
+        $expiration = new DateTime($expirationDate['expiration']);
+        if ($expiration < new DateTime()) {
+            returnError(401, 'Unauthorized: Token expired');
+            return;
+        }
     }
 }

@@ -13,15 +13,6 @@ include_once "../includes/head.php"
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Gestion des Employés</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <div class="input-group me-2">
-                            <input type="text" class="form-control form-control-sm" placeholder="Rechercher un employé..." aria-label="Search">
-                            <button class="btn btn-sm btn-outline-secondary" type="button">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                        <button type="button" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus"></i> Nouvel Employé
-                        </button>
                     </div>
                 </div>
 
@@ -79,9 +70,18 @@ include_once "../includes/head.php"
 
                 <!-- Main Employee Table -->
                 <div class="card mt-4">
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap">
                         <h5 class="card-title mb-0">Liste des Employés</h5>
-                        <div class="d-flex">
+                        <div class="d-flex flex-wrap mt-2 mt-sm-0  align-items-center">
+                            <div class="input-group me-2 mb-2 mb-sm-0" style="max-width: 210px;">
+                                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Rechercher un employé..." aria-label="Search">
+                                <button class="btn btn-sm btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <a type="button" class="btn btn-sm btn-primary me-2" href="create.php">
+                                <i class="fas fa-plus"></i> Nouvel Employé
+                            </a>
                             <div class="dropdown me-2">
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-filter"></i> Filtre
@@ -130,344 +130,25 @@ include_once "../includes/head.php"
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th scope="col">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="selectAll">
-                                            </div>
-                                        </th>
-                                        <th scope="col">Employé</th>
-                                        <th scope="col">Entreprise</th>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Nom/Prénom</th>
+                                        <th scope="col">Identifiant</th>
                                         <th scope="col">Email</th>
                                         <th scope="col">Rôle</th>
-                                        <th scope="col">Date inscription</th>
-                                        <th scope="col">Participation</th>
-                                        <th scope="col">Statut</th>
+                                        <th scope="col">Téléphone</th>
+                                        <th scope="col">Entreprise</th>
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Sophie Martin</h6>
-                                                    <span class="text-muted small">ID-4851</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>TechInnov</td>
-                                        <td>s.martin@techinnov.fr</td>
-                                        <td>Marketing</td>
-                                        <td>12/01/2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="progress flex-grow-1" style="height: 5px;">
-                                                    <div class="progress-bar bg-success" style="width: 92%"></div>
-                                                </div>
-                                                <span class="ms-2">92%</span>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-success">Actif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>Statistiques</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Thomas Leroy</h6>
-                                                    <span class="text-muted small">ID-4852</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>TechInnov</td>
-                                        <td>t.leroy@techinnov.fr</td>
-                                        <td>Développeur</td>
-                                        <td>15/01/2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="progress flex-grow-1" style="height: 5px;">
-                                                    <div class="progress-bar bg-success" style="width: 87%"></div>
-                                                </div>
-                                                <span class="ms-2">87%</span>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-success">Actif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>Statistiques</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Julie Bernard</h6>
-                                                    <span class="text-muted small">ID-4853</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>EcoSolutions</td>
-                                        <td>j.bernard@ecosolutions.fr</td>
-                                        <td>RH</td>
-                                        <td>20/01/2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="progress flex-grow-1" style="height: 5px;">
-                                                    <div class="progress-bar bg-success" style="width: 90%"></div>
-                                                </div>
-                                                <span class="ms-2">90%</span>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-success">Actif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>Statistiques</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Marc Dubois</h6>
-                                                    <span class="text-muted small">ID-4854</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>DigitalWave</td>
-                                        <td>m.dubois@digitalwave.fr</td>
-                                        <td>Direction</td>
-                                        <td>05/02/2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="progress flex-grow-1" style="height: 5px;">
-                                                    <div class="progress-bar bg-warning" style="width: 65%"></div>
-                                                </div>
-                                                <span class="ms-2">65%</span>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-warning text-dark">En congé</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>Statistiques</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-success" href="#"><i class="fas fa-user-check me-2"></i>Marquer comme actif</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Emma Petit</h6>
-                                                    <span class="text-muted small">ID-4855</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>SmartRetail</td>
-                                        <td>e.petit@smartretail.fr</td>
-                                        <td>Marketing</td>
-                                        <td>10/02/2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="progress flex-grow-1" style="height: 5px;">
-                                                    <div class="progress-bar bg-success" style="width: 82%"></div>
-                                                </div>
-                                                <span class="ms-2">82%</span>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-success">Actif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>Statistiques</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Lucas Moreau</h6>
-                                                    <span class="text-muted small">ID-4856</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>TechInnov</td>
-                                        <td>l.moreau@techinnov.fr</td>
-                                        <td>R&D</td>
-                                        <td>15/02/2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="progress flex-grow-1" style="height: 5px;">
-                                                    <div class="progress-bar bg-danger" style="width: 35%"></div>
-                                                </div>
-                                                <span class="ms-2">35%</span>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-danger">Inactif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>Statistiques</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-success" href="#"><i class="fas fa-user-check me-2"></i>Réactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-2">
-                                                <div>
-                                                    <h6 class="mb-0">Laura Simon</h6>
-                                                    <span class="text-muted small">ID-4857</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>EcoSolutions</td>
-                                        <td>l.simon@ecosolutions.fr</td>
-                                        <td>Commercial</td>
-                                        <td>18/02/2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="progress flex-grow-1" style="height: 5px;">
-                                                    <div class="progress-bar bg-success" style="width: 88%"></div>
-                                                </div>
-                                                <span class="ms-2">88%</span>
-                                            </div>
-                                        </td>
-                                        <td><span class="badge bg-success">Actif</span></td>
-                                        <td class="text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>Statistiques</a></li>
-                                                    <li>
-                                                        <hr class="dropdown-divider">
-                                                    </li>
-                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                <tbody id="employeeList">
+                                    <!-- Les employés seront insérés ici par JavaScript -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     <div class="card-footer bg-white d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-muted small">Affichage de 1-7 sur 3,482 employés</span>
+                            <span class="text-muted small" id="paginationInfo">Chargement des données...</span>
                         </div>
                         <nav aria-label="Table navigation">
                             <ul class="pagination pagination-sm mb-0">
@@ -814,24 +495,112 @@ include_once "../includes/head.php"
                             </div>
                         </div>
                     </div>
-
-                    <!-- Footer -->
-                    <footer class="pt-4 my-4 border-top">
-                        <div class="row">
-                            <div class="col-12 col-md text-center text-md-start">
-                                <p>&copy; 2025 Business Care - Administration</p>
-                                <small class="d-block text-muted">Version 3.5.2</small>
-                            </div>
-                            <div class="col-6 col-md text-end">
-                                <small class="text-muted">Dernière mise à jour: 03/03/2025 10:45</small>
-                            </div>
-                        </div>
-                    </footer>
-
+                </div>
             </main>
         </div>
     </div>
 
+    <script>
+        // Fetch Employee List
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchEmployees();
+
+            // Recherche par l'input de recherche
+            document.getElementById('searchInput').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    fetchEmployees(this.value);
+                }
+            });
+        });
+
+        function fetchEmployees(username = '') {
+            const employeeList = document.getElementById('employeeList');
+            employeeList.innerHTML = '<tr><td colspan="8" class="text-center">Chargement des employés...</td></tr>';
+
+            let url = '../../api/employee/getAll.php';
+            if (username) {
+                url += `?username=${encodeURIComponent(username)}`;
+            }
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la récupération des employés');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    employeeList.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(employee => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${employee.collaborateur_id}</td>
+                                <td>
+                                    <h6 class="mb-0">${employee.nom} ${employee.prenom}</h6>
+                                </td>
+                                <td>${employee.username}</td>
+                                <td>${employee.email || '-'}</td>
+                                <td>${employee.role || '-'}</td>
+                                <td>${employee.telephone || '-'}</td>
+                                <td>${employee.id_societe || '-'}</td>
+                                <td class="text-end">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
+                                            <li><a class="dropdown-item" href="modify.php?id=${employee.collaborateur_id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteEmployee(${employee.collaborateur_id}); return false;"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            `;
+                            employeeList.appendChild(row);
+                        });
+
+                        document.getElementById('paginationInfo').textContent = `Affichage de 1-${data.length} sur ${data.length} employés`;
+                    } else {
+                        employeeList.innerHTML = '<tr><td colspan="8" class="text-center">Aucun employé trouvé</td></tr>';
+                        document.getElementById('paginationInfo').textContent = 'Aucun employé trouvé';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    employeeList.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Erreur lors du chargement des données</td></tr>';
+                    document.getElementById('paginationInfo').textContent = 'Erreur lors du chargement des données';
+                });
+        }
+
+        function deleteEmployee(employeeId) {
+            if (confirm('Êtes-vous sûr de vouloir désactiver cet employé?')) {
+                fetch('../../api/employee/delete.php', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: employeeId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success || (data.message && data.message.includes('supprimé'))) {
+                        alert('Employé désactivé avec succès.');
+                        fetchEmployees(); // Rafraîchir la liste
+                    } else {
+                        alert('Erreur lors de la désactivation. Veuillez réessayer.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la désactivation.');
+                });
+            }
+        }
+    </script>
 
     <!-- Scripts pour les graphiques -->
     <script>

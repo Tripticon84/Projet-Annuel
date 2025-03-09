@@ -513,20 +513,6 @@ include_once "../includes/head.php"
                         </div>
                     </div>
                 </div>
-
-                <!-- Footer -->
-                <footer class="pt-4 my-4 border-top">
-                    <div class="row">
-                        <div class="col-12 col-md text-center text-md-start">
-                            <p>&copy; 2025 Business Care - Administration</p>
-                            <small class="d-block text-muted">Version 3.5.2</small>
-                        </div>
-                        <div class="col-6 col-md text-end">
-                            <small class="text-muted">Dernière mise à jour: 03/03/2025 10:45</small>
-                        </div>
-                    </div>
-                </footer>
-
             </main>
         </div>
     </div>

@@ -40,7 +40,7 @@ include_once "../includes/head.php";
             .then(response => response.json())
             .then(data => {
                 console.log("Réponse JSON :", data);
-                if (data) {
+                if (data.id) {
                     responseMessage.textContent = "Admin créé avec succès. ID: " + data.id;
                     responseMessage.classList.add("text-success");
                     responseMessage.classList.remove("text-danger");
