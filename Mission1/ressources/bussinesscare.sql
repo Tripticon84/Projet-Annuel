@@ -100,8 +100,8 @@ CREATE TABLE `collaborateur` (
   `prenom` varchar(255) NOT NULL,
   `username` varchar(255) NOT NULL,
   `role` varchar(255) DEFAULT "employe",
-  `email` varchar(255) DEFAULT NOT NULL,
-  `password` varchar(255) DEFAULT NULL
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
   `telephone` varchar(20) DEFAULT NULL,
   `id_societe` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
