@@ -19,7 +19,7 @@ function createEmployee(
         $password = hashPassword($password);
     }
 
-    $sql = "INSERT INTO collaborateur (nom, prenom, username, role, email, password, telephone, id_societe) VALUES (:nom, :prenom, :username, :role, :email, :password, :telephone, :id_societe)";
+    $sql = "INSERT INTO collaborateur (nom, prenom, username, role, email, password, telephone, id_societe, date_creation) VALUES (:nom, :prenom, :username, :role, :email, :password, :telephone, :id_societe, :date_creation)";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         'nom' => $nom,
@@ -29,7 +29,8 @@ function createEmployee(
         'email' => $email,
         'password' => $password,
         'telephone' => $telephone,
-        'id_societe' => $id_societe
+        'id_societe' => $id_societe,
+        'date_creation' => date('Y-m-d H:i:s')
     ]);
     if ($res) {
         return $db->lastInsertId();
@@ -40,7 +41,7 @@ function createEmployee(
 function getEmployee(int $id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, password, telephone, id_societe FROM collaborateur WHERE collaborateur_id = :id";
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur WHERE collaborateur_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute(['id' => $id]);
     if ($res) {
@@ -53,7 +54,7 @@ function getAllEmployees(string $username = "", int $limit = null, int $offset =
 {
     $db = getDatabaseConnection();
     $params = [];
-    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe FROM collaborateur";
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur";
 
     if (!empty($username)) {
         $sql .= " WHERE username LIKE :username";
@@ -158,7 +159,7 @@ function updateEmployee(int $id, ?string $nom = null, ?string $prenom = null, ?s
 function getEmployeeByTelephone(string $telephone)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT collaborateur_id, nom, prenom, role, email, telephone, id_societe, username FROM collaborateur WHERE telephone = :telephone";
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur WHERE telephone = :telephone";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute(['telephone' => $telephone]);
     if ($res) {
@@ -170,7 +171,7 @@ function getEmployeeByTelephone(string $telephone)
 function getEmployeeByEmail(string $email)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT collaborateur_id, nom, prenom, role, email, telephone, id_societe, username FROM collaborateur WHERE email = :email";
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur WHERE email = :email";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute(['email' => $email]);
     if ($res) {
@@ -182,7 +183,7 @@ function getEmployeeByEmail(string $email)
 function getEmployeesBySociete(int $id_societe)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT collaborateur_id, nom, prenom, role, email, telephone, id_societe, username FROM collaborateur WHERE id_societe = :id_societe";
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur WHERE id_societe = :id_societe";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute(['id_societe' => $id_societe]);
     if ($res) {
@@ -260,4 +261,128 @@ function getEmployeeByUsername($username)
         return $query->fetch(PDO::FETCH_ASSOC);
     }
     return null;
+}
+
+
+// Récupération des statistiques des employés
+function getEmployeeStats()
+{
+    $db = getDatabaseConnection();
+    $stats = [
+        'total' => 0,
+        'totalLastMonth' => 0,
+        'active' => 0,
+        'activeLastMonth' => 0,
+        'new' => 0,
+        'newLastMonth' => 0,
+        'participationRate' => 0,
+        'participationRateLastMonth' => 0
+    ];
+
+    // Date du premier jour du mois courant
+    $currentMonthStart = date('Y-m-01');
+    // Date du premier jour du mois précédent
+    $lastMonthStart = date('Y-m-01', strtotime('-1 month'));
+    // Date du premier jour du mois suivant (pour limiter le mois courant)
+    $nextMonthStart = date('Y-m-01', strtotime('+1 month'));
+
+    try {
+        // Nombre total d'employés inscrits
+        $query = "SELECT COUNT(*) as total FROM collaborateur";
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['total'] = $result['total'];
+
+        // Nombre d'employés inscrits le mois dernier
+        $query = "SELECT COUNT(*) as total FROM collaborateur WHERE date_creation < :lastMonthStart";
+        $stmt = $db->prepare($query);
+        // Nombre d'employés inscrits le mois dernier
+        $query = "SELECT COUNT(*) as total FROM collaborateur WHERE date_creation < :lastMonthStart";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            ':lastMonthStart' => $lastMonthStart
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['totalLastMonth'] = $result['total'];
+
+        // Calcul de la variation totale en pourcentage
+        $totalVariation = $stats['totalLastMonth'] > 0 ?
+            round((($stats['total'] - $stats['totalLastMonth']) / $stats['totalLastMonth']) * 100) : 0;
+        $stats['totalVariation'] = $totalVariation;
+
+        // Nombre d'employés actifs ce mois
+        $query = "SELECT COUNT(DISTINCT collaborateur_id) as active
+             FROM collaborateur
+             WHERE date_activite >= :currentMonthStart AND date_activite < :nextMonthStart";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            ':currentMonthStart' => $currentMonthStart,
+            ':nextMonthStart' => $nextMonthStart
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['active'] = $result['active'];
+
+        // Nombre d'employés actifs le mois dernier
+        $query = "SELECT COUNT(DISTINCT collaborateur_id) as active
+             FROM collaborateur
+             WHERE date_activite >= :lastMonthStart AND date_activite < :currentMonthStart";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            ':lastMonthStart' => $lastMonthStart,
+            ':currentMonthStart' => $currentMonthStart
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['activeLastMonth'] = $result['active'];
+
+        // Calcul de la variation des actifs en pourcentage
+        $activeVariation = $stats['activeLastMonth'] > 0 ?
+            round((($stats['active'] - $stats['activeLastMonth']) / $stats['activeLastMonth']) * 100) : 0;
+        $stats['activeVariation'] = $activeVariation;
+
+        // Nombre de nouveaux employés ce mois
+        $query = "SELECT COUNT(*) as new FROM collaborateur
+             WHERE date_creation >= :currentMonthStart AND date_creation < :nextMonthStart";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            ':currentMonthStart' => $currentMonthStart,
+            ':nextMonthStart' => $nextMonthStart
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['new'] = $result['new'];
+
+        // Nombre de nouveaux employés le mois dernier
+        $query = "SELECT COUNT(*) as new FROM collaborateur
+             WHERE date_creation >= :lastMonthStart AND date_creation < :currentMonthStart";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            ':lastMonthStart' => $lastMonthStart,
+            ':currentMonthStart' => $currentMonthStart
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['newLastMonth'] = $result['new'];
+
+        // Calcul de la variation des nouveaux en pourcentage
+        $newVariation = $stats['newLastMonth'] > 0 ?
+            round((($stats['new'] - $stats['newLastMonth']) / $stats['newLastMonth']) * 100) : 0;
+        $stats['newVariation'] = $newVariation;
+
+        // Taux de participation (basé sur le nombre d'employés actifs divisé par le total)
+        $stats['participationRate'] = $stats['total'] > 0 ?
+            round(($stats['active'] / $stats['total']) * 100) : 0;
+
+        // Taux de participation le mois dernier
+        $participationRateLastMonth = $stats['totalLastMonth'] > 0 ?
+            round(($stats['activeLastMonth'] / $stats['totalLastMonth']) * 100) : 0;
+        $stats['participationRateLastMonth'] = $participationRateLastMonth;
+
+        // Calcul de la variation du taux de participation
+        $participationVariation = $stats['participationRateLastMonth'] > 0 ?
+            round(($stats['participationRate'] - $stats['participationRateLastMonth'])) : 0;
+        $stats['participationVariation'] = $participationVariation;
+
+        return $stats;
+    } catch (PDOException $e) {
+        echo "Erreur lors de la récupération des statistiques : " . $e->getMessage();
+    }
 }

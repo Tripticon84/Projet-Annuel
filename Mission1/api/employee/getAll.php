@@ -52,6 +52,8 @@ foreach ($employees as $employee) {
         "email" => $employee['email'],
         "telephone" => $employee['telephone'],
         "id_societe" => $employee['id_societe'],
+        "date_creation" => $employee['date_creation'],
+        "date_activite" => $employee['date_activite'],
     ];
 }
 

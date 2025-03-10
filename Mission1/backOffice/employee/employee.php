@@ -1,6 +1,29 @@
 <?php
 $title = "Gestion des Employés";
-include_once "../includes/head.php"
+include_once "../includes/head.php";
+include_once "../../api/dao/employee.php";
+
+// Récupération des statistiques
+$employeeStats = getEmployeeStats();
+if (!$employeeStats) {
+    $employeeStats = [
+        'total' => 0,
+        'totalLastMonth' => 0,
+        'active' => 0,
+        'activeLastMonth' => 0,
+        'new' => 0,
+        'newLastMonth' => 0,
+        'participationRate' => 0,
+        'participationRateLastMonth' => 0,
+        'totalVariation' => 0,
+        'activeVariation' => 0,
+        'newVariation' => 0,
+        'participationVariation' => 0,
+    ];
+}
+// echo "<pre>";
+// var_dump($employeeStats);
+// echo "</pre>";
 ?>
 
 <body>
@@ -23,10 +46,11 @@ include_once "../includes/head.php"
                             <div class="stat-icon bg-primary bg-opacity-10 text-primary">
                                 <i class="fas fa-users"></i>
                             </div>
-                            <h3>3,482</h3>
+                            <h3><?php echo number_format($employeeStats['total'], 0, ',', ' '); ?></h3>
                             <p class="text-muted mb-0">Employés inscrits</p>
-                            <div class="mt-2 text-success small">
-                                <i class="fas fa-arrow-up"></i> +8% depuis le mois dernier
+                            <div class="mt-2 <?php echo $employeeStats['totalVariation'] >= 0 ? 'text-success' : 'text-danger'; ?> small">
+                                <i class="fas fa-arrow-<?php echo $employeeStats['totalVariation'] >= 0 ? 'up' : 'down'; ?>"></i>
+                                <?php echo ($employeeStats['totalVariation'] >= 0 ? '+' : '') . $employeeStats['totalVariation']; ?>% depuis le mois dernier
                             </div>
                         </div>
                     </div>
@@ -35,10 +59,11 @@ include_once "../includes/head.php"
                             <div class="stat-icon bg-success bg-opacity-10 text-success">
                                 <i class="fas fa-user-check"></i>
                             </div>
-                            <h3>2,940</h3>
+                            <h3><?php echo number_format($employeeStats['active'], 0, ',', ' '); ?></h3>
                             <p class="text-muted mb-0">Actifs ce mois</p>
-                            <div class="mt-2 text-success small">
-                                <i class="fas fa-arrow-up"></i> +5% depuis le mois dernier
+                            <div class="mt-2 <?php echo $employeeStats['activeVariation'] >= 0 ? 'text-success' : 'text-danger'; ?> small">
+                                <i class="fas fa-arrow-<?php echo $employeeStats['activeVariation'] >= 0 ? 'up' : 'down'; ?>"></i>
+                                <?php echo ($employeeStats['activeVariation'] >= 0 ? '+' : '') . $employeeStats['activeVariation']; ?>% depuis le mois dernier
                             </div>
                         </div>
                     </div>
@@ -47,10 +72,11 @@ include_once "../includes/head.php"
                             <div class="stat-icon bg-warning bg-opacity-10 text-warning">
                                 <i class="fas fa-user-plus"></i>
                             </div>
-                            <h3>128</h3>
+                            <h3><?php echo number_format($employeeStats['new'], 0, ',', ' '); ?></h3>
                             <p class="text-muted mb-0">Nouveaux ce mois</p>
-                            <div class="mt-2 text-danger small">
-                                <i class="fas fa-arrow-down"></i> -12% depuis le mois dernier
+                            <div class="mt-2 <?php echo $employeeStats['newVariation'] >= 0 ? 'text-success' : 'text-danger'; ?> small">
+                                <i class="fas fa-arrow-<?php echo $employeeStats['newVariation'] >= 0 ? 'up' : 'down'; ?>"></i>
+                                <?php echo ($employeeStats['newVariation'] >= 0 ? '+' : '') . $employeeStats['newVariation']; ?>% depuis le mois dernier
                             </div>
                         </div>
                     </div>
@@ -59,10 +85,11 @@ include_once "../includes/head.php"
                             <div class="stat-icon bg-info bg-opacity-10 text-info">
                                 <i class="fas fa-percentage"></i>
                             </div>
-                            <h3>84%</h3>
+                            <h3><?php echo $employeeStats['participationRate']; ?>%</h3>
                             <p class="text-muted mb-0">Taux de participation</p>
-                            <div class="mt-2 text-success small">
-                                <i class="fas fa-arrow-up"></i> +7% depuis le mois dernier
+                            <div class="mt-2 <?php echo $employeeStats['participationVariation'] >= 0 ? 'text-success' : 'text-danger'; ?> small">
+                                <i class="fas fa-arrow-<?php echo $employeeStats['participationVariation'] >= 0 ? 'up' : 'down'; ?>"></i>
+                                <?php echo ($employeeStats['participationVariation'] >= 0 ? '+' : '') . $employeeStats['participationVariation']; ?>% depuis le mois dernier
                             </div>
                         </div>
                     </div>
@@ -74,8 +101,8 @@ include_once "../includes/head.php"
                         <h5 class="card-title mb-0">Liste des Employés</h5>
                         <div class="d-flex flex-wrap mt-2 mt-sm-0  align-items-center">
                             <div class="input-group me-2 mb-2 mb-sm-0" style="max-width: 210px;">
-                                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Rechercher un employé..." aria-label="Search">
-                                <button class="btn btn-sm btn-outline-secondary" type="button">
+                                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher un employé..." aria-label="Search">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" onclick="fetchEmployees(document.getElementById('searchInput').value)">
                                     <i class="fas fa-search"></i>
                                 </button>
                             </div>
@@ -137,6 +164,8 @@ include_once "../includes/head.php"
                                         <th scope="col">Rôle</th>
                                         <th scope="col">Téléphone</th>
                                         <th scope="col">Entreprise</th>
+                                        <th scope="col">Date de création</th>
+                                        <th scope="col">Dernière activité</th>
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
                                 </thead>
@@ -151,353 +180,57 @@ include_once "../includes/head.php"
                             <span class="text-muted small" id="paginationInfo">Chargement des données...</span>
                         </div>
                         <nav aria-label="Table navigation">
-                            <ul class="pagination pagination-sm mb-0">
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#" aria-label="Previous">
-                                        <span aria-hidden="true">«</span>
-                                    </a>
-                                </li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#" aria-label="Next">
-                                        <span aria-hidden="true">»</span>
-                                    </a>
-                                </li>
-                            </ul>
+                            <ul class="pagination pagination-sm mb-0" id="paginationList"></ul>
                         </nav>
                     </div>
                 </div>
 
-                <!-- Charts Row -->
+
+                <!-- Quick Action Cards -->
                 <div class="row mt-4">
-                    <!-- Employee Distribution By Department -->
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title">Répartition par service</h5>
+                    <div class="col-12">
+                        <h5>Actions rapides</h5>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center p-3 mb-3">
+                            <div class="mb-3">
+                                <i class="fas fa-user-plus fa-2x text-primary"></i>
                             </div>
-                            <div class="card-body">
-                                <canvas id="departmentChart" height="260"></canvas>
-                            </div>
+                            <h6>Nouvel employé</h6>
+                            <a href="#" class="btn btn-sm btn-outline-primary mt-2">Ajouter</a>
                         </div>
                     </div>
-
-                    <!-- Activity Trend -->
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title">Tendance de participation</h5>
-                                <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-outline-secondary active">Semaine</button>
-                                    <button type="button" class="btn btn-outline-secondary">Mois</button>
-                                    <button type="button" class="btn btn-outline-secondary">Année</button>
-                                </div>
+                    <div class="col-md-3">
+                        <div class="card text-center p-3 mb-3">
+                            <div class="mb-3">
+                                <i class="fas fa-file-export fa-2x text-success"></i>
                             </div>
-                            <div class="card-body">
-                                <canvas id="activityChart" height="260"></canvas>
+                            <h6>Exporter données</h6>
+                            <a href="#" class="btn btn-sm btn-outline-success mt-2">Exporter</a>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center p-3 mb-3">
+                            <div class="mb-3">
+                                <i class="fas fa-envelope fa-2x text-warning"></i>
                             </div>
+                            <h6>Envoyer message groupé</h6>
+                            <a href="#" class="btn btn-sm btn-outline-warning mt-2">Composer</a>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center p-3 mb-3">
+                            <div class="mb-3">
+                                <i class="fas fa-chart-line fa-2x text-info"></i>
+                            </div>
+                            <h6>Rapport de performance</h6>
+                            <a href="#" class="btn btn-sm btn-outline-info mt-2">Générer</a>
                         </div>
                     </div>
                 </div>
-
-                <!-- Third Row -->
-                <div class="row mt-4">
-                    <!-- Top Active Employees -->
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title">Employés les plus actifs</h5>
-                            </div>
-                            <div class="card-body p-0">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Sophie Martin</h6>
-                                                <p class="mb-0 small text-muted">Marketing | TechInnov</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="progress flex-grow-1 me-2" style="width: 80px; height: 5px;">
-                                                        <div class="progress-bar bg-success" style="width: 92%"></div>
-                                                    </div>
-                                                    <span>92%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Julie Bernard</h6>
-                                                <p class="mb-0 small text-muted">RH | EcoSolutions</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="progress flex-grow-1 me-2" style="width: 80px; height: 5px;">
-                                                        <div class="progress-bar bg-success" style="width: 90%"></div>
-                                                    </div>
-                                                    <span>90%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Thomas Leroy</h6>
-                                                <p class="mb-0 small text-muted">Développeur | TechInnov</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="progress flex-grow-1 me-2" style="width: 80px; height: 5px;">
-                                                        <div class="progress-bar bg-success" style="width: 87%"></div>
-                                                    </div>
-                                                    <span>87%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Laura Simon</h6>
-                                                <p class="mb-0 small text-muted">Commercial | EcoSolutions</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="progress flex-grow-1 me-2" style="width: 80px; height: 5px;">
-                                                        <div class="progress-bar bg-success" style="width: 88%"></div>
-                                                    </div>
-                                                    <span>88%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0">Emma Petit</h6>
-                                                <p class="mb-0 small text-muted">Marketing | SmartRetail</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="progress flex-grow-1 me-2" style="width: 80px; height: 5px;">
-                                                        <div class="progress-bar bg-success" style="width: 82%"></div>
-                                                    </div>
-                                                    <span>82%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="card-footer text-center">
-                                <a href="#" class="btn btn-sm btn-primary">Voir tous les employés actifs</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Employee Activities -->
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title">Activités récentes des employés</h5>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="list-group list-group-flush">
-                                    <div class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div>
-                                                <div class="d-flex align-items-center">
-                                                    <h6 class="mb-0 me-2">Sophie Martin</h6>
-                                                    <span class="badge bg-success">Connexion</span>
-                                                </div>
-                                                <p class="mb-0 small text-muted">Il y a 10 minutes</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div>
-                                                <div class="d-flex align-items-center">
-                                                    <h6 class="mb-0 me-2">Thomas Leroy</h6>
-                                                    <span class="badge bg-info">Modification profil</span>
-                                                </div>
-                                                <p class="mb-0 small text-muted">Il y a 25 minutes</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div>
-                                                <div class="d-flex align-items-center">
-                                                    <h6 class="mb-0 me-2">Julie Bernard</h6>
-                                                    <span class="badge bg-primary">Inscription événement</span>
-                                                </div>
-                                                <p class="mb-0 small text-muted">Il y a 45 minutes</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div>
-                                                <div class="d-flex align-items-center">
-                                                    <h6 class="mb-0 me-2">Marc Dubois</h6>
-                                                    <span class="badge bg-warning text-dark">Déconnexion</span>
-                                                </div>
-                                                <p class="mb-0 small text-muted">Il y a 1 heure</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            <img src="/api/placeholder/40/40" alt="Avatar" class="rounded-circle me-3">
-                                            <div>
-                                                <div class="d-flex align-items-center">
-                                                    <h6 class="mb-0 me-2">Emma Petit</h6>
-                                                    <span class="badge bg-success">Document téléchargé</span>
-                                                </div>
-                                                <p class="mb-0 small text-muted">Il y a 2 heures</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </ul>
-                                </div>
-                                <div class="card-footer text-center">
-                                    <a href="#" class="btn btn-sm btn-primary">Voir toutes les activités</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Fourth Row -->
-                    <div class="row mt-4">
-                        <!-- Employee Status Stats -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title">Statut des employés par entreprise</h5>
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="statusChart" height="250"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Employee Engagement -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="card-title">Participation aux activités</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span>TechInnov</span>
-                                            <span>83%</span>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-primary" role="progressbar" style="width: 83%" aria-valuenow="83" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span>EcoSolutions</span>
-                                            <span>78%</span>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span>DigitalWave</span>
-                                            <span>67%</span>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-info" role="progressbar" style="width: 67%" aria-valuenow="67" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span>SmartRetail</span>
-                                            <span>74%</span>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-warning" role="progressbar" style="width: 74%" aria-valuenow="74" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span>GreenLife</span>
-                                            <span>62%</span>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 62%" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Action Cards -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h5>Actions rapides</h5>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center p-3 mb-3">
-                                <div class="mb-3">
-                                    <i class="fas fa-user-plus fa-2x text-primary"></i>
-                                </div>
-                                <h6>Nouvel employé</h6>
-                                <a href="#" class="btn btn-sm btn-outline-primary mt-2">Ajouter</a>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center p-3 mb-3">
-                                <div class="mb-3">
-                                    <i class="fas fa-file-export fa-2x text-success"></i>
-                                </div>
-                                <h6>Exporter données</h6>
-                                <a href="#" class="btn btn-sm btn-outline-success mt-2">Exporter</a>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center p-3 mb-3">
-                                <div class="mb-3">
-                                    <i class="fas fa-envelope fa-2x text-warning"></i>
-                                </div>
-                                <h6>Envoyer message groupé</h6>
-                                <a href="#" class="btn btn-sm btn-outline-warning mt-2">Composer</a>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center p-3 mb-3">
-                                <div class="mb-3">
-                                    <i class="fas fa-chart-line fa-2x text-info"></i>
-                                </div>
-                                <h6>Rapport de performance</h6>
-                                <a href="#" class="btn btn-sm btn-outline-info mt-2">Générer</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
         </div>
+        </main>
+    </div>
     </div>
 
     <script>
@@ -513,13 +246,18 @@ include_once "../includes/head.php"
             });
         });
 
-        function fetchEmployees(username = '') {
+        let currentPage = 1;
+
+        function fetchEmployees(username = '', page = 1) {
+            currentPage = page;
             const employeeList = document.getElementById('employeeList');
             employeeList.innerHTML = '<tr><td colspan="8" class="text-center">Chargement des employés...</td></tr>';
 
-            let url = '../../api/employee/getAll.php';
+            let limit = 5;
+            let offset = (page - 1) * limit;
+            let url = '../../api/employee/getAll.php?limit=' + limit + '&offset=' + offset;
             if (username) {
-                url += `?username=${encodeURIComponent(username)}`;
+                url += '&username=' + encodeURIComponent(username);
             }
 
             fetch(url)
@@ -532,6 +270,7 @@ include_once "../includes/head.php"
                 .then(data => {
                     employeeList.innerHTML = '';
                     if (data && data.length > 0) {
+                        console.log(data);
                         data.forEach(employee => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
@@ -544,6 +283,8 @@ include_once "../includes/head.php"
                                 <td>${employee.role || '-'}</td>
                                 <td>${employee.telephone || '-'}</td>
                                 <td>${employee.id_societe || '-'}</td>
+                                <td>${new Date(employee.date_creation).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) || '-'}</td>
+                                <td>${new Date(employee.date_activite).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) || '-'}</td>
                                 <td class="text-end">
                                     <div class="dropdown">
                                         <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -562,6 +303,7 @@ include_once "../includes/head.php"
                         });
 
                         document.getElementById('paginationInfo').textContent = `Affichage de 1-${data.length} sur ${data.length} employés`;
+                        updatePagination(data.length === limit);
                     } else {
                         employeeList.innerHTML = '<tr><td colspan="8" class="text-center">Aucun employé trouvé</td></tr>';
                         document.getElementById('paginationInfo').textContent = 'Aucun employé trouvé';
@@ -574,30 +316,45 @@ include_once "../includes/head.php"
                 });
         }
 
+        function updatePagination(hasMore) {
+            const paginationList = document.getElementById('paginationList');
+            paginationList.innerHTML = '';
+            // Bouton précédent
+            let prevItem = document.createElement('li');
+            prevItem.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
+            prevItem.innerHTML = '<a class="page-link" href="#" onclick="fetchEmployees(document.getElementById(\'searchInput\').value, ' + (currentPage - 1) + ')">Précédent</a>';
+            paginationList.appendChild(prevItem);
+            // Bouton suivant
+            let nextItem = document.createElement('li');
+            nextItem.className = 'page-item ' + (!hasMore ? 'disabled' : '');
+            nextItem.innerHTML = '<a class="page-link" href="#" onclick="fetchEmployees(document.getElementById(\'searchInput\').value, ' + (currentPage + 1) + ')">Suivant</a>';
+            paginationList.appendChild(nextItem);
+        }
+
         function deleteEmployee(employeeId) {
             if (confirm('Êtes-vous sûr de vouloir désactiver cet employé?')) {
                 fetch('../../api/employee/delete.php', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        id: employeeId
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: employeeId
+                        })
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success || (data.message && data.message.includes('supprimé'))) {
-                        alert('Employé désactivé avec succès.');
-                        fetchEmployees(); // Rafraîchir la liste
-                    } else {
-                        alert('Erreur lors de la désactivation. Veuillez réessayer.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors de la désactivation.');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success || (data.message && data.message.includes('supprimé'))) {
+                            alert('Employé désactivé avec succès.');
+                            fetchEmployees(); // Rafraîchir la liste
+                        } else {
+                            alert('Erreur lors de la désactivation. Veuillez réessayer.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue lors de la désactivation.');
+                    });
             }
         }
     </script>

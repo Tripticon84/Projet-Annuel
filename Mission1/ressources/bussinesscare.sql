@@ -103,7 +103,8 @@ CREATE TABLE `collaborateur` (
   `email` varchar(255) NOT NULL,
   `password` varchar(255) DEFAULT NULL,
   `telephone` varchar(20) DEFAULT NULL,
-  `id_societe` int(11) DEFAULT NULL
+  `id_societe` int(11) DEFAULT NULL,
+  `date_creation` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -228,11 +229,15 @@ CREATE TABLE `participe_evenement` (
 
 CREATE TABLE `prestataire` (
   `prestataire_id` int(11) NOT NULL,
+  `email` varchar(255)  NOT NULL,
   `nom` varchar(255) DEFAULT NULL,
+  `prenom` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
   `tarif` decimal(10,2) DEFAULT NULL,
   `date_debut_disponibilite` date DEFAULT NULL,
-  `date_fin_disponibilite` date DEFAULT NULL
+  `date_fin_disponibilite` date DEFAULT NULL,
+  `est_candidat` boolean  NOT NULL,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
