@@ -6,6 +6,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 header('Content-Type: application/json');
 
 
+$limit = null;
+$offset = null;
+
 if (!methodIsAllowed('read')) {
     returnError(405, 'Method not allowed');
     return;
@@ -25,7 +28,7 @@ if (isset($_GET['offset'])) {
 }
 
 
-$providers = getAllProvider( $limit, $offset);
+$providers = getAllCandidate( $limit, $offset);
 
 $result = []; // Initialize the result array
 
@@ -38,7 +41,6 @@ foreach ($providers as $provider) {
         "start_date" => $provider['date_debut_disponibilite'],
         "end_date" => $provider['date_fin_disponibilite'],
         "type" => $provider['type'],
-        "description" => $provider['description'],
         "price"=> $provider['tarif']
     ];
 }

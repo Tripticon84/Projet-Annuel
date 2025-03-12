@@ -99,8 +99,8 @@ if (!$employeeStats) {
                 <div class="card mt-4">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap">
                         <h5 class="card-title mb-0">Liste des Employés</h5>
-                        <div class="d-flex flex-wrap mt-2 mt-sm-0  align-items-center">
-                            <div class="input-group me-2 mb-2 mb-sm-0" style="max-width: 210px;">
+                        <div class="d-flex mt-2 mt-sm-0  align-items-center">
+                            <div class="input-group me-2 mb-2 mb-sm-0 p-2" style="max-width: 210px;">
                                 <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher un employé..." aria-label="Search">
                                 <button class="btn btn-sm btn-outline-secondary" type="button" onclick="fetchEmployees(document.getElementById('searchInput').value)">
                                     <i class="fas fa-search"></i>
@@ -110,9 +110,9 @@ if (!$employeeStats) {
                                 <i class="fas fa-plus"></i> Nouvel Employé
                             </a>
                             <div class="dropdown me-2">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <!-- <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-filter"></i> Filtre
-                                </button>
+                                </button> -->
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
                                     <li>
                                         <h6 class="dropdown-header">Entreprise</h6>
@@ -191,16 +191,16 @@ if (!$employeeStats) {
                     <div class="col-12">
                         <h5>Actions rapides</h5>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="card text-center p-3 mb-3">
                             <div class="mb-3">
                                 <i class="fas fa-user-plus fa-2x text-primary"></i>
                             </div>
                             <h6>Nouvel employé</h6>
-                            <a href="#" class="btn btn-sm btn-outline-primary mt-2">Ajouter</a>
+                            <a href="create.php" class="btn btn-sm btn-outline-primary mt-2">Ajouter</a>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="card text-center p-3 mb-3">
                             <div class="mb-3">
                                 <i class="fas fa-file-export fa-2x text-success"></i>
@@ -209,7 +209,7 @@ if (!$employeeStats) {
                             <a href="#" class="btn btn-sm btn-outline-success mt-2">Exporter</a>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="card text-center p-3 mb-3">
                             <div class="mb-3">
                                 <i class="fas fa-envelope fa-2x text-warning"></i>
@@ -218,18 +218,9 @@ if (!$employeeStats) {
                             <a href="#" class="btn btn-sm btn-outline-warning mt-2">Composer</a>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-chart-line fa-2x text-info"></i>
-                            </div>
-                            <h6>Rapport de performance</h6>
-                            <a href="#" class="btn btn-sm btn-outline-info mt-2">Générer</a>
-                        </div>
-                    </div>
                 </div>
+            </main>
         </div>
-        </main>
     </div>
     </div>
 
@@ -302,7 +293,7 @@ if (!$employeeStats) {
                             employeeList.appendChild(row);
                         });
 
-                        document.getElementById('paginationInfo').textContent = `Affichage de 1-${data.length} sur ${data.length} employés`;
+                        document.getElementById('paginationInfo').textContent = `Affichage de 1-${data.length} sur <?= $employeeStats['total'] ?> employés`;
                         updatePagination(data.length === limit);
                     } else {
                         employeeList.innerHTML = '<tr><td colspan="8" class="text-center">Aucun employé trouvé</td></tr>';

@@ -53,7 +53,7 @@ function updateProvider(int $id, string $username, string $password = null)
 function deleteProvider(int $id)
 {
     $db = getDatabaseConnection();
-    $sql = "DELETE FROM admin WHERE admin_id=:id";
+    $sql = "DELETE FROM prestataire WHERE prestataire_id=:id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         "id" => $id
@@ -83,7 +83,7 @@ function getProviderByUsername(string $username)
 function getProviderById($id)
 {
     $connection = getDatabaseConnection();
-    $sql = "SELECT prestataire_id, username, password FROM admin WHERE admin_id = :id";
+    $sql = "SELECT prestataire_id, email  FROM prestataire WHERE prestataire_id = :id";
     $query = $connection->prepare($sql);
     $res = $query->execute(['id' => $id]);
     if ($res) {
@@ -93,16 +93,13 @@ function getProviderById($id)
 }
 
 
-function getAllProvider(string $email = "",int $limit = null, int $offset = null)        //tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
+function getAllProvider(int $limit = null, int $offset = null)        //tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT prestataire_id, email, nom, prenom, type, tarif, date_debut_disponibilite, date_fin_disponibilite FROM prestataire Where est_candidat = false";
     $params = [];
 
-    if (!empty($email)) {
-        $sql .= " WHERE email LIKE :email";
-        $params['email'] = "%" . $email . "%";
-    }
+
 
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
@@ -122,16 +119,12 @@ function getAllProvider(string $email = "",int $limit = null, int $offset = null
     return null;
 }
 
-function getAllCandidate(string $email = "",int $limit = null, int $offset = null)        //tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
+function getAllCandidate(int $limit = null, int $offset = null)        //tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT prestataire_id, email, nom, prenom, type, tarif, date_debut_disponibilite, date_fin_disponibilite FROM prestataire Where est_candidat = true";
     $params = [];
 
-    if (!empty($email)) {
-        $sql .= " WHERE email LIKE :email";
-        $params['email'] = "%" . $email . "%";
-    }
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
         $sql .= " LIMIT " . (string) $limit;
@@ -146,6 +139,21 @@ function getAllCandidate(string $email = "",int $limit = null, int $offset = nul
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+
+function updateCandidateStatus(int $prestataire_id,bool $value){
+    $db = getDatabaseConnection();
+    $sql = "UPDATE prestataire  SET est_candidat = :est_candidat WHERE prestataire_id = :id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'est_candidat'=>$value,
+        'id'=>$prestataire_id
+    ]);
+    if ($res) {
+        return $stmt->rowCount();
     }
     return null;
 }

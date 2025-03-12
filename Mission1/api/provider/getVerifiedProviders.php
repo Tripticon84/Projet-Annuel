@@ -9,18 +9,11 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-
-
-$email = '';
 $limit = null;
 $offset = null;
 
-if (isset($_GET['email'])) {
-    $email = trim($_GET['email']);
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        returnError(400, 'Invalid email format');
-    }
-}
+
+
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
     if ($limit < 1) {
@@ -34,7 +27,7 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$providers = getAllProvider($username, $limit, $offset);
+$providers = getAllProvider($limit, $offset);
 
 $result = []; // Initialize the result array
 
@@ -47,7 +40,6 @@ foreach ($providers as $provider) {
         "start_date" => $provider['date_debut_disponibilite'],
         "end_date" => $provider['date_fin_disponibilite'],
         "type" => $provider['type'],
-        "description" => $provider['description'],
         "price"=> $provider['tarif']
     ];
 }

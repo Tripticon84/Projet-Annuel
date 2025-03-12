@@ -116,7 +116,7 @@ CREATE TABLE `collaborateur` (
 CREATE TABLE `devis` (
   `devis_id` int(11) NOT NULL,
   `date_debut` date DEFAULT NULL,
-  `date_fn` date DEFAULT NULL,
+  `date_fin` date DEFAULT NULL,
   `statut` varchar(255) DEFAULT NULL,
   `montant` decimal(10,2) DEFAULT NULL,
   `is_contract` tinyint(1) DEFAULT NULL,
