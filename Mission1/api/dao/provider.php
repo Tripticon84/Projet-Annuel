@@ -19,36 +19,75 @@ function createProvider(string $username, string $password)
     return null;
 }
 
-function updateProvider(int $id, string $username, string $password = null)
-{              //password est definit a null par defaut si password n est pas preciser
+function updateProvider( $prestataire_id,  $firstname, $name, $type, $est_candidat, $tarif, $email, $date_debut_disponibilite, $date_fin_disponibilite, $password)
+{
     $db = getDatabaseConnection();
+    $params = ['prestataire_id' => $prestataire_id];
+    $setFields = [];
 
-    // Si seul l'username est fourni (pas de mot de passe)
-    if ($password === null) {
-        $sql = "UPDATE admin SET username = :username WHERE admin_id = :id";
-        $stmt = $db->prepare($sql);
-        $res = $stmt->execute([
-            'id' => $id,
-            'username' => $username
-        ]);
+    if ($firstname !== null) {
+        $setFields[] = "prenom = :prenom";
+        $params['prenom'] = $firstname;
     }
-    // Si username et mot de passe sont fournis
-    else {
-        $password = hashPassword($password);
-        $sql = "UPDATE admin SET username = :username, password = :password WHERE admin_id = :id";
-        $stmt = $db->prepare($sql);
-        $res = $stmt->execute([
-            'id' => $id,
-            'username' => $username,
-            'password' => $password
-        ]);
+
+    if ($name !== null) {
+        $setFields[] = "nom = :nom";
+        $params['nom'] = $name;
     }
+
+    if ($type !== null) {
+        $setFields[] = "type = :type";
+        $params['type'] = $type;
+    }
+
+    if ($est_candidat !== null) {
+        $setFields[] = "est_candidat = :est_candidat";
+        $params['est_candidat'] = $est_candidat;
+    }
+
+    if ($tarif !== null) {
+        $setFields[] = "tarif = :tarif";
+        $params['tarif'] = $tarif;
+    }
+
+    if ($email !== null) {
+        $setFields[] = "email = :email";
+        $params['email'] = $email;
+    }
+
+    if ($date_debut_disponibilite !== null) {
+        $setFields[] = "date_debut_disponibilite = :date_debut_disponibilite";
+        $params['date_debut_disponibilite'] = $date_debut_disponibilite;
+    }
+
+    if ($date_fin_disponibilite !== null) {
+        $setFields[] = "date_fin_disponibilite = :date_fin_disponibilite";
+        $params['date_fin_disponibilite'] = $date_fin_disponibilite;
+    }
+
+
+
+    if ($password !== null) {
+        $setFields[] = "password = :password";
+        $params['password'] = hashPassword($password);
+    }
+
+    if (empty($setFields)) {
+        return 0; // Rien à mettre à jour
+    }
+
+    $sql = "UPDATE prestataire SET " . implode(", ", $setFields) . " WHERE prestataire_id = :prestataire_id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);
 
     if ($res) {
         return $stmt->rowCount();
     }
     return null;
 }
+
+              //password est definit a null par defaut si password n est pas preciser
+
 
 function deleteProvider(int $id)
 {
@@ -92,6 +131,16 @@ function getProviderById($id)
     return null;
 }
 
+function getProviderByEmail($email){
+    $connection = getDatabaseConnection();
+    $sql = "SELECT prestataire_id, email  FROM prestataire WHERE email = :email";
+    $query = $connection->prepare($sql);
+    $res = $query->execute(['email' => $email]);
+    if ($res) {
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
 
 function getAllProvider(int $limit = null, int $offset = null)        //tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
 {

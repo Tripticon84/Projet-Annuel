@@ -238,6 +238,7 @@ CREATE TABLE `prestataire` (
   `date_debut_disponibilite` date DEFAULT NULL,
   `date_fin_disponibilite` date DEFAULT NULL,
   `est_candidat` boolean  NOT NULL,
+  `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
