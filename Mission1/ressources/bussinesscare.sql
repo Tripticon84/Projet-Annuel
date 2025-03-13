@@ -29,12 +29,14 @@ USE `bussinesscare`;
 -- Structure de la table `activity`
 --
 
-CREATE TABLE `activity` (
+CREATE TABLE `activite` (
   `activite_id` int(11) NOT NULL,
   `nom` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
   `date` date DEFAULT NULL,
-  `id_devis` int(11) DEFAULT NULL
+  `lieu` varchar(255)  DEFAULT NULL,
+  `id_devis` int(11) DEFAULT NULL,
+  `id_prestataire` int(11)  DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -286,9 +288,10 @@ CREATE TABLE `societe` (
 --
 -- Index pour la table `activity`
 --
-ALTER TABLE `activity`
+ALTER TABLE `activite`
   ADD PRIMARY KEY (`activite_id`),
-  ADD KEY `id_devis` (`id_devis`);
+  ADD KEY `id_devis` (`id_devis`),
+  ADD KEY `id_prestataire` (`id_prestataire`);
 
 --
 -- Index pour la table `admin`
@@ -418,7 +421,7 @@ ALTER TABLE `societe`
 --
 -- AUTO_INCREMENT pour la table `activity`
 --
-ALTER TABLE `activity`
+ALTER TABLE `activite`
   MODIFY `activite_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -512,8 +515,10 @@ ALTER TABLE `societe`
 --
 -- Contraintes pour la table `activity`
 --
-ALTER TABLE `activity`
-  ADD CONSTRAINT `activity_ibfk_1` FOREIGN KEY (`id_devis`) REFERENCES `devis` (`devis_id`);
+ALTER TABLE `activite`
+  ADD CONSTRAINT `activite_ibfk_1` FOREIGN KEY (`id_devis`) REFERENCES `devis` (`devis_id`),
+  ADD CONSTRAINT `activite_ibfk_2` FOREIGN KEY (`id_prestataire`) REFERENCES `prestataire` (`prestataire_id`);
+
 
 --
 -- Contraintes pour la table `autre_frais`
@@ -564,7 +569,7 @@ ALTER TABLE `note_prestataire`
 -- Contraintes pour la table `participe_activite`
 --
 ALTER TABLE `participe_activite`
-  ADD CONSTRAINT `participe_activite_ibfk_1` FOREIGN KEY (`id_activite`) REFERENCES `activity` (`activite_id`),
+  ADD CONSTRAINT `participe_activite_ibfk_1` FOREIGN KEY (`id_activite`) REFERENCES `activite` (`activite_id`),
   ADD CONSTRAINT `participe_activite_ibfk_2` FOREIGN KEY (`id_collaborateur`) REFERENCES `collaborateur` (`collaborateur_id`);
 
 --
@@ -590,7 +595,24 @@ COMMIT;
 
 /* Ajout de données */
 
+INSERT INTO societe (societe_id, nom, adresse, email, contact_person) VALUES (1, 'Société 1', 'Adresse 1', 'societe@example.com', 'Contact Person');
 INSERT INTO admin (admin_id, username, password, token, expiration) VALUES (1, 'root@root.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL);
+INSERT INTO association (association_id, name, description) VALUES (1, 'Association 1', 'Description de l\'association 1');
+INSERT INTO devis (devis_id, date_debut, date_fin, statut, montant, is_contract, id_societe) VALUES (1, '2025-01-01', '2025-12-31', 'En cours', 1000.00, 1, 1);
+INSERT INTO prestataire (prestataire_id, email, nom, prenom, type, description, tarif, date_debut_disponibilite, date_fin_disponibilite, est_candidat, password) VALUES (1, 'prestataire@example.com', 'Nom', 'Prénom', 'Type', 'Description', 100.00, '2025-01-01', '2025-12-31', 1, 'password');
+INSERT INTO facture (facture_id, date_emission, montant, statut, id_devis, id_prestataire) VALUES (1, '2025-01-01', 1000.00, 'Payée', 1, 1);
+INSERT INTO autre_frais (autre_frais_id, nom, montant, id_facture) VALUES (1, 'Frais 1', 100.00, 1);
+INSERT INTO chatbot (question_id, question, reponse) VALUES (1, 'Question 1', 'Réponse 1');
+INSERT INTO collaborateur (collaborateur_id, nom, prenom, username, role, email, password, telephone, id_societe, date_creation) VALUES (1, 'Nom', 'Prénom', 'username', 'employe', 'email@example.com', 'password', '1234567890', 1, NOW());
+INSERT INTO discute_dans (id_salon, id_collaborateur) VALUES (1, 1);
+INSERT INTO evaluation (evaluation_id, note, commentaire, id_collaborateur) VALUES (1, 5, 'Très bien', 1);
+INSERT INTO evenements (evenement_id, nom, date, lieu, type) VALUES (1, 'Événement 1', '2025-01-01', 'Lieu 1', 'Type 1');
+INSERT INTO note_prestataire (note_prestataire_id, id_prestataire, id_evaluation) VALUES (1, 1, 1);
+INSERT INTO participe_activite (id_activite, id_collaborateur) VALUES (1, 1);
+INSERT INTO participe_association (id_association, id_collaborateur) VALUES (1, 1);
+INSERT INTO participe_evenement (id_evenement, id_collaborateur) VALUES (1, 1);
+INSERT INTO salon (salon_id, nom, description) VALUES (1, 'Salon 1', 'Description du salon 1');
+INSERT INTO signalement (signalement_id, probleme, id_societe) VALUES (1, 'Problème 1', 1);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

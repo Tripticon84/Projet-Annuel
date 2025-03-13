@@ -206,3 +206,29 @@ function updateCandidateStatus(int $prestataire_id,bool $value){
     }
     return null;
 }
+
+
+function getAllActivities(int $limit,int $offset, $providerId)  {
+    $db = getDatabaseConnection();
+    $sql = "SELECT activite_id,nom,date,lieu,type,id_devis FROM activite Where prestataire_id =:id";
+    $params = [
+        'id'=>$providerId
+    ];
+
+    // Gestion des paramètres LIMIT et OFFSET
+    if ($limit !== null) {
+        $sql .= " LIMIT " . (string) $limit;
+
+        if ($offset !== null) {
+            $sql .= " OFFSET " . (string) $offset;
+        }
+    }
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
