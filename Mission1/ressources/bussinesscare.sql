@@ -26,7 +26,7 @@ USE `bussinesscare`;
 -- --------------------------------------------------------
 
 --
--- Structure de la table `activity`
+-- Structure de la table `activite`
 --
 
 CREATE TABLE `activite` (
@@ -106,7 +106,8 @@ CREATE TABLE `collaborateur` (
   `password` varchar(255) DEFAULT NULL,
   `telephone` varchar(20) DEFAULT NULL,
   `id_societe` int(11) DEFAULT NULL,
-  `date_creation` datetime DEFAULT NULL
+  `date_creation` datetime DEFAULT NULL,
+  `date_activite` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -286,7 +287,7 @@ CREATE TABLE `societe` (
 --
 
 --
--- Index pour la table `activity`
+-- Index pour la table `activite`
 --
 ALTER TABLE `activite`
   ADD PRIMARY KEY (`activite_id`),
@@ -419,7 +420,7 @@ ALTER TABLE `societe`
 --
 
 --
--- AUTO_INCREMENT pour la table `activity`
+-- AUTO_INCREMENT pour la table `activite`
 --
 ALTER TABLE `activite`
   MODIFY `activite_id` int(11) NOT NULL AUTO_INCREMENT;
@@ -513,7 +514,7 @@ ALTER TABLE `societe`
 --
 
 --
--- Contraintes pour la table `activity`
+-- Contraintes pour la table `activite`
 --
 ALTER TABLE `activite`
   ADD CONSTRAINT `activite_ibfk_1` FOREIGN KEY (`id_devis`) REFERENCES `devis` (`devis_id`),
@@ -595,25 +596,155 @@ COMMIT;
 
 /* Ajout de données */
 
-INSERT INTO societe (societe_id, nom, adresse, email, contact_person) VALUES (1, 'Société 1', 'Adresse 1', 'societe@example.com', 'Contact Person');
-INSERT INTO admin (admin_id, username, password, token, expiration) VALUES (1, 'root@root.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL);
-INSERT INTO association (association_id, name, description) VALUES (1, 'Association 1', 'Description de l\'association 1');
-INSERT INTO devis (devis_id, date_debut, date_fin, statut, montant, is_contract, id_societe) VALUES (1, '2025-01-01', '2025-12-31', 'En cours', 1000.00, 1, 1);
-INSERT INTO prestataire (prestataire_id, email, nom, prenom, type, description, tarif, date_debut_disponibilite, date_fin_disponibilite, est_candidat, password) VALUES (1, 'prestataire@example.com', 'Nom', 'Prénom', 'Type', 'Description', 100.00, '2025-01-01', '2025-12-31', 1, 'password');
-INSERT INTO facture (facture_id, date_emission, montant, statut, id_devis, id_prestataire) VALUES (1, '2025-01-01', 1000.00, 'Payée', 1, 1);
-INSERT INTO autre_frais (autre_frais_id, nom, montant, id_facture) VALUES (1, 'Frais 1', 100.00, 1);
-INSERT INTO chatbot (question_id, question, reponse) VALUES (1, 'Question 1', 'Réponse 1');
-INSERT INTO collaborateur (collaborateur_id, nom, prenom, username, role, email, password, telephone, id_societe, date_creation) VALUES (1, 'Nom', 'Prénom', 'username', 'employe', 'email@example.com', 'password', '1234567890', 1, NOW());
-INSERT INTO discute_dans (id_salon, id_collaborateur) VALUES (1, 1);
-INSERT INTO evaluation (evaluation_id, note, commentaire, id_collaborateur) VALUES (1, 5, 'Très bien', 1);
-INSERT INTO evenements (evenement_id, nom, date, lieu, type) VALUES (1, 'Événement 1', '2025-01-01', 'Lieu 1', 'Type 1');
-INSERT INTO note_prestataire (note_prestataire_id, id_prestataire, id_evaluation) VALUES (1, 1, 1);
-INSERT INTO participe_activite (id_activite, id_collaborateur) VALUES (1, 1);
-INSERT INTO participe_association (id_association, id_collaborateur) VALUES (1, 1);
-INSERT INTO participe_evenement (id_evenement, id_collaborateur) VALUES (1, 1);
-INSERT INTO salon (salon_id, nom, description) VALUES (1, 'Salon 1', 'Description du salon 1');
-INSERT INTO signalement (signalement_id, probleme, id_societe) VALUES (1, 'Problème 1', 1);
+-- Sociétés (entreprises clients)
+INSERT INTO societe (nom, adresse, email, contact_person) VALUES
+('Renault Group', '13 Quai Alphonse Le Gallo, 92100 Boulogne-Billancourt', 'contact@renault.com', 'Marie Dubois'),
+('AXA Assurances', '25 Avenue Matignon, 75008 Paris', 'entreprises@axa.fr', 'Thomas Moreau'),
+('Carrefour France', '93 Avenue de Paris, 91300 Massy', 'relations@carrefour.com', 'Sophie Lambert'),
+('BNP Paribas', '16 Boulevard des Italiens, 75009 Paris', 'entreprise@bnpparibas.com', 'Philippe Martin'),
+('LOréal Paris', '14 Rue Royale, 75008 Paris', 'contact@loreal.fr', 'Claire Lefevre');
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Administrateurs système
+INSERT INTO admin (username, password, token, expiration) VALUES
+('admin', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL),
+('superadmin', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL);
+
+-- Associations partenaires
+INSERT INTO association (name, description) VALUES
+('Les Restos du Cœur', 'Association caritative d\'aide alimentaire et d\'insertion sociale'),
+('Médecins Sans Frontières', 'Organisation médicale humanitaire internationale'),
+('La Croix-Rouge française', 'Association d\'aide humanitaire qui vient en aide aux personnes en difficulté'),
+('WWF France', 'Organisation non gouvernementale de protection de l\'environnement');
+
+-- Collaborateurs des entreprises
+INSERT INTO collaborateur (nom, prenom, username, role, email, password, telephone, id_societe, date_creation, date_activite) VALUES
+('Leroy', 'Jean', 'jleroy', 'manager', 'j.leroy@renault.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0612345678', 1, NOW(), '2025-01-05'),
+('Dupont', 'Marie', 'mdupont', 'responsable_rh', 'm.dupont@renault.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0623456789', 1, NOW(), '2025-01-15'),
+x('Bernard', 'Sylvie', 'sbernard', 'employe', 's.bernard@axa.fr','3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0734567890', 2, NOW(), '2025-02-01'),
+('Petit', 'Thomas', 'tpetit', 'manager', 't.petit@axa.fr', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0745678901', 2, NOW(), '2025-02-10'),
+('Martin', 'Caroline', 'cmartin', 'employe', 'c.martin@carrefour.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0656789012', 3, NOW(), '2025-02-20'),
+('Durand', 'Michel', 'mdurand', 'directeur', 'm.durand@bnpparibas.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0667890123', 4, NOW(), '2025-03-01'),
+('Lefebvre', 'Emma', 'elefebvre', 'employe', 'e.lefebvre@loreal.fr', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0678901234', 5, NOW(), '2025-03-15');
+
+-- Devis pour différentes entreprises
+INSERT INTO devis (date_debut, date_fin, statut, montant, is_contract, id_societe) VALUES
+('2025-03-15', '2025-06-15', 'En cours', 7500.00, 1, 1),
+('2025-04-01', '2025-10-31', 'En attente', 12800.00, 0, 2),
+('2025-02-20', '2025-05-20', 'Accepté', 5200.00, 1, 3),
+('2025-05-01', '2025-08-31', 'En cours', 9750.00, 1, 4),
+('2025-03-10', '2025-12-31', 'En attente', 15300.00, 0, 5);
+
+-- Prestataires de services
+INSERT INTO prestataire (email, nom, prenom, type, description, tarif, date_debut_disponibilite, date_fin_disponibilite, est_candidat, password) VALUES
+('marc.dubois@gmail.com', 'Dubois', 'Marc', 'Coach bien-être', 'Coach certifié spécialisé en gestion du stress et bien-être au travail', 350.00, '2025-01-01', '2025-12-31', 0, '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5'),
+('sophie.morel@outlook.fr', 'Morel', 'Sophie', 'Psychologue', 'Psychologue du travail avec 10 ans d\'expérience', 280.00, '2025-02-15', '2025-11-30', 0, '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5'),
+('julien.roux@formateurs.fr', 'Roux', 'Julien', 'Formateur', 'Formateur en management et communication d\'équipe', 320.00, '2025-01-15', '2025-12-15', 0, '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5'),
+('celine.blanc@gmail.com', 'Blanc', 'Céline', 'Nutritionniste', 'Nutritionniste spécialisée en alimentation au travail', 250.00, '2025-03-01', '2025-09-30', 1, '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5'),
+('pierre.lemoine@coach-sport.fr', 'Lemoine', 'Pierre', 'Coach sportif', 'Coach sportif spécialisé dans les exercices de bureau', 220.00, '2025-01-01', '2025-12-31', 0, '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5');
+
+-- Factures liées aux devis et prestataires
+INSERT INTO facture (date_emission, montant, statut, id_devis, id_prestataire) VALUES
+('2025-04-15', 2500.00, 'Payée', 1, 1),
+('2025-05-01', 3200.00, 'En attente', 2, 2),
+('2025-03-20', 1800.00, 'Payée', 3, 3),
+('2025-05-15', 2400.00, 'En cours', 4, 5),
+('2025-04-10', 3000.00, 'En attente', 5, 4);
+
+-- Autres frais liés aux factures
+INSERT INTO autre_frais (nom, montant, id_facture) VALUES
+('Matériel pédagogique', 350.00, 1),
+('Frais de déplacement', 120.00, 1),
+('Location de salle', 500.00, 2),
+('Fournitures pour ateliers', 280.00, 3),
+('Catering pour session de groupe', 420.00, 4),
+('Documentation personnalisée', 150.00, 5);
+
+-- Questions fréquentes pour le chatbot
+INSERT INTO chatbot (question, reponse) VALUES
+('Comment réserver une activité ?', 'Pour réserver une activité, connectez-vous à votre espace collaborateur, puis naviguez vers la section "Activités". Sélectionnez l\'activité qui vous intéresse et cliquez sur "Réserver".'),
+('Quels types d\'activités sont disponibles ?', 'Nous proposons divers types d\'activités pour le bien-être: coaching personnel, ateliers de gestion du stress, séances de yoga, consultations nutritionnelles, team building, et plus encore.'),
+('Comment annuler ma participation à une activité ?', 'Pour annuler votre participation, rendez-vous dans "Mes activités", sélectionnez l\'activité concernée et cliquez sur "Annuler ma participation". L\'annulation est possible jusqu\'à 48h avant l\'activité.'),
+('Comment évaluer un prestataire ?', 'Après avoir participé à une activité, vous recevrez automatiquement une invitation à évaluer le prestataire. Vous pouvez également vous rendre dans "Mes activités passées" et cliquer sur "Évaluer".'),
+('Puis-je proposer une nouvelle activité ?', 'Oui, vous pouvez soumettre vos idées d\'activités à votre responsable RH ou via le formulaire "Suggestions" dans votre espace collaborateur.');
+
+-- Salons de discussion
+INSERT INTO salon (nom, description) VALUES
+('Bien-être général', 'Discussions sur tous les sujets liés au bien-être en entreprise'),
+('Nutrition et santé', 'Échanges sur l\'alimentation saine et les conseils santé'),
+('Activité physique', 'Partage de conseils et expériences sur le sport et l\'exercice'),
+('Méditation et relaxation', 'Discussions sur les techniques de détente et de méditation'),
+('Équilibre vie pro/perso', 'Échanges sur la conciliation vie professionnelle et personnelle');
+
+-- Activités bien-être
+INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire) VALUES
+('Atelier gestion du stress', 'Atelier collectif', '2025-04-20', 'Salle de conférence A - Siège Renault', 1, 1),
+('Séances de yoga', 'Cours collectif', '2025-05-10', 'Salle de détente - AXA', 2, 5),
+('Consultation nutrition', 'Entretien individuel', '2025-03-25', 'Bureau 302 - Carrefour Massy', 3, 4),
+('Team building nature', 'Sortie d\'équipe', '2025-06-05', 'Forêt de Fontainebleau', 4, 3),
+('Atelier sommeil', 'Conférence', '2025-04-15', 'Auditorium - L\'Oréal Paris', 5, 2);
+
+-- Évaluations des collaborateurs
+INSERT INTO evaluation (note, commentaire, id_collaborateur) VALUES
+(5, 'Excellent atelier, très instructif et pratique. Je me sens mieux équipé pour gérer mon stress quotidien.', 1),
+(4, 'Bonne séance, dynamique et adaptée à tous les niveaux. Quelques exercices supplémentaires auraient été appréciés.', 3),
+(5, 'Consultation très personnalisée, la nutritionniste a su répondre précisément à mes besoins.', 5),
+(3, 'Activité intéressante mais trop courte pour en tirer pleinement profit.', 2),
+(4, 'Conférence enrichissante avec de nombreux conseils pratiques à appliquer au quotidien.', 7);
+
+-- Événements entreprise
+INSERT INTO evenements (nom, date, lieu, type) VALUES
+('Journée bien-être', '2025-05-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique'),
+('Semaine de la santé', '2025-06-15', 'Siège AXA - Paris', 'Semaine spéciale'),
+('Challenge pas quotidiens', '2025-04-01', 'Toutes les agences Carrefour', 'Challenge d\'équipe'),
+('Conférence Équilibre de vie', '2025-07-10', 'Tour BNP - La Défense', 'Conférence'),
+('Ateliers détente', '2025-05-05', 'Centre L\'Oréal - Paris', 'Ateliers pratiques');
+
+-- Notes des prestataires
+INSERT INTO note_prestataire (id_prestataire, id_evaluation) VALUES
+(1, 1),
+(5, 2),
+(4, 3),
+(3, 4),
+(2, 5);
+
+-- Signalements de problèmes
+INSERT INTO signalement (probleme, id_societe) VALUES
+('Difficulté d\'accès à la plateforme de réservation des activités', 1),
+('Prestataire absent lors d\'une séance programmée', 2),
+('Matériel insuffisant pour l\'atelier nutrition', 3),
+('Problème de coordination entre les différents services', 4),
+('Demande d\'activités plus adaptées aux horaires des équipes', 5);
+
+-- Relations salon-collaborateurs (qui discute dans quel salon)
+INSERT INTO discute_dans (id_salon, id_collaborateur) VALUES
+(1, 1), (1, 2), (1, 3),
+(1, 4), (2, 2), (2, 5),
+(2, 7), (3, 1), (3, 3),
+(3, 6), (4, 4), (4, 5),
+(4, 7), (5, 1), (5, 2),
+(5, 3), (5, 4), (5, 5);
+
+-- Participations aux activités
+INSERT INTO participe_activite (id_activite, id_collaborateur) VALUES
+(1, 1), (1, 2),
+(2, 3), (2, 4),
+(3, 5), (4, 6),
+(4, 1), (4, 2),
+(5, 7);
+
+-- Participations aux associations
+INSERT INTO participe_association (id_association, id_collaborateur) VALUES
+(1, 1), (1, 3),
+(1, 5), (2, 2),
+(2, 4), (3, 6),
+(3, 7), (4, 3),
+(4, 5), (4, 7);
+
+-- Participations aux événements
+INSERT INTO participe_evenement (id_evenement, id_collaborateur) VALUES
+(1, 1), (1, 2),
+(2, 3), (2, 4),
+(3, 5), (3, 6),
+(4, 6), (4, 7),
+(5, 1), (5, 3),
+(5, 7);
