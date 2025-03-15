@@ -50,6 +50,11 @@
                                 <i class="fas fa-home"></i> Gestion Admins
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/backOffice/login/logout.php">
+                                <i class="fas fa-sign-out-alt"></i> Se déconnecter
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
