@@ -420,3 +420,82 @@ function getEmployeeProfile(int $id) {
     }
     return null;
 }
+
+function getEmployeeActivities(int $collaborateur_id) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT a.* 
+            FROM activite a
+            INNER JOIN participe_activite pa ON a.activite_id = pa.id_activite 
+            WHERE pa.id_collaborateur = :collaborateur_id";
+    
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['collaborateur_id' => $collaborateur_id]);
+    
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getEmployeeEvents(int $collaborateur_id) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT e.* 
+            FROM evenements e
+            INNER JOIN participe_evenement pe ON e.evenement_id = pe.id_evenement 
+            WHERE pe.id_collaborateur = :collaborateur_id";
+    
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['collaborateur_id' => $collaborateur_id]);
+    
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getEmployeeChats(int $collaborateur_id) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT s.* 
+            FROM salon s
+            INNER JOIN discute_dans d ON s.salon_id = d.id_salon 
+            WHERE d.id_collaborateur = :collaborateur_id";
+    
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['collaborateur_id' => $collaborateur_id]);
+    
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getEmployeeAssociations(int $collaborateur_id) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT a.* 
+            FROM association a
+            INNER JOIN participe_association pa ON a.association_id = pa.id_association 
+            WHERE pa.id_collaborateur = :collaborateur_id";
+    
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['collaborateur_id' => $collaborateur_id]);
+    
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getEmployeeEvaluations(int $collaborateur_id) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT evaluation_id, note, commentaire, date_creation 
+            FROM evaluation 
+            WHERE id_collaborateur = :collaborateur_id";
+    
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['collaborateur_id' => $collaborateur_id]);
+    
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
