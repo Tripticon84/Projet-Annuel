@@ -95,7 +95,6 @@ if (!$employee_id) {
                         document.getElementById('email').value = data.email || '';
                         document.getElementById('telephone').value = data.telephone || '';
                         document.getElementById('id_societe').value = data.id_societe || '';
-                        // Le mot de passe n'est jamais pré-rempli pour des raisons de sécurité
                     } else {
                         document.getElementById('responseMessage').textContent = "Erreur: Employé non trouvé";
                         document.getElementById('responseMessage').classList.add("text-danger");

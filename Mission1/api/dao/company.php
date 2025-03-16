@@ -3,7 +3,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/hashPassword.php";
 
 
-function createSociety($nom,$email,$adresse,$contact_person,$password,$telephone) {
+function createSociety($nom, $email, $adresse, $contact_person, $password, $telephone)
+{
     $db = getDatabaseConnection();
 
     // Hasher le mot de passe
@@ -110,33 +111,38 @@ function updateSociety($id, ?string $nom = null, ?string $email = null, ?string 
         return $stmt->rowCount();
     }
     return null;
-
 }
 
 
-function getAllSociety($name = '', $limit = null, $offset = null)
+function getAllSociety($name = "", $limit = null, $offset = null)
 {
     $db = getDatabaseConnection();
+    $params = [];
     $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation FROM societe";
+    $conditions = [];
+
     if (!empty($name)) {
-        $sql .= " WHERE nom LIKE :nom";
+        $conditions[] = "nom LIKE :name";
         $params['name'] = "%" . $name . "%";
     }
 
-    // Gestion des paramètres LIMIT et OFFSET
-    if ($limit !== null) {
-        $sql .= " LIMIT " . (string) $limit;
+    if (!empty($conditions)) {
+        $sql .= " WHERE " . implode(" AND ", $conditions);
+    }
 
+    if ($limit !== null) {
+        $sql .= " LIMIT " . intval($limit);
         if ($offset !== null) {
-            $sql .= " OFFSET " . (string) $offset;
+            $sql .= " OFFSET " . intval($offset);
         }
     }
+
     $stmt = $db->prepare($sql);
     $res = $stmt->execute($params);
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    return null;;
+    return null;
 }
 
 function getSociety($id)
@@ -189,7 +195,6 @@ function getSocietyEmployees($societe_id)
     $stmt = $db->prepare($sql);
     $stmt->execute(['societe_id' => $societe_id]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
 }
 
 
@@ -205,7 +210,7 @@ function getCompanyEstimate($societe_id, $is_contract)
 function getCompanyOtherCost($societe_id)
 {
     $db = getDatabaseConnection();
-    
+
     $sql = "SELECT af.autre_frais_id, af.nom, af.montant, af.id_facture, af.date_creation, f.facture_id, f.date_emission, f.montant, f.statut FROM autre_frais af
             JOIN facture f ON af.id_facture = f.facture_id
             JOIN devis d ON f.id_devis = d.devis_id
@@ -214,4 +219,78 @@ function getCompanyOtherCost($societe_id)
     $stmt = $db->prepare($sql);
     $stmt->execute(['societe_id' => $societe_id]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Récupération des statistiques
+function getCompaniesStats()
+{
+    $db = getDatabaseConnection();
+    $stats = [
+        'total' => 0,
+        'totalLastMonth' => 0,
+        'new' => 0,
+        'newLastMonth' => 0,
+    ];
+
+    // Date du premier jour du mois courant
+    $currentMonthStart = date('Y-m-01');
+    // Date du premier jour du mois précédent
+    $lastMonthStart = date('Y-m-01', strtotime('-1 month'));
+    // Date du premier jour du mois suivant (pour limiter le mois courant)
+    $nextMonthStart = date('Y-m-01', strtotime('+1 month'));
+
+    try {
+        // Nombre total de sociétés inscrites
+        $query = "SELECT COUNT(*) as total FROM societe";
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['total'] = $result['total'];
+
+        // Nombre de sociétés inscrites avant le mois dernier
+        $query = "SELECT COUNT(*) as total FROM societe WHERE date_creation < :lastMonthStart";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            ':lastMonthStart' => $lastMonthStart
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['totalLastMonth'] = $result['total'];
+
+        // Calcul de la variation totale en pourcentage
+        $totalVariation = $stats['totalLastMonth'] > 0 ?
+            round((($stats['total'] - $stats['totalLastMonth']) / $stats['totalLastMonth']) * 100) : 0;
+        $stats['totalVariation'] = $totalVariation;
+
+        // Nombre de nouvelles sociétés ce mois
+        $query = "SELECT COUNT(*) as new FROM societe
+             WHERE date_creation >= :currentMonthStart AND date_creation < :nextMonthStart";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            ':currentMonthStart' => $currentMonthStart,
+            ':nextMonthStart' => $nextMonthStart
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['new'] = $result['new'];
+
+        // Nombre de nouvelles sociétés le mois dernier
+        $query = "SELECT COUNT(*) as new FROM societe
+             WHERE date_creation >= :lastMonthStart AND date_creation < :currentMonthStart";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            ':lastMonthStart' => $lastMonthStart,
+            ':currentMonthStart' => $currentMonthStart
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats['newLastMonth'] = $result['new'];
+
+        // Calcul de la variation des nouveaux en pourcentage
+        $newVariation = $stats['newLastMonth'] > 0 ?
+            round((($stats['new'] - $stats['newLastMonth']) / $stats['newLastMonth']) * 100) : 0;
+        $stats['newVariation'] = $newVariation;
+
+        return $stats;
+    } catch (PDOException $e) {
+        echo "Erreur lors de la récupération des statistiques des sociétés : " . $e->getMessage();
+        return null;
+    }
 }
