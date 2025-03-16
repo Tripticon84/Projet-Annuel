@@ -7,7 +7,7 @@
                 <div class="position-sticky pt-3">
                     <div class="text-center mb-4">
                         <h3>Business Care</h3>
-                        <p class="text-muted">Administration</p>
+                        <h6>Administration</h6>
                     </div>
                     <ul class="nav flex-column">
                         <li class="nav-item">

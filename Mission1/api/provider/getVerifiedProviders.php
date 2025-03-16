@@ -11,8 +11,7 @@ if (!methodIsAllowed('read')) {
 
 $limit = null;
 $offset = null;
-
-
+$search = null;
 
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
@@ -27,7 +26,12 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$providers = getAllProvider($limit, $offset);
+// Récupération du paramètre de recherche
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $search = trim($_GET['search']);
+}
+
+$providers = getAllProvider($limit, $offset, $search);
 
 $result = []; // Initialize the result array
 

@@ -11,7 +11,7 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
-// Récupérer les données de la requête
+// Récupérer les données de la requête  :FIXME:
 $data = getBody();
 
 // Vérifier si l'ID est présent
@@ -43,7 +43,7 @@ $password = isset($data['password']) ? $data['password'] : null;
 
 // Vérifier si au moins un champ est fourni pour la mise à jour
 if ($firstName === null && $name === null && $email === null && $type === null &&
-    $price === null && $date_db === null && $date_fn === null && $status === null) {
+    $price === null && $date_db === null && $date_fn === null && $est_candidat === null && $password === null) {
     returnError(400, 'No data provided for update');
     return;
 }

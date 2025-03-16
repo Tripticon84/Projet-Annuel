@@ -11,17 +11,19 @@ if (!methodIsAllowed('read')) {
 
 $limit = null;
 $offset = null;
-$data = getBody();
+$providerId = $_GET['id'];
 
-
-if (!isset($data['prestataire_id'])) {
+if (!isset($providerId)) {
     returnError(400, 'Missing id');
     return;
 }
 
 
-$provider = getProviderById($data['prestataire_id']);
-
+$provider = getProviderById($providerId);
+if (!$provider) {
+    returnError(404, 'Provider not found');
+    return;
+}
 
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
@@ -36,18 +38,18 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$activities = getAllActivities($limit, $offset, $provider);
+$activities = getAllActivities($limit, $offset, $providerId);
 
 $result = []; // Initialize the result array
 
 foreach ($activities as $activitie) {
     $result[] = [
-        "activite_id" => $activities['evenement_id'],
+        "activite_id" => $activitie['activite_id'],
         "name" => $activitie['nom'],
         "date" => $activitie['date'],
         "place" => $activitie['lieu'],
         "type" => $activitie['type'],
-        "id_estimate"=>$activitie['id_devis']
+        "id_estimate" => $activitie['id_devis']
     ];
 }
 
