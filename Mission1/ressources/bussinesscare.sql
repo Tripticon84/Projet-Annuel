@@ -108,7 +108,8 @@ CREATE TABLE `collaborateur` (
   `telephone` varchar(20) DEFAULT NULL,
   `id_societe` int(11) DEFAULT NULL,
   `date_creation` datetime DEFAULT NULL,
-  `date_activite` datetime DEFAULT NULL
+  `date_activite` datetime DEFAULT NULL,
+  `desactivate` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

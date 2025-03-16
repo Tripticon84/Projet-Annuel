@@ -24,8 +24,8 @@ if (!$employee) {
 
 <body class="container mt-5">
     <a href="employee.php" class="btn btn-secondary mb-3">&larr; Retour</a>
-    
-    <div class="card p-4 shadow-sm"></div>
+
+    <div class="card p-4 shadow-sm">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0">Profil de l'employé</h2>
         </div>

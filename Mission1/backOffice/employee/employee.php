@@ -310,11 +310,11 @@ if (!$employeeStats) {
                     })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success || (data.message && data.message.includes('supprimé'))) {
+                        if (data.success || (data.message && data.message.includes('desactivated'))) {
                             alert('Employé désactivé avec succès.');
                             fetchEmployees(); // Rafraîchir la liste
                         } else {
-                            alert('Erreur lors de la désactivation. Veuillez réessayer.');
+                            alert('Erreur lors de la désactivation.');
                         }
                     })
                     .catch(error => {
@@ -325,120 +325,6 @@ if (!$employeeStats) {
         }
 
 
-    </script>
-
-    <!-- Scripts pour les graphiques -->
-    <script>
-        // Graphique de répartition par service
-        const departmentCtx = document.getElementById('departmentChart').getContext('2d');
-        const departmentChart = new Chart(departmentCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Marketing', 'R&D', 'Commercial', 'RH', 'Direction', 'Finance', 'IT'],
-                datasets: [{
-                    data: [25, 18, 22, 14, 5, 8, 8],
-                    backgroundColor: [
-                        '#3a86ff',
-                        '#8338ec',
-                        '#ff006e',
-                        '#fb5607',
-                        '#ffbe0b',
-                        '#38b000',
-                        '#14213d'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    }
-                }
-            }
-        });
-
-        // Graphique de tendance de participation
-        const activityCtx = document.getElementById('activityChart').getContext('2d');
-        const activityChart = new Chart(activityCtx, {
-            type: 'line',
-            data: {
-                labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-                datasets: [{
-                        label: 'Cette semaine',
-                        data: [78, 82, 79, 85, 83, 45, 38],
-                        borderColor: '#3a86ff',
-                        backgroundColor: 'rgba(58, 134, 255, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    },
-                    {
-                        label: 'Semaine précédente',
-                        data: [72, 75, 78, 74, 80, 42, 35],
-                        borderColor: '#8338ec',
-                        backgroundColor: 'rgba(131, 56, 236, 0.05)',
-                        tension: 0.3,
-                        fill: true,
-                        borderDash: [5, 5]
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Graphique de statut des employés
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
-        const statusChart = new Chart(statusCtx, {
-            type: 'bar',
-            data: {
-                labels: ['TechInnov', 'EcoSolutions', 'DigitalWave', 'SmartRetail', 'GreenLife'],
-                datasets: [{
-                        label: 'Actifs',
-                        data: [850, 620, 480, 390, 220],
-                        backgroundColor: '#4CAF50'
-                    },
-                    {
-                        label: 'En congé',
-                        data: [120, 85, 65, 50, 35],
-                        backgroundColor: '#FFC107'
-                    },
-                    {
-                        label: 'Inactifs',
-                        data: [30, 45, 55, 40, 25],
-                        backgroundColor: '#F44336'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        stacked: true
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
     </script>
 </body>
 

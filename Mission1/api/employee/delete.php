@@ -16,7 +16,7 @@ if (!isset($data['id'])) {
     return;
 }
 
-//verify if the employee exists
+// verify if the employee exists
 $employee = getEmployee($data['id']);
 if (!$employee) {
     returnError(404, 'Employee not found');
@@ -26,7 +26,7 @@ if (!$employee) {
 $deleted = deleteEmployee($data['id']);
 
 if ($deleted) {
-    echo json_encode(['message' => 'Employee deleted']);
+    echo json_encode(['message' => 'Employee desactivated']);
     return http_response_code(200);
 } else {
     returnError(500, 'Failed to delete employee');

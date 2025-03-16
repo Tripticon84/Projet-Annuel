@@ -54,7 +54,7 @@ function getAllEmployees(string $username = "", int $limit = null, int $offset =
 {
     $db = getDatabaseConnection();
     $params = [];
-    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur";
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur WHERE desactivate = 0";
 
     if (!empty($username)) {
         $sql .= " WHERE username LIKE :username";
@@ -99,7 +99,7 @@ function getAllEmployees(string $username = "", int $limit = null, int $offset =
 function deleteEmployee(int $id)
 {
     $db = getDatabaseConnection();
-    $sql = "DELETE FROM collaborateur WHERE collaborateur_id = :id";
+    $sql = "UPDATE collaborateur SET desactivate = 1 WHERE collaborateur_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute(['id' => $id]);
     if ($res) {
@@ -402,7 +402,7 @@ function getEmployeeStats()
 
 function getEmployeeProfile(int $id) {
     $db = getDatabaseConnection();
-    $sql = "SELECT 
+    $sql = "SELECT
         collaborateur_id,
         nom,
         prenom,
@@ -412,12 +412,12 @@ function getEmployeeProfile(int $id) {
         id_societe,
         date_creation,
         date_activite
-    FROM collaborateur 
+    FROM collaborateur
     WHERE collaborateur_id = :id";
-    
+
     $stmt = $db->prepare($sql);
     $res = $stmt->execute(['id' => $id]);
-    
+
     if ($res) {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
