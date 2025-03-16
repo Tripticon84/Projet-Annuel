@@ -16,7 +16,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($current_page == 'society.php') ? 'active' : '' ?>" href="/backOffice/society/society.php">
+                            <a class="nav-link <?= ($current_page == 'company.php') ? 'active' : '' ?>" href="/backOffice/company/company.php">
                                 <i class="fas fa-building"></i> Sociétés clientes
                             </a>
                         </li>
