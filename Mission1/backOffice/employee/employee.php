@@ -260,7 +260,7 @@ if (!$employeeStats) {
                                             <li><a class="dropdown-item" href="profil.php?id=${employee.collaborateur_id}"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
                                             <li><a class="dropdown-item" href="modify.php?id=${employee.collaborateur_id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteEmployee(${employee.collaborateur_id}); return false;"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteEmployee(${employee.collaborateur_id}); return false;"><i class="fas fa-user-slash me-2"></i>Supprimer</a></li>
                                         </ul>
                                     </div>
                                 </td>
@@ -298,7 +298,7 @@ if (!$employeeStats) {
         }
 
         function deleteEmployee(employeeId) {
-            if (confirm('Êtes-vous sûr de vouloir désactiver cet employé?')) {
+            if (confirm('Êtes-vous sûr de vouloir suprimer cet employé?')) {
                 fetch('../../api/employee/delete.php', {
                         method: 'DELETE',
                         headers: {
@@ -308,7 +308,12 @@ if (!$employeeStats) {
                             id: employeeId
                         })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success || (data.message && data.message.includes('desactivated'))) {
                             alert('Employé désactivé avec succès.');
@@ -319,7 +324,7 @@ if (!$employeeStats) {
                     })
                     .catch(error => {
                         console.error('Erreur:', error);
-                        alert('Une erreur est survenue lors de la désactivation.');
+                        alert('Une erreur est survenue lors de la suppréssion.');
                     });
             }
         }
