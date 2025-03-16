@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/society.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/company.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/hashPassword.php';
 

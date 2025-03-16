@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/society.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/company.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 
@@ -11,9 +11,9 @@ if (!methodIsAllowed('delete')) {
 }
 
 $data = getBody();
-$id = $data['id'];
+$id = $data['societe_id'];
 
-if (validateMandatoryParams($data, ['id'])) {
+if (validateMandatoryParams($data, ['societe_id'])) {
 
     // Vérifier l'id existe
     $society = getSocietyById($id);

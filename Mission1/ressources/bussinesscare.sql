@@ -75,6 +75,7 @@ CREATE TABLE `autre_frais` (
   `autre_frais_id` int(11) NOT NULL,
   `nom` varchar(255) DEFAULT NULL,
   `montant` decimal(10,2) DEFAULT NULL,
+  `date_creation` datetime DEFAULT NULL,
   `id_facture` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -147,7 +148,8 @@ CREATE TABLE `evaluation` (
   `evaluation_id` int(11) NOT NULL,
   `note` int(11) DEFAULT NULL,
   `commentaire` text DEFAULT NULL,
-  `id_collaborateur` int(11) DEFAULT NULL
+  `id_collaborateur` int(11) DEFAULT NULL,
+  `date_creation` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -600,12 +602,12 @@ COMMIT;
 /* Ajout de données */
 
 -- Sociétés (entreprises clients)
-INSERT INTO societe (nom, adresse, email, contact_person) VALUES
-('Renault Group', '13 Quai Alphonse Le Gallo, 92100 Boulogne-Billancourt', 'contact@renault.com', 'Marie Dubois'),
-('AXA Assurances', '25 Avenue Matignon, 75008 Paris', 'entreprises@axa.fr', 'Thomas Moreau'),
-('Carrefour France', '93 Avenue de Paris, 91300 Massy', 'relations@carrefour.com', 'Sophie Lambert'),
-('BNP Paribas', '16 Boulevard des Italiens, 75009 Paris', 'entreprise@bnpparibas.com', 'Philippe Martin'),
-('LOréal Paris', '14 Rue Royale, 75008 Paris', 'contact@loreal.fr', 'Claire Lefevre');
+INSERT INTO societe (nom, adresse, email, contact_person,telephone,password,date_creation) VALUES
+('Renault Group', '13 Quai Alphonse Le Gallo, 92100 Boulogne-Billancourt', 'contact@renault.com', 'Marie Dubois', '0123456789', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW()),
+('AXA Assurances', '25 Avenue Matignon, 75008 Paris', 'entreprises@axa.fr', 'Thomas Moreau', '0234567890', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW()),
+('Carrefour France', '93 Avenue de Paris, 91300 Massy', 'relations@carrefour.com', 'Sophie Lambert', '0345678901', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW()),
+('BNP Paribas', '16 Boulevard des Italiens, 75009 Paris', 'entreprise@bnpparibas.com', 'Philippe Martin', '0456789012', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW()),
+('LOréal Paris', '14 Rue Royale, 75008 Paris', 'contact@loreal.fr', 'Claire Lefevre', '0567890123', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW());
 
 -- Administrateurs système
 INSERT INTO admin (username, password, token, expiration) VALUES
@@ -623,7 +625,7 @@ INSERT INTO association (name, description) VALUES
 INSERT INTO collaborateur (nom, prenom, username, role, email, password, telephone, id_societe, date_creation, date_activite) VALUES
 ('Leroy', 'Jean', 'jleroy', 'manager', 'j.leroy@renault.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0612345678', 1, NOW(), '2025-01-05'),
 ('Dupont', 'Marie', 'mdupont', 'responsable_rh', 'm.dupont@renault.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0623456789', 1, NOW(), '2025-01-15'),
-x('Bernard', 'Sylvie', 'sbernard', 'employe', 's.bernard@axa.fr','3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0734567890', 2, NOW(), '2025-02-01'),
+('Bernard', 'Sylvie', 'sbernard', 'employe', 's.bernard@axa.fr','3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0734567890', 2, NOW(), '2025-02-01'),
 ('Petit', 'Thomas', 'tpetit', 'manager', 't.petit@axa.fr', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0745678901', 2, NOW(), '2025-02-10'),
 ('Martin', 'Caroline', 'cmartin', 'employe', 'c.martin@carrefour.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0656789012', 3, NOW(), '2025-02-20'),
 ('Durand', 'Michel', 'mdurand', 'directeur', 'm.durand@bnpparibas.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0667890123', 4, NOW(), '2025-03-01'),

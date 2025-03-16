@@ -1,6 +1,6 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/hashPassword.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/society.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/company.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 header('Content-Type: application/json');
@@ -31,6 +31,6 @@ if (!$societe) {
 unset($societe['password']);
 
 // Retour des informations de l'administrateur
-echo json_encode($admin);
+echo json_encode($societe);
 http_response_code(200);
 exit();
