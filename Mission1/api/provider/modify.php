@@ -11,7 +11,7 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
-// Récupérer les données de la requête  :FIXME:
+// Récupérer les données de la requête
 $data = getBody();
 
 // Vérifier si l'ID est présent
