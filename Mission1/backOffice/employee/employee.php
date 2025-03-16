@@ -282,7 +282,7 @@ if (!$employeeStats) {
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
+                                            <li><a class="dropdown-item" href="profil.php?id=${employee.collaborateur_id}"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
                                             <li><a class="dropdown-item" href="modify.php?id=${employee.collaborateur_id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li><a class="dropdown-item text-danger" href="#" onclick="deleteEmployee(${employee.collaborateur_id}); return false;"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
@@ -348,6 +348,8 @@ if (!$employeeStats) {
                     });
             }
         }
+
+
     </script>
 
     <!-- Scripts pour les graphiques -->

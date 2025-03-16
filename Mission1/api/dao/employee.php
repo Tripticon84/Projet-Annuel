@@ -84,6 +84,18 @@ function getAllEmployees(string $username = "", int $limit = null, int $offset =
     return null;
 }
 
+// function deleteEmployee(int $id)
+// {
+//     $db = getDatabaseConnection();
+//     $sql = "DELETE FROM collaborateur WHERE collaborateur_id = :id";
+//     $stmt = $db->prepare($sql);
+//     $res = $stmt->execute(['id' => $id]);
+//     if ($res) {
+//         return $stmt->rowCount();
+//     }
+//     return null;
+// }
+
 function deleteEmployee(int $id)
 {
     $db = getDatabaseConnection();
@@ -91,10 +103,11 @@ function deleteEmployee(int $id)
     $stmt = $db->prepare($sql);
     $res = $stmt->execute(['id' => $id]);
     if ($res) {
-        return $stmt->rowCount();
+        return $stmt->rowCount() > 0;
     }
-    return null;
+    return false;
 }
+
 
 function updateEmployee(int $id, ?string $nom = null, ?string $prenom = null, ?string $role = null, ?string $email = null, ?string $telephone = null, ?int $id_societe = null, ?string $username = null, ?string $password = null)
 {
@@ -385,4 +398,28 @@ function getEmployeeStats()
     } catch (PDOException $e) {
         echo "Erreur lors de la récupération des statistiques : " . $e->getMessage();
     }
+}
+
+function getEmployeeProfile(int $id) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT 
+        collaborateur_id,
+        nom,
+        prenom,
+        role,
+        email,
+        telephone,
+        id_societe,
+        date_creation,
+        date_activite
+    FROM collaborateur 
+    WHERE collaborateur_id = :id";
+    
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['id' => $id]);
+    
+    if ($res) {
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
 }
