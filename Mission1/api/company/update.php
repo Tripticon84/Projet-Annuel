@@ -13,52 +13,52 @@ if (!methodIsAllowed('update')) {
 $data = getBody();
 
 $id = $data['id'];
-$nom = $data['nom'];
-$email = $data['email'];
-$adresse = $data['adresse'];
-$contact_person = $data['contact_person'];
+$nom = isset($data['nom']) ? $data['nom'] : null;
+$email = isset($data['email']) ? $data['email'] : null;
+$adresse = isset($data['adresse']) ? $data['adresse'] : null;
+$contact_person = isset($data['contact_person']) ? $data['contact_person'] : null;
 $password = !empty($data['password']) ? hashPassword($data['password']) : null;
-$telephone = $data['telephone'];
+$telephone = isset($data['telephone']) ? $data['telephone'] : null;
 
-if (validateMandatoryParams($data, ['id', 'nom', 'email', 'adresse', 'contact_person', 'telephone'])) {
+//verifier qu un champ est fourni pour la mise a jour
+if ($nom === null && $email === null && $adresse === null && $contact_person === null && $password === null && $telephone === null) {
+    returnError(400, 'No data provided for update');
+    return;
+}
 
-    // Vérifier l'id existe
-    $company = getSocietyById($id);
-    if (empty($company)) {
-        returnError(400, 'company does not exist');
-        return;
-    }
+// Vérifier l'id existe
+$company = getSocietyById($id);
+if (empty($company)) {
+    returnError(400, 'company does not exist');
+    return;
+}
 
-    // Vérifier l'email n'existe pas
-    $company = getSocietyByEmail($email);
-    if (!empty($company) && $company['societe_id'] != $id) {
-        returnError(400, 'company already exists');
-        return;
-    }
+// Vérifier l'email n'existe pas
+$company = getSocietyByEmail($email);
+if (!empty($company) && $company['societe_id'] != $id) {
+    returnError(400, 'company already exists');
+    return;
+}
 
-    // Vérifier le telephone n'existe pas
-    $company = getSocietyByTelephone($telephone);
-    if (!empty($company) && $company['societe_id'] != $id) {
-        returnError(400, 'Telephone already exists');
-        return;
-    }
+// Vérifier le telephone n'existe pas
+$company = getSocietyByTelephone($telephone);
+if (!empty($company) && $company['societe_id'] != $id) {
+    returnError(400, 'Telephone already exists');
+    return;
+}
 
-    // Vérification de la longueur du mot de passe
-    if ($password != null && strlen($data['password']) < 12) {
-        returnError(400, 'Password must be at least 12 characters long');
-        return;
-    }
+// Vérification de la longueur du mot de passe
+if ($password != null && strlen($data['password']) < 12) {
+    returnError(400, 'Password must be at least 12 characters long');
+    return;
+}
 
-    $res = updateSociety($id, $nom, $email, $adresse, $contact_person, $password, $telephone);
+$res = updateSociety($id, $nom, $email, $adresse, $contact_person, $password, $telephone);
 
-    if (!$res) {
-        returnError(500, 'Could not update the company');
-        return;
-    }
-
+if (!$res) {
+    returnError(500, 'Could not update the company');
+    return;
+}else{
     echo json_encode(['id' => $id]);
     http_response_code(200);
-    exit;
-} else {
-    returnError(412, 'Mandatory parameters: id, nom, email, adresse, contact_person, password, telephone');
 }

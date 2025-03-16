@@ -7,15 +7,14 @@ include_once "../includes/head.php";
     <div class="container-fluid">
         <div class="row">
             <?php include_once "../includes/sidebar.php"; ?>
-            <!-- Main Content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-                <!-- Header -->
+                <!-- Entête -->
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Modifier une société</h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="company.php" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                    <div class="d-flex align-items-center">
+                        <a href="/backoffice/company/company.php" class="btn btn-link text-decoration-none me-2">
+                            <i class="fas fa-arrow-left"></i>
                         </a>
+                        <h1 class="h2">Modifier une société</h1>
                     </div>
                 </div>
 
