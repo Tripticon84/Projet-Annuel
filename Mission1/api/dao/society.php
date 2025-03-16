@@ -48,7 +48,7 @@ function getSocietyByTelephone($telephone)
 function getSocietyById($id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT id FROM societe WHERE id = :id";
+    $sql = "SELECT id, nom, email, adresse, contact_person, telephone, date_creation FROM societe WHERE id = :id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -137,4 +137,13 @@ function getAllSociety($name = '', $limit = null, $offset = null)
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return null;;
+}
+
+function getSociety($id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT id, nom, email, adresse, contact_person, telephone, date_creation FROM societe WHERE id = :id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }

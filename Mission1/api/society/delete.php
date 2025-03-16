@@ -18,14 +18,14 @@ if (validateMandatoryParams($data, ['id'])) {
     // Vérifier l'id existe
     $society = getSocietyById($id);
     if (empty($society)) {
-        returnError(400, 'society does not exist');
+        returnError(400, 'Company does not exist');
         return;
     }
 
     $res = deleteSociety($id);
 
     if (!$res) {
-        returnError(500, 'Could not delete the society');
+        returnError(500, 'Could not delete the Company');
         return;
     }
 

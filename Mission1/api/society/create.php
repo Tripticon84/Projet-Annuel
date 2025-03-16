@@ -24,7 +24,7 @@ if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person',
     // Vérifier l'email n'existe pas
     $society = getSocietyByEmail($email);
     if (!empty($society)) {
-        returnError(400, 'society already exists');
+        returnError(400, 'Company already exists');
         return;
     }
 
@@ -44,7 +44,7 @@ if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person',
     $newSocietyId = createSociety($nom, $email, $adresse, $contact_person, $password, $telephone);
 
     if (!$newSocietyId) {
-        returnError(500, 'Could not create the society');
+        returnError(500, 'Could not create the Company');
         return;
     }
 
