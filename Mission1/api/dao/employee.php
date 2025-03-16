@@ -102,10 +102,7 @@ function deleteEmployee(int $id)
     $sql = "DELETE FROM collaborateur WHERE collaborateur_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute(['id' => $id]);
-    if ($res) {
-        return $stmt->rowCount() > 0;
-    }
-    return false;
+    return $res;
 }
 
 
