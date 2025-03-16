@@ -65,17 +65,17 @@ include_once "../includes/head.php";
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="tarif" class="form-label">Tarif (€/heure)</label>
-                                    <input type="number" class="form-control" id="tarif" name="tarif" step="0.01" min="0">
+                                    <input type="number" class="form-control" id="tarif" name="tarif" step="1" min="10">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="date_debut" class="form-label">Disponible à partir de</label>
-                                    <input type="date" class="form-control" id="date_debut" name="date_debut_disponibilite">
+                                    <label for="date_debut_disponibilite" class="form-label">Disponible à partir de</label>
+                                    <input type="date" class="form-control" id="date_debut_disponibilite" name="date_debut_disponibilite">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="date_fin" class="form-label">Disponible jusqu'à</label>
-                                    <input type="date" class="form-control" id="date_fin" name="date_fin_disponibilite">
+                                    <input type="date" class="form-control" id="date_fin_disponibilite" name="date_fin_disponibilite">
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -90,7 +90,6 @@ include_once "../includes/head.php";
                                 <button type="button" id="deleteButton" class="btn btn-danger me-auto">
                                     <i class="fas fa-trash"></i> Supprimer
                                 </button>
-                                <button type="reset" class="btn btn-outline-secondary">Réinitialiser</button>
                                 <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                             </div>
                         </form>
@@ -133,21 +132,24 @@ include_once "../includes/head.php";
                     if (!provider) {
                         throw new Error('Prestataire non trouvé');
                     }
+                    console.log(provider);
 
                     // Remplir le formulaire avec les données du prestataire
-                    document.getElementById('prestataire_id').value = provider.id;
-                    document.getElementById('nom').value = provider.name || '';
-                    document.getElementById('prenom').value = provider.surname || '';
+                    document.getElementById('prestataire_id').value = provider.prestataire_id;
+                    document.getElementById('nom').value = provider.nom || '';
+                    document.getElementById('prenom').value = provider.prenom || '';
                     document.getElementById('email').value = provider.email || '';
                     document.getElementById('type').value = provider.type || '';
-                    document.getElementById('tarif').value = provider.price || '';
+                    document.getElementById('tarif').value = provider.tarif || '';
 
-                    if (provider.start_date) {
-                        document.getElementById('date_debut').value = provider.start_date.split(' ')[0]; // Format YYYY-MM-DD
+                    if (provider.date_debut_disponibilite) {
+                        const dateDebut = new Date(provider.date_debut_disponibilite);
+                        document.getElementById('date_debut_disponibilite').value = dateDebut.toISOString().split('T')[0]; // Format YYYY-MM-DD
                     }
 
-                    if (provider.end_date) {
-                        document.getElementById('date_fin').value = provider.end_date.split(' ')[0]; // Format YYYY-MM-DD
+                    if (provider.date_fin_disponibilite) {
+                        const dateFin = new Date(provider.date_fin_disponibilite);
+                        document.getElementById('date_fin_disponibilite').value = dateFin.toISOString().split('T')[0]; // Format YYYY-MM-DD
                     }
 
                     document.getElementById('estCandidat').checked = provider.est_candidat === '1';
@@ -161,7 +163,6 @@ include_once "../includes/head.php";
                     document.getElementById('loadingIndicator').style.display = 'none';
                     document.getElementById('notFoundMessage').style.display = 'block';
                 });
-//                :FIXME:
             // Gestion de la soumission du formulaire
             const form = document.getElementById('modifyProviderForm');
             form.addEventListener('submit', function(e) {
@@ -170,6 +171,7 @@ include_once "../includes/head.php";
                 const formData = new FormData(form);
                 const providerData = {};
 
+
                 formData.forEach((value, key) => {
                     providerData[key] = value;
                 });
@@ -177,30 +179,32 @@ include_once "../includes/head.php";
                 // Convert checkbox value properly
                 providerData.est_candidat = document.getElementById('estCandidat').checked ? 1 : 0;
 
-                fetch('/api/provider/modify.php', {
-                    method: 'PATCH', // Utiliser PATCH pour les mises à jour partielles
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(providerData),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Prestataire modifié avec succès!');
-                        // Recharger les données pour afficher les modifications
-                        window.location.reload();
-                    } else {
-                        alert('Erreur: ' + (data.error || 'Impossible de modifier le prestataire'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors de la modification du prestataire.');
-                });
+                console.log(providerData);
+                fetch('../../api/provider/modify.php', {
+                        method: 'PATCH', // Utiliser PATCH pour les mises à jour partielles
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(providerData),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Prestataire modifié avec succès!');
+                            // Recharger les données pour afficher les modifications
+                            window.location.reload();
+                        } else {
+                            alert('Erreur: ' + (data.error || 'Impossible de modifier le prestataire'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue lors de la modification du prestataire.');
+                    });
             });
 
         });
     </script>
 </body>
+
 </html>
