@@ -32,6 +32,11 @@ if (isset($_GET['offset'])) {
 
 $societes = getAllSociety($name, $limit, $offset);
 
+if (!$societes) {
+    returnError(404, 'No company found');
+    return;
+}
+
 $result = []; // Initialize the result array
 
 foreach ($societes as $societe) {
