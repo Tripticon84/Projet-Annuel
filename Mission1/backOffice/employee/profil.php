@@ -7,16 +7,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/employee.php';
 $employeeId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($employeeId <= 0) {
-    // Rediriger si l'ID n'est pas valide
     header('Location: /backOffice/employee/employee.php');
     exit;
 }
 
-// Récupérer les informations de l'employé
+// Récupérer toutes les informations
 $employee = getEmployeeProfile($employeeId);
+$activities = getEmployeeActivities($employeeId);
+$events = getEmployeeEvents($employeeId);
+$chats = getEmployeeChats($employeeId);
+$associations = getEmployeeAssociations($employeeId);
+$evaluations = getEmployeeEvaluations($employeeId);
 
 if (!$employee) {
-    // Rediriger si l'employé n'existe pas
     header('Location: /backOffice/employee/employee.php');
     exit;
 }
@@ -25,7 +28,7 @@ if (!$employee) {
 <body class="container mt-5">
     <a href="employee.php" class="btn btn-secondary mb-3">&larr; Retour</a>
 
-    <div class="card p-4 shadow-sm">
+    <div class="card p-4 shadow-sm mb-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0">Profil de l'employé</h2>
         </div>
@@ -58,12 +61,86 @@ if (!$employee) {
                     <label class="form-label fw-bold">Date de création</label>
                     <p class="form-control-static"><?php echo htmlspecialchars($employee['date_creation']); ?></p>
                 </div>
-                <div class="mb-3">
+                <div class="mb-3"></div>
                     <label class="form-label fw-bold">Dernière activité</label>
                     <p class="form-control-static"><?php echo htmlspecialchars($employee['date_activite']); ?></p>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Activités -->
+    <div class="card p-4 shadow-sm mb-4">
+        <h3>Activités</h3>
+        <?php if ($activities): ?>
+            <ul class="list-group">
+                <?php foreach ($activities as $activity): ?>
+                    <li class="list-group-item"><?php echo htmlspecialchars($activity['nom']); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Aucune activité trouvée</p>
+        <?php endif; ?>
+    </div>
+
+    <!-- Événements -->
+    <div class="card p-4 shadow-sm mb-4">
+        <h3>Événements</h3>
+        <?php if ($events): ?>
+            <ul class="list-group">
+                <?php foreach ($events as $event): ?>
+                    <li class="list-group-item"><?php echo htmlspecialchars($event['nom']); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Aucun événement trouvé</p>
+        <?php endif; ?>
+    </div>
+
+    <!-- Salons de discussion -->
+    <div class="card p-4 shadow-sm mb-4">
+        <h3>Salons de discussion</h3>
+        <?php if ($chats): ?>
+            <ul class="list-group">
+                <?php foreach ($chats as $chat): ?>
+                    <li class="list-group-item"><?php echo htmlspecialchars($chat['nom']); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Aucun salon trouvé</p>
+        <?php endif; ?>
+    </div>
+
+    <!-- Associations -->
+    <div class="card p-4 shadow-sm mb-4">
+        <h3>Associations</h3>
+        <?php if ($associations): ?>
+            <ul class="list-group">
+                <?php foreach ($associations as $association): ?>
+                    <li class="list-group-item"><?php echo htmlspecialchars($association['name']); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Aucune association trouvée</p>
+        <?php endif; ?>
+    </div>
+
+    <!-- Évaluations -->
+    <div class="card p-4 shadow-sm mb-4">
+        <h3>Évaluations</h3>
+        <?php if ($evaluations): ?>
+            <ul class="list-group">
+                <?php foreach ($evaluations as $evaluation): ?>
+                    <li class="list-group-item">
+                        <div>Note: <?php echo htmlspecialchars($evaluation['note']); ?>/5</div>
+                        <div>Commentaire: <?php echo htmlspecialchars($evaluation['commentaire']); ?></div>
+                        <div>Date: <?php echo htmlspecialchars($evaluation['date_creation']); ?></div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Aucune évaluation trouvée</p>
+        <?php endif; ?>
+    </div>
 </body>
-</html>
+</html></div></ul>
