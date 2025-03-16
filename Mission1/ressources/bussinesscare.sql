@@ -284,7 +284,9 @@ CREATE TABLE `societe` (
   `contact_person` varchar(255) DEFAULT NULL,
   `telephone` varchar(20) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
-  `date_creation` datetime DEFAULT NULL
+  `date_creation` datetime DEFAULT NULL,
+  `token` varchar(255) DEFAULT NULL,
+  `expiration` datetime NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
