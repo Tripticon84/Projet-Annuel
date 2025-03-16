@@ -2,12 +2,11 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/provider.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
-
 header('Content-Type: application/json');
-
 
 $limit = null;
 $offset = null;
+$search = null;
 
 if (!methodIsAllowed('read')) {
     returnError(405, 'Method not allowed');
@@ -27,8 +26,12 @@ if (isset($_GET['offset'])) {
     }
 }
 
+// Récupération du paramètre de recherche
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $search = trim($_GET['search']);
+}
 
-$providers = getAllCandidate( $limit, $offset);
+$providers = getAllCandidate($limit, $offset, $search);
 
 $result = []; // Initialize the result array
 

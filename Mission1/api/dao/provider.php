@@ -122,7 +122,7 @@ function getProviderByUsername(string $username)
 function getProviderById($id)
 {
     $connection = getDatabaseConnection();
-    $sql = "SELECT prestataire_id, email  FROM prestataire WHERE prestataire_id = :id";
+    $sql = "SELECT prestataire_id, email, nom, prenom, description, tarif,  date_debut_disponibilite, date_fin_disponibilite, est_candidat FROM prestataire WHERE prestataire_id = :id";
     $query = $connection->prepare($sql);
     $res = $query->execute(['id' => $id]);
     if ($res) {
@@ -142,13 +142,17 @@ function getProviderByEmail($email){
     return null;
 }
 
-function getAllProvider(int $limit = null, int $offset = null)        //tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
+function getAllProvider(int $limit = null, int $offset = null, string $search = null)        //tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT prestataire_id, email, nom, prenom, type, tarif, date_debut_disponibilite, date_fin_disponibilite FROM prestataire Where est_candidat = false";
     $params = [];
 
-
+    // Ajout du filtre de recherche
+    if ($search !== null && $search !== '') {
+        $sql .= " AND (LOWER(nom) LIKE LOWER(:search) OR LOWER(prenom) LIKE LOWER(:search) OR LOWER(email) LIKE LOWER(:search))";
+        $params['search'] = "%$search%";
+    }
 
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
@@ -168,11 +172,17 @@ function getAllProvider(int $limit = null, int $offset = null)        //tout les
     return null;
 }
 
-function getAllCandidate(int $limit = null, int $offset = null)        //tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
+function getAllCandidate(int $limit = null, int $offset = null, string $search = null)        // tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT prestataire_id, email, nom, prenom, type, tarif, date_debut_disponibilite, date_fin_disponibilite FROM prestataire Where est_candidat = true";
     $params = [];
+
+    // Ajout du filtre de recherche
+    if ($search !== null && $search !== '') {
+        $sql .= " AND (LOWER(nom) LIKE LOWER(:search) OR LOWER(prenom) LIKE LOWER(:search) OR LOWER(email) LIKE LOWER(:search))";
+        $params['search'] = "%$search%";
+    }
 
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
@@ -208,11 +218,11 @@ function updateCandidateStatus(int $prestataire_id,bool $value){
 }
 
 
-function getAllActivities(int $limit,int $offset, $providerId)  {
+function getAllActivities(int $limit = null, int $offset = null, $providerId)  {
     $db = getDatabaseConnection();
-    $sql = "SELECT activite_id,nom,date,lieu,type,id_devis FROM activite Where prestataire_id =:id";
+    $sql = "SELECT activite_id, nom, date, lieu, type, id_devis FROM activite WHERE id_prestataire = :id";
     $params = [
-        'id'=>$providerId
+        'id'=> $providerId
     ];
 
     // Gestion des paramètres LIMIT et OFFSET
