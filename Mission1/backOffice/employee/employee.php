@@ -110,31 +110,6 @@ if (!$employeeStats) {
                                 <i class="fas fa-plus"></i> Nouvel Employé
                             </a>
                             <div class="dropdown me-2">
-                                <!-- <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-filter"></i> Filtre
-                                </button> -->
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
-                                    <li>
-                                        <h6 class="dropdown-header">Entreprise</h6>
-                                    </li>
-                                    <li><a class="dropdown-item" href="#">Toutes les entreprises</a></li>
-                                    <li><a class="dropdown-item" href="#">TechInnov</a></li>
-                                    <li><a class="dropdown-item" href="#">EcoSolutions</a></li>
-                                    <li><a class="dropdown-item" href="#">DigitalWave</a></li>
-                                    <li><a class="dropdown-item" href="#">SmartRetail</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <h6 class="dropdown-header">Statut</h6>
-                                    </li>
-                                    <li><a class="dropdown-item" href="#">Tous les statuts</a></li>
-                                    <li><a class="dropdown-item" href="#">Actifs</a></li>
-                                    <li><a class="dropdown-item" href="#">Inactifs</a></li>
-                                    <li><a class="dropdown-item" href="#">En congé</a></li>
-                                </ul>
-                            </div>
-                            <div class="dropdown me-2">
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-sort"></i> Tri
                                 </button>

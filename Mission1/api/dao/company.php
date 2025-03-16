@@ -147,3 +147,71 @@ function getSociety($id)
     $stmt->execute(['id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
+
+function findCompanyByCredentials($email, $password)
+{
+    $connection = getDatabaseConnection();
+    $sql = "SELECT societe_id FROM societe WHERE email = :email AND password = :password";
+    $query = $connection->prepare($sql);
+    $res = $query->execute([
+        'email' => $email,
+        'password' => $password
+    ]);
+    if ($res) {
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function setCompanySession($id)
+{
+    $connection = getDatabaseConnection();
+    $sql = "UPDATE societe SET token = :token, expiration = DATE_ADD(NOW(), INTERVAL 2 HOUR) WHERE societe_id = :id";
+    $query = $connection->prepare($sql);
+    $token = date('d/M/Y h:m:s') . '_' . $id . '_' . generateRandomString(100);
+    $tokenHashed = hash('md5', $token);
+    $res = $query->execute([
+        'id' => $id,
+        'token' => $tokenHashed
+    ]);
+    if ($res) {
+        return $tokenHashed;
+    }
+    return null;
+}
+
+
+function getSocietyEmployees($societe_id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone FROM collaborateur WHERE id_societe = :societe_id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['societe_id' => $societe_id]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+}
+
+
+function getCompanyEstimate($societe_id, $is_contract)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT devis_id, date_debut, date_fin, statut, montant FROM devis WHERE id_societe = :societe_id AND is_contract = :is_contract";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['societe_id' => $societe_id, 'is_contract' => $is_contract]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getCompanyOtherCost($societe_id)
+{
+    $db = getDatabaseConnection();
+    
+    $sql = "SELECT af.autre_frais_id, af.nom, af.montant, af.id_facture, af.date_creation, f.facture_id, f.date_emission, f.montant, f.statut FROM autre_frais af
+            JOIN facture f ON af.id_facture = f.facture_id
+            JOIN devis d ON f.id_devis = d.devis_id
+            WHERE d.id_societe = :societe_id";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['societe_id' => $societe_id]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}

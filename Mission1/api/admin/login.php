@@ -2,6 +2,7 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/admin.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/stringUtils.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/hashPassword.php';
 header("Content-Type: application/json");
 
 if (!methodIsAllowed('login')) {
