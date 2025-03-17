@@ -11,18 +11,18 @@ if (!methodIsAllowed('delete')) {
 
 $data = getBody();
 
-if (!isset($data['activity_id'])) {
+if (!isset($data['activite_id'])) {
     returnError(400, 'Missing id');
     return;
 }
 
-$activity = getActivityById($data['activity_id']);
+$activity = getActivityById($data['activite_id']);
 if (!$activity) {
     returnError(404, 'Activity not found');
     return;
 }
 
-$deleted = deleteActivity($data['activity_id']);
+$deleted = deleteActivity($data['activite_id']);
 
 if ($deleted) {
     echo json_encode(['message' => 'Activity deleted']);

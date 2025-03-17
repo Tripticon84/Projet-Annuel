@@ -45,54 +45,55 @@ function deleteEmployee(int $id)
     return $res;
 }
 
-function updateActivity(string $nom = null, string $type = null, $date = null, $id_prestataire = null, $place = null, $id_devis = null, int $activite_id, $desactivate = null)
+function updateActivity($activite_id, $nom = null, $type = null, $date = null, $id_prestataire, $place = null, $id_devis = null, $desactivate = null)
 {
     $db = getDatabaseConnection();
-    $sql = "UPDATE activite SET ";
-    $params = [
-        "id" => $activite_id
-    ];
-    $coma = "";
+    $params = ['id' => $activite_id];
+    $setFields = [];
+
     if ($nom !== null) {
-        $sql .= "nom = :nom";
+        $setFields[] = "nom = :nom";
         $params['nom'] = $nom;
-        $coma = ",";
     }
+
     if ($type !== null) {
-        $sql .= $coma . "type = :type";
+        $setFields[] = "type = :type";
         $params['type'] = $type;
-        $coma = ",";
     }
+
     if ($date !== null) {
-        $sql .= $coma . "date = :date";
+        $setFields[] = "date = :date";
         $params['date'] = $date;
-        $coma = ",";
     }
+
     if ($id_prestataire !== null) {
-        $sql .= $coma . "id_prestataire = :id_prestataire";
+        $setFields[] = "id_prestataire = :id_prestataire";
         $params['id_prestataire'] = $id_prestataire;
-        $coma = ",";
     }
+
     if ($place !== null) {
-        $sql .= $coma . "lieu = :lieu";
+        $setFields[] = "lieu = :lieu";
         $params['lieu'] = $place;
-        $coma = ",";
     }
+
     if ($id_devis !== null) {
-        $sql .= $coma . "id_devis = :id_devis";
+        $setFields[] = "id_devis = :id_devis";
         $params['id_devis'] = $id_devis;
-        $coma = ",";
     }
+
     if ($desactivate !== null) {
-        $sql .= $coma . "desactivate = :desactivate";
+        $setFields[] = "desactivate = :desactivate";
         $params['desactivate'] = $desactivate;
     }
 
-    
-    $sql .= " WHERE activite_id = :id";
+    if (empty($setFields)) {
+        return 0; // Rien à mettre à jour
+    }
 
+    $sql = "UPDATE activite SET " . implode(", ", $setFields) . " WHERE activite_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute($params);
+
     if ($res) {
         return $stmt->rowCount();
     }
@@ -111,11 +112,18 @@ function getActivityById($id)
     return null;
 }
 
-function getAllActivity($limit = null, $offset = null)
+function getAllActivity($limit = null, $offset = null, $nom = null)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT activite_id, nom, type, date, id_prestataire, lieu, id_devis FROM activite";
+    $sql = "SELECT activite_id, nom, type, date, id_prestataire, lieu, id_devis FROM activite WHERE 1=1";
     $params = [];
+
+    // Ajout du filtre par nom si spécifié
+    if ($nom !== null && $nom !== '') {
+        $sql .= " AND nom LIKE :nom";
+        $params['nom'] = "%" . $nom . "%";
+    }
+
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
         $sql .= " LIMIT " . (string) $limit;
@@ -126,12 +134,10 @@ function getAllActivity($limit = null, $offset = null)
     }
 
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
+    $res = $stmt->execute($params);
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return null;
 }
-
-

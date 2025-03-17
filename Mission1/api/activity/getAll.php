@@ -11,6 +11,8 @@ if (!methodIsAllowed('read')) {
 
 $limit = null;
 $offset = null;
+$nom = null;
+
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
     if ($limit < 1) {
@@ -23,8 +25,11 @@ if (isset($_GET['offset'])) {
         returnError(400, 'Offset must be a positive number');
     }
 }
+if (isset($_GET['nom'])) {
+    $nom = trim($_GET['nom']);
+}
 
-$activities = getAllActivity($limit, $offset);
+$activities = getAllActivity($limit, $offset, $nom);
 
 if (!$activities) {
     returnError(500, 'Failed to retrieve activities');
@@ -37,8 +42,8 @@ foreach ($activities as $activity) {
         "id" => $activity['activite_id'],
         "nom" => $activity['nom'],
         "type" => $activity['type'],
-        "date" => $activity['day'],
-        "lieu" => $activity['place'],
+        "date" => $activity['date'],
+        "lieu" => $activity['lieu'],
         "id_devis" => $activity['id_devis'],
         "id_prestataire" => $activity['id_prestataire']
     ];

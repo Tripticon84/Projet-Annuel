@@ -27,7 +27,7 @@ function createProvider($email, $nom, $prenom, $type, $description, $tarif, $dat
     return null;
 }
 
-function updateProvider( $prestataire_id,  $firstname, $name, $type, $est_candidat, $tarif, $email, $date_debut_disponibilite, $date_fin_disponibilite, $password)
+function updateProvider($prestataire_id, $firstname, $name, $type, $est_candidat, $tarif, $email, $date_debut_disponibilite, $date_fin_disponibilite, $password = null, $description = null)
 {
     $db = getDatabaseConnection();
     $params = ['prestataire_id' => $prestataire_id];
@@ -73,7 +73,10 @@ function updateProvider( $prestataire_id,  $firstname, $name, $type, $est_candid
         $params['date_fin_disponibilite'] = $date_fin_disponibilite;
     }
 
-
+    if ($description !== null) {
+        $setFields[] = "description = :description";
+        $params['description'] = $description;
+    }
 
     if ($password !== null) {
         $setFields[] = "password = :password";

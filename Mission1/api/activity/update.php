@@ -1,6 +1,6 @@
-<?php 
+<?php
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/api/dao/activity.php";   
+require_once $_SERVER['DOCUMENT_ROOT'] . "/api/dao/activity.php";
 
 header('Content-Type: application/json');
 
@@ -13,13 +13,13 @@ if (!methodIsAllowed('update')) {
 // Récupérer les données de la requête
 $data = getBody();
 
-if (!isset($data['activity_id']) || empty($data['activity_id'])) {
-    returnError(400, 'Admin ID is required');
+if (!isset($data['activite_id']) || empty($data['activite_id'])) {
+    returnError(400, 'Activity ID is required');
     return;
 }
 
 // Récupérer l'activité par son ID
-$activityId = $data['activity_id'];
+$activityId = $data['activite_id'];
 $existingActivity = getActivityById($activityId);
 
 // Vérifier si l'activité existe
@@ -32,14 +32,14 @@ if (!$existingActivity) {
 $nom = isset($data['nom']) ? $data['nom'] : null;
 $type = isset($data['type']) ? $data['type'] : null;
 $date = isset($data['date']) ? $data['date'] : null;
-$place = isset($data['place']) ? $data['place'] : null;
+$lieu = isset($data['lieu']) ? $data['lieu'] : null; // Correction de 'place' à 'lieu' pour correspondre au paramètre SQL
 $id_devis = isset($data['id_devis']) ? $data['id_devis'] : null;
 $id_prestataire = isset($data['id_prestataire']) ? $data['id_prestataire'] : null;
 $desactivate = isset($data['desactivate']) ? $data['desactivate'] : null;
 
+// Mise à jour en utilisant les bons noms de variables
+$updateResult = updateActivity($activityId, $nom, $type, $date, $lieu, $id_prestataire, $id_devis, $desactivate);
 
-
-$updateResult = updateActivity($nom, $type, $date, $id_prestataire, $place, $id_devis, $activityId, $desactivate);
 if ($updateResult) {
     echo json_encode([
         'success' => true,

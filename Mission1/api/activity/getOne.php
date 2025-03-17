@@ -11,7 +11,7 @@ if (!methodIsAllowed('read')) {
 
 
 
-$activityId = $_GET['activity_id'];
+$activityId = $_GET['activite_id'];
 
 if (!isset($activityId)) {
     returnError(400, 'Missing id');
@@ -19,7 +19,7 @@ if (!isset($activityId)) {
 }
 
 if (!is_numeric($activityId)) {
-    returnError(400, 'Invalid parameter type. activity_id must be an integer.');
+    returnError(400, 'Invalid parameter type. activite_id must be an integer.');
     return;
 }
 
@@ -30,17 +30,14 @@ if (!$activity) {
     return;
 }
 
-$result['activity'] = [
+$result = [
     "id" => $activity['activite_id'],
     "nom" => $activity['nom'],
     "type" => $activity['type'],
-    "date" => $activity['day'],
-    "lieu" => $activity['place'],
+    "date" => $activity['date'],
+    "lieu" => $activity['lieu'],
     "id_devis" => $activity['id_devis'],
     "id_prestataire" => $activity['id_prestataire']
 ];
 
 echo json_encode($result);
-
-
-

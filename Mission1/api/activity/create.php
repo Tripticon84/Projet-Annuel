@@ -14,7 +14,7 @@ if (!methodIsAllowed('create')) {
 $data = getBody();
 
 if (validateMandatoryParams($data, ['nom', 'type', 'date', 'lieu', 'id_devis','id_prestataire'])) {
-    
+
     if (!is_numeric($data['id_devis']) || !is_numeric($data['id_prestataire'])) {
         returnError(400, 'Invalid parameter type. id_devis and id_prestataire must be integers.');
         return;
@@ -59,4 +59,4 @@ if (validateMandatoryParams($data, ['nom', 'type', 'date', 'lieu', 'id_devis','i
 }else{
     returnError(400, 'Missing required parameters');
     return;
-}   
+}
