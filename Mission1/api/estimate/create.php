@@ -1,5 +1,6 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/estimate.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/company.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 header('Content-Type: application/json');
@@ -14,35 +15,23 @@ $data = getBody();
 
 if (validateMandatoryParams($data, ['date_debut', 'date_fin', 'statut', 'montant', 'is_contract', 'id_societe'])) {
 
-    // Vérifier l'email n'existe pas
-    $estimate = getEmployeeByEmail($data['email']);
-    if (!empty($employee)) {
-        returnError(400, 'Email already exists');
+    if (!is_numeric($data['montant'])) {
+        returnError(400, 'montant must be a number');
         return;
     }
-
-    // Vérifier l'username n'existe pas
-    $employee = getEmployeeByUsername($data['username']);
-    if (!empty($employee)) {
-        returnError(400, 'Username already exists');
+    if ($data['statut'] !== 'refusé' && $data['statut'] !== 'accepté' && $data['statut'] !== 'envoyé' && $data['statut'] !== 'brouillon') {
+        returnError(400, 'statut must be refusé, accepté, envoyé or brouillon');
         return;
     }
-
-    // Vérifier le telephone n'existe pas
-    $employee = getEmployeeByTelephone($data['telephone']);
-    if (!empty($employee)) {
-        returnError(400, 'Telephone already exists');
+    $company = getSocietyById($data['id_societe']);
+    if (empty($company)) {
+        returnError(400, 'company does not exist');
         return;
     }
+    
 
-    // Vérification de la longueur du mot de passe
-    if (strlen($data['password']) < 8) {
-         returnError(400, 'Password must be at least 8 characters long');
-        return;
-    }
-
-    $newEstimateId = createEstimate($data['date_debut'], $data['date_fin'], $data['statut'], $data['montant'], $data['is_contract'], $data['id_societe']);
-
+    $newEstimateId = createEstimate($data['date_debut'], $data['date_fin'], $data['statut'], $data['montant'], $data['is_contract'], $data['id_societe'],$company['nom']);
+    
     if (!$newEstimateId) {
         returnError(500, 'Could not create the estimate');
         return;
