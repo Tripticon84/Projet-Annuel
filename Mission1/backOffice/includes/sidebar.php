@@ -1,10 +1,10 @@
-            <?php
+<?php
 
             $current_page = basename($_SERVER['SCRIPT_NAME']); ?>
 
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-                <div class="position-sticky pt-3">
+                <div class="position-sticky pt-3 d-flex flex-column" style="height: 100vh;">
                     <div class="text-center mb-4">
                         <h3>Business Care</h3>
                         <h6>Administration</h6>
@@ -55,6 +55,8 @@
                                 <i class="fas fa-robot"></i> Chatbot
                             </a>
                         </li>
+                    </ul>
+                    <ul class="nav flex-column mt-auto">
                         <li class="nav-item">
                             <a class="nav-link" href="/backOffice/login/logout.php">
                                 <i class="fas fa-sign-out-alt"></i> Se déconnecter
