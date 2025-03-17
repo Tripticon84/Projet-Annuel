@@ -1,0 +1,32 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/activity.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
+
+header('Content-Type: application/json');
+
+if (!methodIsAllowed('delete')) {
+    returnError(405, 'Method not allowed');
+    return;
+}
+
+$data = getBody();
+
+if (!isset($data['activity_id'])) {
+    returnError(400, 'Missing id');
+    return;
+}
+
+$activity = getActivityById($data['activity_id']);
+if (!$activity) {
+    returnError(404, 'Activity not found');
+    return;
+}
+
+$deleted = deleteActivity($data['activity_id']);
+
+if ($deleted) {
+    echo json_encode(['message' => 'Activity deleted']);
+    return http_response_code(200);
+} else {
+    returnError(500, 'Failed to delete activity');
+}

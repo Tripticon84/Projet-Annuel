@@ -33,9 +33,10 @@ CREATE TABLE `activite` (
   `activite_id` int(11) NOT NULL,
   `nom` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
-  `day` date DEFAULT NULL,
+  `date` date DEFAULT NULL,
   `lieu` varchar(255)  DEFAULT NULL,
   `id_devis` int(11) DEFAULT NULL,
+  `desactivate` boolean DEFAULT 0,
   `id_prestataire` int(11)  DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -685,7 +686,7 @@ INSERT INTO salon (nom, description) VALUES
 ('Équilibre vie pro/perso', 'Échanges sur la conciliation vie professionnelle et personnelle');
 
 -- Activités bien-être
-INSERT INTO activite (nom, type, day, lieu, id_devis, id_prestataire) VALUES
+INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire) VALUES
 ('Atelier gestion du stress', 'Atelier collectif', '2025-04-20', 'Salle de conférence A - Siège Renault', 1, 1),
 ('Séances de yoga', 'Cours collectif', '2025-05-10', 'Salle de détente - AXA', 2, 5),
 ('Consultation nutrition', 'Entretien individuel', '2025-03-25', 'Bureau 302 - Carrefour Massy', 3, 4),
