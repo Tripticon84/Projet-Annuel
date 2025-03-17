@@ -122,8 +122,9 @@ CREATE TABLE `devis` (
   `devis_id` int(11) NOT NULL,
   `date_debut` date DEFAULT NULL,
   `date_fin` date DEFAULT NULL,
-  `statut` varchar(255) DEFAULT NULL,
+  `statut` ENUM('brouillon', 'envoyé', 'accepté', 'refusé') DEFAULT 'brouillon',
   `montant` decimal(10,2) DEFAULT NULL,
+  `fichier` varchar(255) DEFAULT NULL,
   `is_contract` tinyint(1) DEFAULT NULL,
   `id_societe` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -635,12 +636,12 @@ INSERT INTO collaborateur (nom, prenom, username, role, email, password, telepho
 ('Lefebvre', 'Emma', 'elefebvre', 'employe', 'e.lefebvre@loreal.fr', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0678901234', 5, NOW(), '2025-03-15');
 
 -- Devis pour différentes entreprises
-INSERT INTO devis (date_debut, date_fin, statut, montant, is_contract, id_societe) VALUES
-('2025-03-15', '2025-06-15', 'En cours', 7500.00, 1, 1),
-('2025-04-01', '2025-10-31', 'En attente', 12800.00, 0, 2),
-('2025-02-20', '2025-05-20', 'Accepté', 5200.00, 1, 3),
-('2025-05-01', '2025-08-31', 'En cours', 9750.00, 1, 4),
-('2025-03-10', '2025-12-31', 'En attente', 15300.00, 0, 5);
+INSERT INTO devis (date_debut, date_fin, montant, is_contract, id_societe) VALUES
+('2025-03-15', '2025-06-15',  7500.00, 1, 1),
+('2025-04-01', '2025-10-31',  12800.00, 0, 2),
+('2025-02-20', '2025-05-20',  5200.00, 1, 3),
+('2025-05-01', '2025-08-31',  9750.00, 1, 4),
+('2025-03-10', '2025-12-31',  15300.00, 0, 5);
 
 -- Prestataires de services
 INSERT INTO prestataire (email, nom, prenom, type, description, tarif, date_debut_disponibilite, date_fin_disponibilite, est_candidat, password) VALUES

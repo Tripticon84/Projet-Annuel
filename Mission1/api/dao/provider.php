@@ -203,7 +203,7 @@ function getAllCandidate(int $limit = null, int $offset = null, string $search =
 }
 
 
-function updateCandidateStatus(int $prestataire_id,bool $value){
+function updateCandidateStatus($prestataire_id,$value){
     $db = getDatabaseConnection();
     $sql = "UPDATE prestataire  SET est_candidat = :est_candidat WHERE prestataire_id = :id";
     $stmt = $db->prepare($sql);

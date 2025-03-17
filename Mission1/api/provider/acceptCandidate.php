@@ -34,9 +34,8 @@ if (validateMandatoryParams($data, ['est_candidat','prestataire_id'])) {
         returnError(400,'est déja prestataire.');
         return;
     }
-
     // Création de l'administrateur
-    $newProvider = updateCandidateStatus($data['prestataire_id'],false);
+    $newProvider = updateCandidateStatus($data['prestataire_id'],0);
 
     if (!$newProvider) {
         returnError(500, 'Could not accept the candidate');
