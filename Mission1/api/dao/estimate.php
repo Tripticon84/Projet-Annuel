@@ -37,37 +37,42 @@ function updateEstimate( $date_debut = null,  $date_fin = null , string $statut 
     $params = [
         "id" => $devis_id
     ];
-
+    $coma = "";
     if ($date_debut !== null) {
         $sql .= "date_debut = :date_debut";
         $params['date_debut'] = $date_debut;
+        $coma = ",";
     }
     if ($date_fin !== null) {
-        $sql .= ", date_fin = :date_fin";
+        $sql .= $coma . "date_fin = :date_fin";
         $params['date_fin'] = $date_fin;
+        $coma = ",";
     }
-
     if ($statut !== null) {
-        $sql .= ", statut = :statut";
+        $sql .= $coma . "statut = :statut";
         $params['statut'] = $statut;
+        $coma = ",";
     }
     if ($montant !== null) {
-        $sql .= ", montant = :montant";
+        $sql .= $coma . "montant = :montant";
         $params['montant'] = $montant;
+        $coma = ",";
     }
     if ($is_contract !== null) {
-        $sql .= ", is_contract = :is_contract";
+        $sql .= $coma . "is_contract = :is_contract";
         $params['is_contract'] = $is_contract;
+        $coma = ",";
     }
     if ($id_societe !== null) {
-        $sql .= ", id_societe = :id_societe";
+        $sql .= $coma . "id_societe = :id_societe";
         $params['id_societe'] = $id_societe;
+        $coma = ",";
     }
     if ($fichier !== null) {
-        $sql .= ", fichier = :fichier";
+        $sql .= $coma . "fichier = :fichier";
         $params['fichier'] = $fichier;
+        $coma = ",";
     }
-
     $sql .= " WHERE devis_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute($params);
