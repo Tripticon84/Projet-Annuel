@@ -9,12 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-// // Vérification du token d'authentification
-// if (!isset($_GET['token'])) {
-//     returnError(401, 'Token not provided');
-//     return;
-// }
-// tokenVerification($_GET['token']);
+acceptedTokens(true, true, false, true);
 
 // Vérification de l'ID de la societe
 if (!isset($_GET['devis_id']) || empty($_GET['devis_id'])) {

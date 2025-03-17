@@ -10,6 +10,8 @@ if (!methodIsAllowed('delete')) {
     return;
 }
 
+acceptedTokens(true, true, false, true);
+
 $data = getBody();
 $id = $data['devis_id'];
 
@@ -24,7 +26,7 @@ if (validateMandatoryParams($data, ['devis_id'])) {
 
 
     $res = deleteEstimate($id);
-    
+
     if (!$res) {
         returnError(500, 'Could not delete the Estimate');
         return;

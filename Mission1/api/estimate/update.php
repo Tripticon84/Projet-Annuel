@@ -11,6 +11,8 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
+acceptedTokens(true, true, false, true);
+
 $data = getBody();
 
 $devis_id = $data['devis_id'];

@@ -10,6 +10,8 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
+acceptedTokens(true, true, false, true);
+
 $data = getBody();
 
 
@@ -28,10 +30,10 @@ if (validateMandatoryParams($data, ['date_debut', 'date_fin', 'statut', 'montant
         returnError(400, 'company does not exist');
         return;
     }
-    
+
 
     $newEstimateId = createEstimate($data['date_debut'], $data['date_fin'], $data['statut'], $data['montant'], $data['is_contract'], $data['id_societe'],$company['nom']);
-    
+
     if (!$newEstimateId) {
         returnError(500, 'Could not create the estimate');
         return;

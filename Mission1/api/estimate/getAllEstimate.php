@@ -9,6 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, false, true);
 
 $limit = null;
 $offset = null;
@@ -49,5 +50,3 @@ foreach ($Estimates as $Estimate) {
 
 
 echo json_encode($result);
-
-

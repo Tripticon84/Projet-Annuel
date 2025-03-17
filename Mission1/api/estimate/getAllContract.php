@@ -9,6 +9,8 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, false, true);
+
 
 $limit = null;
 $offset = null;
@@ -49,5 +51,3 @@ foreach ($contracts as $contract) {
 
 
 echo json_encode($result);
-
-
