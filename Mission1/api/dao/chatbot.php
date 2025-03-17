@@ -57,7 +57,7 @@ function getAllChatbots($limit = null, $offset = null){
     return null;
 }
 
-function updateChatbot($chatbot_id,?string $question = null,?string $answer = null){
+function updateChatbot($chatbot_id, ?string $question = null, ?string $answer = null){
     $db = getDatabaseConnection();
     $params = ['chatbot_id' => $chatbot_id];
     $setFields = [];

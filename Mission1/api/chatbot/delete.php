@@ -10,12 +10,12 @@ if (!methodIsAllowed('delete')) {
 }
 
 $data = getBody();
-$chatbot_id = $data['chatbot_id'];
 
-if (!isset($chatbot_id) || empty($chatbot_id)) {
+if (!validateMandatoryParams($data, ['chatbot_id'])) {
     returnError(400, 'Missing required parameters');
     return;
 }
+$chatbot_id = $data['chatbot_id'];
 
 
 $chatbot = getChatbot($chatbot_id);

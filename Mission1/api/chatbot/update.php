@@ -11,15 +11,15 @@ if (!methodIsAllowed('update')) {
 }
 
 $data = getBody();
-$chatbot_id = $data['chatbot_id'];
 
-if (!isset($chatbot_id) || empty($chatbot_id)) {
+if (!validateMandatoryParams($data, ['chatbot_id'])) {
     returnError(400, 'Missing required parameters');
     return;
 }
 
+$chatbot_id = $data['chatbot_id'];
 $question = isset($data['question']) ? $data['question'] : null;
-$answer = isset($data['reponse']) ? $data['reponse'] : null;
+$answer = isset($data['answer']) ? $data['answer'] : null;
 
 // Vérifier si au moins un champ est fourni pour la mise à jour
 if ($question === null && $answer === null) {

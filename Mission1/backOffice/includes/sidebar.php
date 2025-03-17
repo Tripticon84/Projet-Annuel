@@ -51,6 +51,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link <?= ($current_page == 'chatbot.php') ? 'active' : '' ?>" href="/backOffice/chatbot/chatbot.php">
+                                <i class="fas fa-robot"></i> Chatbot
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/backOffice/login/logout.php">
                                 <i class="fas fa-sign-out-alt"></i> Se déconnecter
                             </a>
