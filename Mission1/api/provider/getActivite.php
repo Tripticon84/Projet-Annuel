@@ -9,6 +9,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, true, true);
+
+
 $limit = null;
 $offset = null;
 $providerId = $_GET['id'];

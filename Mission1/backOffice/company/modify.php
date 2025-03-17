@@ -97,7 +97,11 @@ include_once "../includes/head.php";
             }
 
             // Récupération des données de la société
-            fetch(`../../api/company/getOne.php?societe_id=${companyId}`)
+            fetch(`../../api/company/getOne.php?societe_id=${companyId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Société non trouvée');
@@ -141,9 +145,10 @@ include_once "../includes/head.php";
                 });
 
                 fetch('../../api/company/update.php', {
-                        method: 'PATCH', // Utiliser PATCH pour les mises à jour partielles
+                        method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken(),
                         },
                         body: JSON.stringify(companyData),
                     })

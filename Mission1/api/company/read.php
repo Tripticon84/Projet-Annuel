@@ -11,6 +11,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, false, false);
+
+
 // Récupération de l'ID depuis l'URL
 if (!isset($_GET['societe_id']) || empty($_GET['societe_id'])) {
     returnError(400, 'societe_id parameter is required');

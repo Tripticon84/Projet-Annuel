@@ -154,40 +154,6 @@ function getSociety($id)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-
-function findCompanyByCredentials($email, $password)
-{
-    $connection = getDatabaseConnection();
-    $sql = "SELECT societe_id FROM societe WHERE email = :email AND password = :password";
-    $query = $connection->prepare($sql);
-    $res = $query->execute([
-        'email' => $email,
-        'password' => $password
-    ]);
-    if ($res) {
-        return $query->fetch(PDO::FETCH_ASSOC);
-    }
-    return null;
-}
-
-function setCompanySession($id)
-{
-    $connection = getDatabaseConnection();
-    $sql = "UPDATE societe SET token = :token, expiration = DATE_ADD(NOW(), INTERVAL 2 HOUR) WHERE societe_id = :id";
-    $query = $connection->prepare($sql);
-    $token = date('d/M/Y h:m:s') . '_' . $id . '_' . generateRandomString(100);
-    $tokenHashed = hash('md5', $token);
-    $res = $query->execute([
-        'id' => $id,
-        'token' => $tokenHashed
-    ]);
-    if ($res) {
-        return $tokenHashed;
-    }
-    return null;
-}
-
-
 function getSocietyEmployees($societe_id)
 {
     $db = getDatabaseConnection();
@@ -293,4 +259,65 @@ function getCompaniesStats()
         echo "Erreur lors de la récupération des statistiques des sociétés : " . $e->getMessage();
         return null;
     }
+}
+
+
+
+// Token
+
+function findCompanyByCredentials($email, $password)
+{
+    $connection = getDatabaseConnection();
+    $hashedPassword = hashPassword($password);
+    $sql = "SELECT societe_id FROM societe WHERE email = :email AND password = :password";
+    $query = $connection->prepare($sql);
+    $res = $query->execute([
+        'email' => $email,
+        'password' => $hashedPassword
+    ]);
+    if ($res) {
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function setCompanySession($id, $token)
+{
+    $connection = getDatabaseConnection();
+    $sql = "UPDATE societe SET token = :token, expiration = DATE_ADD(NOW(), INTERVAL 2 HOUR) WHERE societe_id = :id";
+    $query = $connection->prepare($sql);
+    $res = $query->execute([
+        'id' => $id,
+        'token' => $token
+    ]);
+    if ($res) {
+        return $query->rowCount();
+    }
+    return null;
+}
+
+function getCompanyExpirationByToken($token)
+{
+    $connection = getDatabaseConnection();
+    $sql = "SELECT expiration FROM societe WHERE token = :token";
+    $query = $connection->prepare($sql);
+    $res = $query->execute([
+        'token' => $token
+    ]);
+    if ($res) {
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getCompanyByToken($token)
+{
+    $connection = getDatabaseConnection();
+    $sql = "SELECT societe_id, nom, email, contact_person FROM societe WHERE token = :token";
+    $query = $connection->prepare($sql);
+    $res = $query->execute(['token' => $token]);
+    if ($res) {
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
 }

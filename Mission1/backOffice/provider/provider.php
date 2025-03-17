@@ -58,16 +58,17 @@ include_once "../includes/head.php";
                 <div class="card mt-4">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Prestataires vérifiés</h5>
-                        <div class="d-flex">
+                        <div class="d-flex mt-2 mt-sm-0  align-items-center">
+                            <div class="input-group me-2" style="max-width: 200px;">
+                                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher un prestataire" aria-label="Search">
+                                <button class="btn btn-sm btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <a type="button" class="btn btn-sm btn-primary me-2" href="create.php">
+                                <i class="fas fa-plus"></i> Ajouter un prestataire
+                            </a>
                             <div class="dropdown">
-                                <div class="btn-toolbar mb-2 mb-md-0">
-                                    <div class="input-group me-2">
-                                        <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher un prestataire" aria-label="Search">
-                                        <button class="btn btn-sm btn-outline-secondary" type="button">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                </div>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdownVerified">
                                     <li><a class="dropdown-item" href="#">Nom (A-Z)</a></li>
                                     <li><a class="dropdown-item" href="#">Nom (Z-A)</a></li>
@@ -210,7 +211,11 @@ include_once "../includes/head.php";
             const candidateList = document.getElementById('candidateList');
             candidateList.innerHTML = '<tr><td colspan="7" class="text-center">Chargement des candidats...</td></tr>';
 
-            fetch('../../api/provider/getCandidates.php')
+            fetch('../../api/provider/getCandidates.php', {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Erreur lors de la récupération des candidats');
@@ -271,7 +276,11 @@ include_once "../includes/head.php";
                 url += '&search=' + encodeURIComponent(search);
             }
 
-            fetch(url)
+            fetch(url, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Erreur lors de la récupération des prestataires');
@@ -348,6 +357,7 @@ include_once "../includes/head.php";
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
                         },
                         body: JSON.stringify({
                             prestataire_id: id,
@@ -378,7 +388,11 @@ include_once "../includes/head.php";
             const modal = new bootstrap.Modal(document.getElementById('activitiesModal'));
             modal.show();
 
-            fetch(`/api/provider/getActivite.php?id=${providerId}`)
+            fetch(`/api/provider/getActivite.php?id=${providerId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
                 .then(response => response.json())
                 .then(data => {
                     activityList.innerHTML = '';

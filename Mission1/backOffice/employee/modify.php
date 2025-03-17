@@ -76,7 +76,11 @@ if (!$employee_id) {
             console.log("Chargement des données pour l'employé ID:", employeeId);
 
             // Appel API pour récupérer les données de l'employé
-            fetch(`../../api/employee/read.php?id=${employeeId}`)
+            fetch(`../../api/employee/read.php?id=${employeeId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Erreur réseau: ' + response.status);
@@ -144,11 +148,13 @@ if (!$employee_id) {
             }
 
             console.log("Envoi des données pour mise à jour:", updateData);
-
             // Appel API pour mettre à jour l'employé
             fetch('../../api/employee/modify.php', {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                },
                 body: JSON.stringify(updateData)
             })
             .then(response => {

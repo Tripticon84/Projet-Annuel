@@ -13,12 +13,8 @@ if (!methodIsAllowed('create')) {
 
 $data = getBody();
 
-// Vérification du token d'authentification
-if (!isset($_GET['token'])) {
-    returnError(401, 'Token not provided');
-    return;
-}
-tokenVerification($_GET['token']);
+acceptedTokens(true, false, false, false);
+
 
 if (validateMandatoryParams($data, ['username', 'password'])) {
     // Vérification si l'admin existe déjà

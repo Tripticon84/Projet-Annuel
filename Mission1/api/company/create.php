@@ -10,6 +10,9 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
+acceptedTokens(true, true, false, false);
+
+
 $data = getBody();
 $nom = $data['nom'];
 $email = $data['email'];
@@ -26,7 +29,7 @@ if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person',
             returnError(400, 'Invalid email format');
             return;
         }
-        
+
         // Vérifier l'email n'existe pas
         $society = getSocietyByEmail($email);
         if (!empty($society)) {
@@ -68,7 +71,3 @@ if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person',
     returnError(412, 'Mandatory parameters: nom, email, adresse, contact_person, password, telephone');
 }
 ?>
-
-
-
-

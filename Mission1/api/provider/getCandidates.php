@@ -4,14 +4,17 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 header('Content-Type: application/json');
 
-$limit = null;
-$offset = null;
-$search = null;
-
 if (!methodIsAllowed('read')) {
     returnError(405, 'Method not allowed');
     return;
 }
+
+acceptedTokens(true, false, false, false);
+
+
+$limit = null;
+$offset = null;
+$search = null;
 
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);

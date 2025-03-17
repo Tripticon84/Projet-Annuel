@@ -137,6 +137,7 @@ $companyStats = getCompaniesStats();
             });
         });
 
+
         let currentPage = 1;
 
         function fetchCompanies(name = '', page = 1) {
@@ -151,7 +152,11 @@ $companyStats = getCompaniesStats();
                 url += '&name=' + encodeURIComponent(name);
             }
 
-            fetch(url)
+            fetch(url, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Erreur lors de la récupération des sociétés');
@@ -222,7 +227,10 @@ $companyStats = getCompaniesStats();
             if (confirm('Êtes-vous sûr de vouloir supprimer cette société?')) {
                 fetch('../../api/company/delete.php', {
                     method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
                     body: JSON.stringify({ societe_id: companyId })
                 })
                 .then(response => response.json())

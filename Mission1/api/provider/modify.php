@@ -11,6 +11,8 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
 // Récupérer les données de la requête
 $data = getBody();
 

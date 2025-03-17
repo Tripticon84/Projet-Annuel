@@ -10,8 +10,10 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
-$data = getBody();
+acceptedTokens(true, true, false, false);
 
+
+$data = getBody();
 
 if (validateMandatoryParams($data, ['nom', 'prenom', 'username', 'role', 'email', 'password', 'telephone', 'id_societe'])) {
 

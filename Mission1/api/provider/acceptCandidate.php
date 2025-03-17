@@ -12,14 +12,11 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 $data = getBody();
 
-// // Vérification du token d'authentification
-// if (!isset($_GET['token'])) {
-//     returnError(401, 'Token not provided');
-//     return;
-// }
-// tokenVerification($_GET['token']);
 
 if (validateMandatoryParams($data, ['est_candidat','prestataire_id'])) {
     // Vérification si l'admin existe déjà

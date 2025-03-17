@@ -132,9 +132,10 @@ include_once "../includes/head.php";
                 providerData.est_candidat = document.getElementById('estCandidat').checked ? 1 : 0;
 
                 fetch('../../api/provider/create.php', {
-                    method: 'POST',
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
                     },
                     body: JSON.stringify(providerData),
                 })

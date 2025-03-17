@@ -10,6 +10,9 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 $data = getBody();
 
 $id = $data['id'];

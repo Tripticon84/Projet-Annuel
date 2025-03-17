@@ -9,6 +9,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, true, true);
+
+
 $name = '';
 $limit = null;
 $offset = null;

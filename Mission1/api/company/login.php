@@ -30,10 +30,20 @@ if (!$companyId) {
     returnError(404, 'company not found');
 }
 
-$result = setCompanySession($companyId);
+$token = date('d/M/Y h:m:s') . '_' . $companyId . '_' . generateRandomString(100);
+$tokenHashed = hash('md5', $token);
 
-if (!$result) {
+$res = setCompanySession($companyId, $tokenHashed);
+if (!$res) {
     returnError(500, 'An error has occurred');
 }
 
-returnSuccess(['societe_id' => $companyId]);
+returnSuccess(
+    [
+        'token' => $tokenHashed,
+        'date' => date_add(
+            date_create("now", new DateTimeZone('Europe/Paris')),
+            DateInterval::createFromDateString('3 hour')
+        )
+    ]
+);

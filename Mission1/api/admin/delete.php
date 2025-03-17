@@ -11,14 +11,7 @@ if (!methodIsAllowed('delete')) {
 
 $data = getBody();
 
-
-
-// Vérification du token d'authentification
-if (!isset($_GET['token'])) {
-    returnError(401, 'Token not provided');
-    return;
-}
-tokenVerification($_GET['token']);
+acceptedTokens(true, false, false, false);
 
 
 if (!isset($data['id'])) {

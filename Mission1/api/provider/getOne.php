@@ -10,6 +10,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, true, true);
+
+
 // Vérifier si l'ID est fourni
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     returnError(400, 'Provider ID is required');

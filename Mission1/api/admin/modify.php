@@ -14,12 +14,7 @@ if (!methodIsAllowed('update')) {
 // Récupérer les données de la requête
 $data = getBody();
 
-// Vérification du token d'authentification
-if (!isset($_GET['token'])) {
-    returnError(401, 'Token not provided');
-    return;
-}
-tokenVerification($_GET['token']);
+acceptedTokens(true, false, false, false);
 
 
 // Vérifier si l'ID est présent

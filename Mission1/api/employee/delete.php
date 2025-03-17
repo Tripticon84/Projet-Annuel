@@ -9,6 +9,8 @@ if (!methodIsAllowed('delete')) {
     return;
 }
 
+acceptedTokens(true, true, false, false);
+
 $data = getBody();
 
 if (!isset($data['id'])) {
@@ -31,5 +33,3 @@ if ($deleted) {
 } else {
     returnError(500, 'Failed to delete employee');
 }
-
-

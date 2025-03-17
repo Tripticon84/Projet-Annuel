@@ -9,6 +9,9 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 $data = getBody();
 $question = $data['question'];
 $answer = $data['answer'];

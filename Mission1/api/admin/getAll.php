@@ -9,7 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-
+acceptedTokens(true, false, false, false);
 
 $username = '';
 $limit = null;

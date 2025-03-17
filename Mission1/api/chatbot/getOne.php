@@ -9,12 +9,8 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-// // Vérification du token d'authentification
-// if (!isset($_GET['token'])) {
-//     returnError(401, 'Token not provided');
-//     return;
-// }
-// tokenVerification($_GET['token']);
+acceptedTokens(true, false, false, false);
+
 
 // Vérification de l'ID du chatbot
 if (!isset($_GET['chatbot_id']) || empty($_GET['chatbot_id'])) {

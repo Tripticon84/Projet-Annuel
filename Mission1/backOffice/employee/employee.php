@@ -198,7 +198,6 @@ if (!$employeeStats) {
         </div>
     </div>
     </div>
-
     <script>
         // Fetch Employee List
         document.addEventListener('DOMContentLoaded', function() {
@@ -226,7 +225,11 @@ if (!$employeeStats) {
                 url += '&username=' + encodeURIComponent(username);
             }
 
-            fetch(url)
+            fetch(url, {
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Erreur lors de la récupération des employés');
@@ -240,31 +243,31 @@ if (!$employeeStats) {
                         data.forEach(employee => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
-                                <td>${employee.collaborateur_id}</td>
-                                <td>
-                                    <h6 class="mb-0">${employee.nom} ${employee.prenom}</h6>
-                                </td>
-                                <td>${employee.username}</td>
-                                <td>${employee.email || '-'}</td>
-                                <td>${employee.role || '-'}</td>
-                                <td>${employee.telephone || '-'}</td>
-                                <td>${employee.id_societe || '-'}</td>
-                                <td>${new Date(employee.date_creation).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) || '-'}</td>
-                                <td>${new Date(employee.date_activite).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) || '-'}</td>
-                                <td class="text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="profil.php?id=${employee.collaborateur_id}"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
-                                            <li><a class="dropdown-item" href="modify.php?id=${employee.collaborateur_id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteEmployee(${employee.collaborateur_id}); return false;"><i class="fas fa-user-slash me-2"></i>Supprimer</a></li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            `;
+                            <td>${employee.collaborateur_id}</td>
+                            <td>
+                                <h6 class="mb-0">${employee.nom} ${employee.prenom}</h6>
+                            </td>
+                            <td>${employee.username}</td>
+                            <td>${employee.email || '-'}</td>
+                            <td>${employee.role || '-'}</td>
+                            <td>${employee.telephone || '-'}</td>
+                            <td>${employee.id_societe || '-'}</td>
+                            <td>${new Date(employee.date_creation).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) || '-'}</td>
+                            <td>${new Date(employee.date_activite).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) || '-'}</td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="profil.php?id=${employee.collaborateur_id}"><i class="fas fa-eye me-2"></i>Voir profil</a></li>
+                                        <li><a class="dropdown-item" href="modify.php?id=${employee.collaborateur_id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteEmployee(${employee.collaborateur_id}); return false;"><i class="fas fa-user-slash me-2"></i>Supprimer</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        `;
                             employeeList.appendChild(row);
                         });
 
@@ -303,6 +306,7 @@ if (!$employeeStats) {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
                         },
                         body: JSON.stringify({
                             id: employeeId
@@ -328,8 +332,6 @@ if (!$employeeStats) {
                     });
             }
         }
-
-
     </script>
 </body>
 

@@ -9,6 +9,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, false, false);
+
+
 $idSociete = intval($_GET['societe_id']);
 $Employees = getSocietyEmployees($idSociete);
 

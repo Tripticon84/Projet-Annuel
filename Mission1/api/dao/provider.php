@@ -3,15 +3,23 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/hashPassword.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 
-function createProvider(string $username, string $password)
+
+function createProvider($email, $nom, $prenom, $type, $description, $tarif, $date_debut_disponibilite, $date_fin_disponibilite, $est_candidat, $password)
 {
-    $password = hashPassword($password);
     $db = getDatabaseConnection();
-    $sql = "INSERT INTO admin (username, password) VALUES (:username, :password)";
+    $sql = "INSERT INTO prestataire (email, nom, prenom, type, description, tarif, date_debut_disponibilite, date_fin_disponibilite, est_candidat, password) VALUES (:email, :nom, :prenom, :type, :description, :tarif, :date_debut_disponibilite, :date_fin_disponibilite, :est_candidat, :password)";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
-        'username' => $username,
-        'password' => $password
+        'email' => $email,
+        'nom' => $nom,
+        'prenom' => $prenom,
+        'type' => $type,
+        'description' => $description,
+        'tarif' => $tarif,
+        'date_debut_disponibilite' => $date_debut_disponibilite,
+        'date_fin_disponibilite' => $date_fin_disponibilite,
+        'est_candidat' => $est_candidat,
+        'password' => hashPassword($password)
     ]);
     if ($res) {
         return $db->lastInsertId();
@@ -239,6 +247,64 @@ function getAllActivities(int $limit = null, int $offset = null, $providerId)  {
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+/* Authentification */
+
+function findProviderByCredentials($email, $password)
+{
+    $connection = getDatabaseConnection();
+    $hashedPassword = hashPassword($password);
+    $sql = "SELECT prestataire_id FROM prestataire WHERE email = :email AND password = :password";
+    $query = $connection->prepare($sql);
+    $res = $query->execute([
+        'email' => $email,
+        'password' => $hashedPassword
+    ]);
+    if ($res) {
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function setProviderSession($id, $token) {
+    $connection = getDatabaseConnection();
+    // Ajouter les colonnes token et expiration à la table prestataire si elles n'existent pas
+    $sql = "UPDATE prestataire SET token = :token, expiration = DATE_ADD(NOW(), INTERVAL 2 HOUR) WHERE prestataire_id = :id";
+    $query = $connection->prepare($sql);
+    $res = $query->execute([
+        'id' => $id,
+        'token' => $token
+    ]);
+    if ($res) {
+        return $query->rowCount();
+    }
+    return null;
+}
+
+function getProviderExpirationByToken($token) {
+    $connection = getDatabaseConnection();
+    $sql = "SELECT expiration FROM prestataire WHERE token = :token";
+    $query = $connection->prepare($sql);
+    $res = $query->execute([
+        'token' => $token
+    ]);
+    if ($res) {
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getProviderByToken($token)
+{
+    $connection = getDatabaseConnection();
+    $sql = "SELECT prestataire_id, nom, prenom, email, type FROM prestataire WHERE token = :token";
+    $query = $connection->prepare($sql);
+    $res = $query->execute(['token' => $token]);
+    if ($res) {
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
     return null;
 }

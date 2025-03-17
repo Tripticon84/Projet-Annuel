@@ -9,6 +9,8 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, false, false);
+
 $idSociete = intval($_GET['societe_id']);
 $is_contract = false;
 $company = getSocietyById($idSociete);

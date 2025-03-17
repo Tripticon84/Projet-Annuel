@@ -2,6 +2,7 @@
 $title = "Creation des Administrateurs";
 include_once "../includes/head.php";
 ?>
+
 <body class="container mt-5">
     <a href="admin.php" class="btn btn-secondary mb-3">&larr; Retour</a>
     <div class="card p-4 shadow-sm">
@@ -23,40 +24,50 @@ include_once "../includes/head.php";
     </div>
 
     <script>
-        document.getElementById('adminForm').addEventListener('submit', function(event) {  //Ajoute un écouteur d'événements sur le formulaire qui s'exécute lorsque l'utilisateur le soumet.
-            event.preventDefault();  //Empêche le rechargement de la page, qui est le comportement par défaut d'un formulaire HTML.
+        document.getElementById('adminForm').addEventListener('submit', function(event) { //Ajoute un écouteur d'événements sur le formulaire qui s'exécute lorsque l'utilisateur le soumet.
+            event.preventDefault(); //Empêche le rechargement de la page, qui est le comportement par défaut d'un formulaire HTML.
 
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const responseMessage = document.getElementById('responseMessage');
 
-            console.log("Envoi des données :", { username, password }); // Log the data being sent
+            console.log("Envoi des données :", {
+                username,
+                password
+            }); // Log the data being sent
 
             fetch('../../api/admin/create.php', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Réponse JSON :", data);
-                if (data.id) {
-                    responseMessage.textContent = "Admin créé avec succès. ID: " + data.id;
-                    responseMessage.classList.add("text-success");
-                    responseMessage.classList.remove("text-danger");
-                } else {
-                    responseMessage.textContent = "Erreur: " + data.error;
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Réponse JSON :", data);
+                    if (data.id) {
+                        responseMessage.textContent = "Admin créé avec succès. ID: " + data.id;
+                        responseMessage.classList.add("text-success");
+                        responseMessage.classList.remove("text-danger");
+                    } else {
+                        responseMessage.textContent = "Erreur: " + data.error;
+                        responseMessage.classList.add("text-danger");
+                        responseMessage.classList.remove("text-success");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur fetch :", error); // Affiche l'erreur dans la console
+                    responseMessage.textContent = error.message;
                     responseMessage.classList.add("text-danger");
                     responseMessage.classList.remove("text-success");
-                }
-            })
-            .catch(error => {
-                console.error("Erreur fetch :", error); // Affiche l'erreur dans la console
-                responseMessage.textContent =  error.message;
-                responseMessage.classList.add("text-danger");
-                responseMessage.classList.remove("text-success");
-            });
+                });
         });
     </script>
 </body>
+
 </html>

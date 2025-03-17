@@ -11,6 +11,7 @@ if (!$admin_id) {
     exit;
 }
 ?>
+
 <body class="container mt-5">
     <a href="admin.php" class="btn btn-secondary mb-3">&larr; Retour</a>
     <div class="card p-4 shadow-sm">
@@ -45,7 +46,11 @@ if (!$admin_id) {
             console.log("Chargement des données pour l'admin ID:", adminId);
 
             // Appel API pour récupérer les données de l'administrateur
-            fetch(`../../api/admin/read.php?id=${adminId}`)
+            fetch(`../../api/admin/read.php?id=${adminId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Erreur réseau: ' + response.status);
@@ -94,45 +99,51 @@ if (!$admin_id) {
             } else {
                 console.log("Mise à jour sans changer le mot de passe");
             }
-
-            console.log("Envoi des données pour mise à jour:", { id: adminId, username });
+            console.log("Envoi des données pour mise à jour:", {
+                id: adminId,
+                username
+            });
 
             // Appel API pour mettre à jour l'administrateur
             fetch('../../api/admin/modify.php', {
-                method: 'PATCH', // Ou PATCH selon votre API
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updateData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erreur reseau: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("Réponse de l'API:", data);
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(updateData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur reseau: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Réponse de l'API:", data);
 
-                // Afficher un message de succès ou d'erreur
-                if (data.success) {
-                    responseMessage.textContent = "Administrateur modifié avec succès";
-                    responseMessage.classList.add("text-success");
-                    responseMessage.classList.remove("text-danger");
+                    // Afficher un message de succès ou d'erreur
+                    if (data.success) {
+                        responseMessage.textContent = "Administrateur modifié avec succès";
+                        responseMessage.classList.add("text-success");
+                        responseMessage.classList.remove("text-danger");
 
-                    // Redirection optionnelle
-                    // setTimeout(() => window.location.href = 'admin.php', 1500);
-                } else {
-                    responseMessage.textContent = "Erreur: " + (data.error || "Échec de la mise à jour");
+                        // Redirection optionnelle
+                        // setTimeout(() => window.location.href = 'admin.php', 1500);
+                    } else {
+                        responseMessage.textContent = "Erreur: " + (data.error || "Échec de la mise à jour");
+                        responseMessage.classList.add("text-danger");
+                        responseMessage.classList.remove("text-success");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur lors de la mise à jour:", error);
+                    responseMessage.textContent = "Erreur: " + error.message;
                     responseMessage.classList.add("text-danger");
                     responseMessage.classList.remove("text-success");
-                }
-            })
-            .catch(error => {
-                console.error("Erreur lors de la mise à jour:", error);
-                responseMessage.textContent = "Erreur: " + error.message;
-                responseMessage.classList.add("text-danger");
-                responseMessage.classList.remove("text-success");
-            });
+                });
         });
     </script>
 </body>
+
 </html>

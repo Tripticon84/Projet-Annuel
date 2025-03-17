@@ -11,6 +11,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 // Récupération de l'ID depuis l'URL
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     returnError(400, 'ID parameter is required');

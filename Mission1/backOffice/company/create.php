@@ -70,7 +70,10 @@ include_once "../includes/head.php";
                 };
                 fetch('../../api/company/create.php', {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
                     body: JSON.stringify(formData)
                 })
                 .then(response => response.json())

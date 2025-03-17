@@ -9,6 +9,9 @@ if (!methodIsAllowed('delete')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 $data = getBody();
 
 if (!validateMandatoryParams($data, ['chatbot_id'])) {

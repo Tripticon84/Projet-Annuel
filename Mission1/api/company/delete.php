@@ -10,6 +10,9 @@ if (!methodIsAllowed('delete')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 $data = getBody();
 $id = $data['societe_id'];
 

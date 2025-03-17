@@ -70,7 +70,11 @@ include_once "../includes/head.php";
     </div>
     <script>
         // Fetch Admin List
-        fetch('../../api/admin/getAll.php')
+        fetch('../../api/admin/getAll.php', {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 const adminList = document.getElementById('adminList');
@@ -98,7 +102,7 @@ include_once "../includes/head.php";
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="modify.php?id=${admin.id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
-                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteAdmin(${admin.id}); return false;"><i class="fas fa-trash me-2"></i>Supprimer</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteAdmin(${admin.id})"><i class="fas fa-trash me-2"></i>Supprimer</a></li>
                                 </ul>
                             </div>
                         </td>
@@ -108,13 +112,13 @@ include_once "../includes/head.php";
             })
             .catch(error => console.error('Erreur lors de la récupération des administrateurs:', error));
 
-        // Function to delete admin with POST request
         function deleteAdmin(adminId) {
             if (confirm('Êtes-vous sûr de vouloir supprimer cet administrateur ?')) {
                 fetch('../../api/admin/delete.php', {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
                         },
                         body: JSON.stringify({
                             id: adminId

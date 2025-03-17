@@ -121,7 +121,11 @@ include_once "../includes/head.php";
             }
 
             // Récupération des données du prestataire
-            fetch(`../../api/provider/getOne.php?id=${providerId}`)
+            fetch(`../../api/provider/getOne.php?id=${providerId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Prestataire non trouvé');
@@ -184,6 +188,7 @@ include_once "../includes/head.php";
                         method: 'PATCH', // Utiliser PATCH pour les mises à jour partielles
                         headers: {
                             'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
                         },
                         body: JSON.stringify(providerData),
                     })
