@@ -58,6 +58,27 @@ session_start();
 $_SESSION["admin_id"] = $result["admin_id"];
 $_SESSION["username"] = $result["username"];
 
+// Login dans l'api pour récupérer le token
+$postData = [
+    'username' => $username,
+    'password' => $_POST['password']
+];
+$ch = curl_init('localhost/api/admin/login.php');
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$data = json_decode($response, true);
+if (isset($data['token'])) {
+    $_SESSION['token'] = $data['token'];
+    // Set a cookie 'token' with an expiration time of 1 hour from now (3600 seconds)
+    $expirationTimestamp = strtotime($data['date']['date']);
+    setcookie('token', $data['token'], $expirationTimestamp, '/');
+}
+
 // Redirection vers la page d'accueil
 header("location:../home.php");
 exit();

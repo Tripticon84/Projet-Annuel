@@ -24,6 +24,20 @@ if (!isset($_SESSION["admin_id"]) && $title != "Connexion") {
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+    <!-- Récupérer le token JWT depuis le cookie -->
+    <script>
+        const getToken = () => {
+            const cookies = document.cookie.split('; ');
+            const tokenCookie = cookies.find(row => row.startsWith('token='));
+            return tokenCookie ? tokenCookie.split('=')[1] : null;
+        };
+
+        if (getToken() === null && !document.title.includes("Connexion")) {
+            alert("Vous devez vous connecter pour accéder à cette page.");
+            window.location.href = "/backOffice/login/logout.php";
+        }
+
+    </script>
     <style>
         :root {
             --primary-color: #3a86ff;
