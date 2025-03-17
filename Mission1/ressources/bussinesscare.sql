@@ -36,6 +36,7 @@ CREATE TABLE `activite` (
   `date` date DEFAULT NULL,
   `lieu` varchar(255)  DEFAULT NULL,
   `id_devis` int(11) DEFAULT NULL,
+  `desactivate` boolean DEFAULT 0,
   `id_prestataire` int(11)  DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
