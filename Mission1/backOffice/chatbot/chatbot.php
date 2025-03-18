@@ -101,9 +101,14 @@ include_once "../includes/head.php";
         function fetchChatbotQuestions() {
             const chatbotList = document.getElementById('chatbotList');
             chatbotList.innerHTML = '<tr><td colspan="4" class="text-center">Chargement des questions...</td></tr>';
-
             // Appeler l'API pour récupérer toutes les questions
-            fetch('../../api/chatbot/getAll.php')
+            fetch('../../api/chatbot/getAll.php', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -151,11 +156,11 @@ include_once "../includes/head.php";
             const question = document.getElementById('questionInput').value.trim();
             const answer = document.getElementById('answerInput').value.trim();
             if (!question || !answer) return;
-
             fetch('../../api/chatbot/create.php', {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
                     },
                     body: JSON.stringify({
                         question,
@@ -185,7 +190,8 @@ include_once "../includes/head.php";
                 fetch('../../api/chatbot/delete.php', {
                         method: 'DELETE',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
                         },
                         body: JSON.stringify({
                             chatbot_id
@@ -233,11 +239,11 @@ include_once "../includes/head.php";
             const question = document.getElementById('editQuestionInput').value.trim();
             const answer = document.getElementById('editAnswerInput').value.trim();
             if (!question || !answer) return;
-
             fetch('../../api/chatbot/update.php', {
                     method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
                     },
                     body: JSON.stringify({
                         chatbot_id,
