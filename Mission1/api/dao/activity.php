@@ -66,10 +66,7 @@ function updateActivity($activite_id, $nom = null, $type = null, $date = null, $
         $params['date'] = $date;
     }
 
-    if ($id_prestataire !== null) {
-        $setFields[] = "id_prestataire = :id_prestataire";
-        $params['id_prestataire'] = $id_prestataire;
-    }
+
 
     if ($place !== null) {
         $setFields[] = "lieu = :lieu";

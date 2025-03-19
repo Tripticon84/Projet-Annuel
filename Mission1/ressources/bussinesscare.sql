@@ -636,6 +636,9 @@ INSERT INTO collaborateur (nom, prenom, username, role, email, password, telepho
 ('Durand', 'Michel', 'mdurand', 'directeur', 'm.durand@bnpparibas.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0667890123', 4, NOW(), '2025-03-01'),
 ('Lefebvre', 'Emma', 'elefebvre', 'employe', 'e.lefebvre@loreal.fr', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0678901234', 5, NOW(), '2025-03-15');
 
+INSERT INTO collaborateur (nom, prenom, username, role, email, password, telephone, id_societe, date_creation, date_activite, desactivate)
+VALUES ('Renaud', 'Marcel', 'mrenaud', 'employe', 'm.renaud@renault.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0688888888', 1, NOW(), '2025-04-01', 1);
+
 -- Devis pour différentes entreprises
 INSERT INTO devis (date_debut, date_fin, montant, is_contract, id_societe) VALUES
 ('2025-03-15', '2025-06-15',  7500.00, 1, 1),
@@ -692,6 +695,9 @@ INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire) VALUES
 ('Consultation nutrition', 'Entretien individuel', '2025-03-25', 'Bureau 302 - Carrefour Massy', 3, 4),
 ('Team building nature', 'Sortie d\'équipe', '2025-06-05', 'Forêt de Fontainebleau', 4, 3),
 ('Atelier sommeil', 'Conférence', '2025-04-15', 'Auditorium - L\'Oréal Paris', 5, 2);
+
+INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire, desactivate)
+VALUES ('Atelier test', 'test', '2025-06-30', 'Test location', 1, 1, 1);
 
 -- Évaluations des collaborateurs
 INSERT INTO evaluation (note, commentaire, id_collaborateur) VALUES
