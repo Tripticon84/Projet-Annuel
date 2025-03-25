@@ -42,7 +42,6 @@ CREATE TABLE `activite` (
   `nom` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
   `date` date DEFAULT NULL,
-  `lieu` varchar(255)  DEFAULT NULL,
   `id_devis` int(11) DEFAULT NULL,
   `desactivate` boolean DEFAULT 0,
   `id_prestataire` int(11)  DEFAULT NULL,
@@ -721,13 +720,13 @@ INSERT INTO salon (nom, description) VALUES
 ('Méditation et relaxation', 'Discussions sur les techniques de détente et de méditation'),
 ('Équilibre vie pro/perso', 'Échanges sur la conciliation vie professionnelle et personnelle');
 
-INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire, id_lieu) VALUES
-('Atelier gestion du stress', 'Atelier collectif', '2025-04-20', 'Salle de conférence A - Siège Renault', 1, 1, 1),
-('Séances de yoga', 'Cours collectif', '2025-05-10', 'Salle de détente - AXA', 2, 5, 2),
-('Consultation nutrition', 'Entretien individuel', '2025-03-25', 'Bureau 302 - Carrefour Massy', 3, 4, 3),
-('Team building nature', 'Sortie d\'équipe', '2025-06-05', 'Forêt de Fontainebleau', 4, 3, 4),
-('Atelier sommeil', 'Conférence', '2025-04-15', 'Auditorium - L\'Oréal Paris', 5, 2, 5),
-('Atelier test', 'test', '2025-06-30', 'Test location', 1, 1, 1);
+INSERT INTO activite (nom, type, date, id_devis, id_prestataire, id_lieu) VALUES
+('Atelier gestion du stress', 'Atelier collectif', '2025-04-20', 1, 1, 1),
+('Séances de yoga', 'Cours collectif', '2025-05-10', 2, 5, 2),
+('Consultation nutrition', 'Entretien individuel', '2025-03-25', 3, 4, 3),
+('Team building nature', 'Sortie d\'équipe', '2025-06-05', 4, 3, 4),
+('Atelier sommeil', 'Conférence', '2025-04-15', 5, 2, 5),
+('Atelier test', 'test', '2025-06-30', 1, 1, 1);
 
 -- Évaluations des collaborateurs
 INSERT INTO evaluation (note, commentaire, id_collaborateur) VALUES
