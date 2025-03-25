@@ -1,4 +1,6 @@
 <?php
+require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 
 function createAssociation($name, $description)
 {

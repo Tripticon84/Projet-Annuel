@@ -3,6 +3,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/activity.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/estimate.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/provider.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/place.php';
 
 header('Content-Type: application/json');
 
@@ -38,14 +39,21 @@ if (validateMandatoryParams($data, ['nom', 'type', 'date', 'lieu', 'id_devis','i
         return;
     }
 
+    $place = getPlaceById($data['id_lieu']);
+    if (!$place) {
+        returnError(404, 'Place not found');
+        return;
+    }
+
     $name = $data['nom'];
     $type = $data['type'];
     $date = $data['date'];
     $place = $data['lieu'];
     $id_devis = $data['id_devis'];
     $id_prestataire = $data['id_prestataire'];
+    $place = $data['id_lieu'] ;
 
-    $newActivityId = createActivity($name, $type, $date, $place, $id_devis, $id_prestataire);
+    $newActivityId = createActivity($name, $type, $date, $place, $id_devis, $id_prestataire, $place);
 
     if (!$newActivityId) {
         // Log the error for debugging

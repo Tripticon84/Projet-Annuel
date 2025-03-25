@@ -3,18 +3,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 
 
-function createActivity(string $nom,string $type,$date,string $place,int $id_devis,int $id_prestataire)
+function createActivity(string $nom,string $type,$date,int $id_devis,int $id_prestataire,int $id_lieu)
 {
     $db = getDatabaseConnection();
-    $sql = "INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire) VALUES (:nom, :type, :date, :lieu, :id_devis, :id_prestataire)";
+    $sql = "INSERT INTO activite (nom, type, date, id_devis, id_prestataire, id_lieu) VALUES (:nom, :type, :date, :id_devis, :id_prestataire, :id_lieu)";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         'nom' => $nom,
         'type' => $type,
         'date' => $date,
-        'lieu' => $place,
         'id_devis' => $id_devis,
-        'id_prestataire' => $id_prestataire
+        'id_prestataire' => $id_prestataire,
+        'id_lieu' => $id_lieu
     ]);
     if ($res) {
         return $db->lastInsertId();
@@ -45,52 +45,53 @@ function deleteEmployee(int $id)
     return $res;
 }
 
-function updateActivity($activite_id, $nom = null, $type = null, $date = null, $id_prestataire, $place = null, $id_devis = null, $desactivate = null)
+function updateActivity(string $nom = null, string $type = null, $date = null, $id_prestataire = null, $id_devis = null, int $activite_id, $desactivate = null, $id_lieu = null)
 {
     $db = getDatabaseConnection();
-    $params = ['id' => $activite_id];
-    $setFields = [];
-
+    $sql = "UPDATE activite SET ";
+    $params = [
+        "id" => $activite_id
+    ];
+    $coma = "";
     if ($nom !== null) {
-        $setFields[] = "nom = :nom";
+        $sql .= "nom = :nom";
         $params['nom'] = $nom;
+        $coma = ",";
     }
-
     if ($type !== null) {
-        $setFields[] = "type = :type";
+        $sql .= $coma . "type = :type";
         $params['type'] = $type;
+        $coma = ",";
     }
-
     if ($date !== null) {
-        $setFields[] = "date = :date";
+        $sql .= $coma . "date = :date";
         $params['date'] = $date;
+        $coma = ",";
     }
-
-
-
-    if ($place !== null) {
-        $setFields[] = "lieu = :lieu";
-        $params['lieu'] = $place;
+    if ($id_prestataire !== null) {
+        $sql .= $coma . "id_prestataire = :id_prestataire";
+        $params['id_prestataire'] = $id_prestataire;
+        $coma = ",";
     }
-
     if ($id_devis !== null) {
-        $setFields[] = "id_devis = :id_devis";
+        $sql .= $coma . "id_devis = :id_devis";
         $params['id_devis'] = $id_devis;
+        $coma = ",";
     }
-
     if ($desactivate !== null) {
-        $setFields[] = "desactivate = :desactivate";
+        $sql .= $coma . "desactivate = :desactivate";
         $params['desactivate'] = $desactivate;
     }
-
-    if (empty($setFields)) {
-        return 0; // Rien à mettre à jour
+    if ($id_lieu !== null) {
+        $sql .= $coma . "id_lieu = :id_lieu";
+        $params['id_lieu'] = $id_lieu;
     }
 
-    $sql = "UPDATE activite SET " . implode(", ", $setFields) . " WHERE activite_id = :id";
+    
+    $sql .= " WHERE activite_id = :id";
+
     $stmt = $db->prepare($sql);
     $res = $stmt->execute($params);
-
     if ($res) {
         return $stmt->rowCount();
     }
@@ -100,7 +101,7 @@ function updateActivity($activite_id, $nom = null, $type = null, $date = null, $
 function getActivityById($id)
 {
     $connection = getDatabaseConnection();
-    $sql = "SELECT activite_id, nom, type, date, id_prestataire, lieu, id_devis FROM activite WHERE activite_id = :id";
+    $sql = "SELECT activite_id, nom, type, date, id_prestataire, id_devis,id_lieu FROM activite WHERE activite_id = :id";
     $query = $connection->prepare($sql);
     $res = $query->execute(['id' => $id]);
     if ($res) {
@@ -109,18 +110,11 @@ function getActivityById($id)
     return null;
 }
 
-function getAllActivity($limit = null, $offset = null, $nom = null)
+function getAllActivity($limit = null, $offset = null)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT activite_id, nom, type, date, id_prestataire, lieu, id_devis FROM activite WHERE 1=1";
+    $sql = "SELECT activite_id, nom, type, date, id_prestataire, id_devis, id_lieu FROM activite";
     $params = [];
-
-    // Ajout du filtre par nom si spécifié
-    if ($nom !== null && $nom !== '') {
-        $sql .= " AND nom LIKE :nom";
-        $params['nom'] = "%" . $nom . "%";
-    }
-
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
         $sql .= " LIMIT " . (string) $limit;
@@ -131,10 +125,12 @@ function getAllActivity($limit = null, $offset = null, $nom = null)
     }
 
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute($params);
+    $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return null;
 }
+
+

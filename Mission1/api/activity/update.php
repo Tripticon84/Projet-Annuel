@@ -32,13 +32,13 @@ if (!$existingActivity) {
 $nom = isset($data['nom']) ? $data['nom'] : null;
 $type = isset($data['type']) ? $data['type'] : null;
 $date = isset($data['date']) ? $data['date'] : null;
-$lieu = isset($data['lieu']) ? $data['lieu'] : null; // Correction de 'place' à 'lieu' pour correspondre au paramètre SQL
 $id_devis = isset($data['id_devis']) ? $data['id_devis'] : null;
 $id_prestataire = isset($data['id_prestataire']) ? $data['id_prestataire'] : null;
 $desactivate = isset($data['desactivate']) ? $data['desactivate'] : null;
+$id_lieu = isset($data['id_lieu']) ? $data['id_lieu'] : null;
 
 // Mise à jour en utilisant les bons noms de variables
-$updateResult = updateActivity($activityId, $nom, $type, $date, $lieu, $id_prestataire, $id_devis, $desactivate);
+$updateResult = updateActivity( $nom, $type, $date, $id_prestataire, $id_devis, $activityId, $desactivate, $id_lieu);
 
 if ($updateResult) {
     echo json_encode([
