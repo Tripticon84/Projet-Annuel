@@ -24,7 +24,7 @@ function getPlaceById(int $id)
     return $stmt->fetch();
 }
 
-function getAllAdmin(string $adress = "", int $limit = null, int $offset = null)        //tout les params sont optionnels: le premier pour filtrer par username, le deuxième pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
+function getAllPlace(string $adress = "", int $limit = null, int $offset = null)        //tout les params sont optionnels: le premier pour filtrer par username, le deuxième pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT lieu_id, adresse, ville, code_postal FROM lieu";
@@ -54,33 +54,36 @@ function getAllAdmin(string $adress = "", int $limit = null, int $offset = null)
 }
 
 
-function updatePlace(int $id, string $adress = null, string $city = null, string $postalCode = null)
+function updatePlace( $id, ?string $adress = null, ?string $city = null, ?int $postalCode = null)
 {
     $db = getDatabaseConnection();
-    $sql = "UPDATE lieu SET";
-    $params = [];
-    $coma = "";
+    $params = ['id' => $id];
+    $setFields = [];
 
     if ($adress !== null) {
-        $sql .= $coma . "adresse = :adress";
+        $setFields[] = "adresse = :adress";
         $params['adress'] = $adress;
-        $coma = ",";
     }
+
     if ($city !== null) {
-        $sql .= $coma . "ville = :city";
+        $setFields[] = "ville = :city";
         $params['city'] = $city;
-        $coma = ",";
     }
+
     if ($postalCode !== null) {
-        $sql .= $coma . "code_postal = :postal_code";
-        $params['postal_code'] = $postalCode;
+        $setFields[] = "code_postal = :postalCode";
+        $params['postalCode'] = $postalCode;
+    }
+
+    if (empty($setFields)) {
+        return 0; // Rien à mettre à jour
     }
 
     
-    $sql .= " WHERE lieu_id = :id";
-
+    $sql = "UPDATE lieu SET " . implode(", ", $setFields) . " WHERE lieu_id = :id";
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute(array_merge($params, ['id' => $id]));
+    $res = $stmt->execute($params);
+
     if ($res) {
         return $stmt->rowCount();
     }

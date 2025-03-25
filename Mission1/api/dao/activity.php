@@ -47,55 +47,60 @@ function deleteEmployee(int $id)
 
 function updateActivity(string $nom = null, string $type = null, $date = null, $id_prestataire = null, $id_devis = null, int $activite_id, $desactivate = null, $id_lieu = null)
 {
+    
     $db = getDatabaseConnection();
-    $sql = "UPDATE activite SET ";
-    $params = [
-        "id" => $activite_id
-    ];
-    $coma = "";
+    $params = ['id' => $activite_id];
+    $setFields = [];
+
     if ($nom !== null) {
-        $sql .= "nom = :nom";
+        $setFields[] = "nom = :nom";
         $params['nom'] = $nom;
-        $coma = ",";
     }
+
     if ($type !== null) {
-        $sql .= $coma . "type = :type";
+        $setFields[] = "type = :type";
         $params['type'] = $type;
-        $coma = ",";
     }
+
     if ($date !== null) {
-        $sql .= $coma . "date = :date";
+        $setFields[] = "date = :date";
         $params['date'] = $date;
-        $coma = ",";
     }
+
     if ($id_prestataire !== null) {
-        $sql .= $coma . "id_prestataire = :id_prestataire";
+        $setFields[] = "id_prestataire = :id_prestataire";
         $params['id_prestataire'] = $id_prestataire;
-        $coma = ",";
     }
+
     if ($id_devis !== null) {
-        $sql .= $coma . "id_devis = :id_devis";
+        $setFields[] = "id_devis = :id_devis";
         $params['id_devis'] = $id_devis;
-        $coma = ",";
     }
-    if ($desactivate !== null) {
-        $sql .= $coma . "desactivate = :desactivate";
-        $params['desactivate'] = $desactivate;
-    }
+
     if ($id_lieu !== null) {
-        $sql .= $coma . "id_lieu = :id_lieu";
+        $setFields[] = "id_lieu = :id_lieu";
         $params['id_lieu'] = $id_lieu;
     }
 
-    
-    $sql .= " WHERE activite_id = :id";
+    if ($desactivate !== null) {
+        $setFields[] = "desactivate = :desactivate";
+        $params['desactivate'] = $desactivate;
+    }
 
+    if (empty($setFields)) {
+        return 0; // Rien à mettre à jour
+    }
+
+    
+    $sql = "UPDATE activite SET " . implode(", ", $setFields) . " WHERE activite_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute($params);
+
     if ($res) {
         return $stmt->rowCount();
     }
     return null;
+
 }
 
 function getActivityById($id)
