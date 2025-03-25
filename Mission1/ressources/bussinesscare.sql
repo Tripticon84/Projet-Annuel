@@ -28,6 +28,14 @@ USE `bussinesscare`;
 --
 -- Structure de la table `activite`
 --
+CREATE TABLE `lieu`(
+  `lieu_id` int(11) NOT NULL,
+  `adresse` varchar(255) DEFAULT NULL,
+  `ville` varchar(255) DEFAULT NULL,
+  `code_postal` int(11) DEFAULT NULL
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 CREATE TABLE `activite` (
   `activite_id` int(11) NOT NULL,
@@ -37,7 +45,8 @@ CREATE TABLE `activite` (
   `lieu` varchar(255)  DEFAULT NULL,
   `id_devis` int(11) DEFAULT NULL,
   `desactivate` boolean DEFAULT 0,
-  `id_prestataire` int(11)  DEFAULT NULL
+  `id_prestataire` int(11)  DEFAULT NULL,
+  `id_lieu` int(11)  DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -166,7 +175,8 @@ CREATE TABLE `evenements` (
   `nom` varchar(255) DEFAULT NULL,
   `date` date DEFAULT NULL,
   `lieu` varchar(255) DEFAULT NULL,
-  `type` varchar(255) DEFAULT NULL
+  `type` varchar(255) DEFAULT NULL,
+  `id_association` int(11)  DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -289,20 +299,27 @@ CREATE TABLE `societe` (
   `password` varchar(255) DEFAULT NULL,
   `date_creation` datetime DEFAULT NULL,
   `token` varchar(255) DEFAULT NULL,
-  `expiration` datetime NULL
+  `expiration` datetime NULL,
+  `siret` int(11) NOT NULL,
+  `activate` boolean DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Index pour les tables déchargées
 --
-
+--
+-- Index pour la table `lieu`
+--
+ALTER TABLE `lieu`
+  ADD PRIMARY KEY (`lieu_id`);
 --
 -- Index pour la table `activite`
 --
 ALTER TABLE `activite`
   ADD PRIMARY KEY (`activite_id`),
   ADD KEY `id_devis` (`id_devis`),
-  ADD KEY `id_prestataire` (`id_prestataire`);
+  ADD KEY `id_prestataire` (`id_prestataire`),
+  ADD KEY `id_lieu` (`id_lieu`);
 
 --
 -- Index pour la table `admin`
@@ -361,7 +378,8 @@ ALTER TABLE `evaluation`
 -- Index pour la table `evenements`
 --
 ALTER TABLE `evenements`
-  ADD PRIMARY KEY (`evenement_id`);
+  ADD PRIMARY KEY (`evenement_id`),
+  ADD KEY `id_association`(`id_association`);
 
 --
 -- Index pour la table `facture`
@@ -428,7 +446,8 @@ ALTER TABLE `societe`
 --
 -- AUTO_INCREMENT pour les tables déchargées
 --
-
+ALTER TABLE `lieu`
+  MODIFY `lieu_id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT pour la table `activite`
 --
@@ -528,7 +547,8 @@ ALTER TABLE `societe`
 --
 ALTER TABLE `activite`
   ADD CONSTRAINT `activite_ibfk_1` FOREIGN KEY (`id_devis`) REFERENCES `devis` (`devis_id`),
-  ADD CONSTRAINT `activite_ibfk_2` FOREIGN KEY (`id_prestataire`) REFERENCES `prestataire` (`prestataire_id`);
+  ADD CONSTRAINT `activite_ibfk_2` FOREIGN KEY (`id_prestataire`) REFERENCES `prestataire` (`prestataire_id`),
+  ADD CONSTRAINT `activite_ibfk_3` FOREIGN KEY (`id_lieu`) REFERENCES `lieu` (`lieu_id`);
 
 
 --
@@ -536,6 +556,12 @@ ALTER TABLE `activite`
 --
 ALTER TABLE `autre_frais`
   ADD CONSTRAINT `autre_frais_ibfk_1` FOREIGN KEY (`id_facture`) REFERENCES `facture` (`facture_id`);
+
+--
+-- Contraintes pour la table `evenements`
+--
+ALTER TABLE `evenements`
+  ADD CONSTRAINT `evenements_ibfk_1` FOREIGN KEY (`id_association`) REFERENCES `association` (`association_id`);
 
 --
 -- Contraintes pour la table `collaborateur`
@@ -606,13 +632,20 @@ COMMIT;
 
 /* Ajout de données */
 
+INSERT INTO lieu (adresse, ville, code_postal) VALUES
+('13 Quai Alphonse Le Gallo', 'Boulogne-Billancourt', 92100),
+('25 Avenue Matignon', 'Paris', 75008),
+('93 Avenue de Paris', 'Massy', 91300),
+('16 Boulevard des Italiens', 'Paris', 75009),
+('14 Rue Royale', 'Paris', 75008);
+
 -- Sociétés (entreprises clients)
-INSERT INTO societe (nom, adresse, email, contact_person,telephone,password,date_creation) VALUES
-('Renault Group', '13 Quai Alphonse Le Gallo, 92100 Boulogne-Billancourt', 'contact@renault.com', 'Marie Dubois', '0123456789', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW()),
-('AXA Assurances', '25 Avenue Matignon, 75008 Paris', 'entreprises@axa.fr', 'Thomas Moreau', '0234567890', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW()),
-('Carrefour France', '93 Avenue de Paris, 91300 Massy', 'relations@carrefour.com', 'Sophie Lambert', '0345678901', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW()),
-('BNP Paribas', '16 Boulevard des Italiens, 75009 Paris', 'entreprise@bnpparibas.com', 'Philippe Martin', '0456789012', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW()),
-('LOréal Paris', '14 Rue Royale, 75008 Paris', 'contact@loreal.fr', 'Claire Lefevre', '0567890123', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW());
+INSERT INTO societe (nom, adresse, email, contact_person,telephone,password,date_creation,siret,activate) VALUES
+('Renault Group', '13 Quai Alphonse Le Gallo, 92100 Boulogne-Billancourt', 'contact@renault.com', 'Marie Dubois', '0123456789', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 33030',true),
+('AXA Assurances', '25 Avenue Matignon, 75008 Paris', 'entreprises@axa.fr', 'Thomas Moreau', '0234567890', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 44040',false),
+('Carrefour France', '93 Avenue de Paris, 91300 Massy', 'relations@carrefour.com', 'Sophie Lambert', '0345678901', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 44040',false),
+('BNP Paribas', '16 Boulevard des Italiens, 75009 Paris', 'entreprise@bnpparibas.com', 'Philippe Martin', '0456789012', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 44040',false),
+('LOréal Paris', '14 Rue Royale, 75008 Paris', 'contact@loreal.fr', 'Claire Lefevre', '0567890123', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 44040',false);
 
 -- Administrateurs système
 INSERT INTO admin (username, password, token, expiration) VALUES
@@ -688,16 +721,13 @@ INSERT INTO salon (nom, description) VALUES
 ('Méditation et relaxation', 'Discussions sur les techniques de détente et de méditation'),
 ('Équilibre vie pro/perso', 'Échanges sur la conciliation vie professionnelle et personnelle');
 
--- Activités bien-être
-INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire) VALUES
-('Atelier gestion du stress', 'Atelier collectif', '2025-04-20', 'Salle de conférence A - Siège Renault', 1, 1),
-('Séances de yoga', 'Cours collectif', '2025-05-10', 'Salle de détente - AXA', 2, 5),
-('Consultation nutrition', 'Entretien individuel', '2025-03-25', 'Bureau 302 - Carrefour Massy', 3, 4),
-('Team building nature', 'Sortie d\'équipe', '2025-06-05', 'Forêt de Fontainebleau', 4, 3),
-('Atelier sommeil', 'Conférence', '2025-04-15', 'Auditorium - L\'Oréal Paris', 5, 2);
-
-INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire, desactivate)
-VALUES ('Atelier test', 'test', '2025-06-30', 'Test location', 1, 1, 1);
+INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire, id_lieu) VALUES
+('Atelier gestion du stress', 'Atelier collectif', '2025-04-20', 'Salle de conférence A - Siège Renault', 1, 1, 1),
+('Séances de yoga', 'Cours collectif', '2025-05-10', 'Salle de détente - AXA', 2, 5, 2),
+('Consultation nutrition', 'Entretien individuel', '2025-03-25', 'Bureau 302 - Carrefour Massy', 3, 4, 3),
+('Team building nature', 'Sortie d\'équipe', '2025-06-05', 'Forêt de Fontainebleau', 4, 3, 4),
+('Atelier sommeil', 'Conférence', '2025-04-15', 'Auditorium - L\'Oréal Paris', 5, 2, 5),
+('Atelier test', 'test', '2025-06-30', 'Test location', 1, 1, 1);
 
 -- Évaluations des collaborateurs
 INSERT INTO evaluation (note, commentaire, id_collaborateur) VALUES
@@ -708,12 +738,13 @@ INSERT INTO evaluation (note, commentaire, id_collaborateur) VALUES
 (4, 'Conférence enrichissante avec de nombreux conseils pratiques à appliquer au quotidien.', 7);
 
 -- Événements entreprise
-INSERT INTO evenements (nom, date, lieu, type) VALUES
-('Journée bien-être', '2025-05-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique'),
-('Semaine de la santé', '2025-06-15', 'Siège AXA - Paris', 'Semaine spéciale'),
-('Challenge pas quotidiens', '2025-04-01', 'Toutes les agences Carrefour', 'Challenge d\'équipe'),
-('Conférence Équilibre de vie', '2025-07-10', 'Tour BNP - La Défense', 'Conférence'),
-('Ateliers détente', '2025-05-05', 'Centre L\'Oréal - Paris', 'Ateliers pratiques');
+INSERT INTO evenements (nom, date, lieu, type, id_association) VALUES
+('Journée bien-être', '2025-05-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique', 1),
+('Semaine de la santé', '2025-06-15', 'Siège AXA - Paris', 'Semaine spéciale', 2),
+('Challenge pas quotidiens', '2025-04-01', 'Toutes les agences Carrefour', 'Challenge d\'équipe', 3),
+('Conférence Équilibre de vie', '2025-07-10', 'Tour BNP - La Défense', 'Conférence', 4),
+('Ateliers détente', '2025-05-05', 'Centre L\'Oréal - Paris', 'Ateliers pratiques', 1);
+
 
 -- Notes des prestataires
 INSERT INTO note_prestataire (id_prestataire, id_evaluation) VALUES
