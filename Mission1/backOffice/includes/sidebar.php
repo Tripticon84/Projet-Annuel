@@ -35,6 +35,11 @@ $current_page = basename($_SERVER['SCRIPT_NAME']); ?>
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link <?= ($current_page == 'place.php') ? 'active' : '' ?>" href="/backOffice/place/place.php">
+                    <i class="fas fa-map-marker-alt"></i> Lieux
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link <?= ($current_page == 'provider_activity.php') ? 'active' : '' ?>" href="/backOffice/activity/activity.php">
                     <i class="fas fa-tasks"></i> Activité des prestataires
                 </a>
@@ -57,6 +62,11 @@ $current_page = basename($_SERVER['SCRIPT_NAME']); ?>
             <li class="nav-item">
                 <a class="nav-link <?= ($current_page == 'chatbot.php') ? 'active' : '' ?>" href="/backOffice/chatbot/chatbot.php">
                     <i class="fas fa-robot"></i> Chatbot
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?= ($current_page == 'report.php') ? 'active' : '' ?>" href="/backOffice/report/report.php">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Signalements
                 </a>
             </li>
         </ul>

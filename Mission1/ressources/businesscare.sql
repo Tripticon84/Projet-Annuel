@@ -279,6 +279,7 @@ CREATE TABLE `salon` (
 CREATE TABLE `signalement` (
   `signalement_id` int(11) NOT NULL,
   `probleme` text DEFAULT NULL,
+  `date_signalement` datetime NOT NULL,
   `id_societe` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -759,7 +760,7 @@ INSERT INTO signalement (probleme, id_societe) VALUES
 ('Prestataire absent lors d\'une séance programmée', 2),
 ('Matériel insuffisant pour l\'atelier nutrition', 3),
 ('Problème de coordination entre les différents services', 4),
-('Demande d\'activités plus adaptées aux horaires des équipes', 5);
+("Demande d\'activités plus adaptées aux horaires des équipes", 5);
 
 -- Relations salon-collaborateurs (qui discute dans quel salon)
 INSERT INTO discute_dans (id_salon, id_collaborateur) VALUES
