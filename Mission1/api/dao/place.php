@@ -6,7 +6,7 @@ function createPlace($adress, $city, $postalCode)
 {
     
         $db = getDatabaseConnection();
-        $sql = "INSERT INTO liey (adresse, ville, code_postal) VALUES (:adress, :city, :postal_code)";
+        $sql = "INSERT INTO lieu (adresse, ville, code_postal) VALUES (:adress, :city, :postal_code)";
         $stmt = $db->prepare($sql);
         $res=$stmt->execute(['adress' => $adress, 'city' => $city, 'postal_code' => $postalCode]);
         if($res){
