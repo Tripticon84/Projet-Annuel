@@ -101,7 +101,7 @@ function deleteEstimate(int $id)
 function getEstimateById($id)
 {
     $connection = getDatabaseConnection();
-    $sql = "SELECT devis_id, date_debut, date_fin, statut, montant, is_contract, fichier, id_societe FROM devis WHERE devis_id = :id ";
+    $sql = "SELECT devis_id, date_debut, date_fin, statut, montant,montant_ht,montant_tva, is_contract, fichier, id_societe FROM devis WHERE devis_id = :id ";
     $query = $connection->prepare($sql);
     $res = $query->execute(['id' => $id]);
     if ($res) {
