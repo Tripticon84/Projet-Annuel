@@ -29,12 +29,32 @@ function createInvoice($date_emission,$date_echeance,$montant,$montant_tva,$mont
 }
 
 
-function getAllInvoice()
+function getAllInvoice( $id_prestataire = "", int $limit = null, int $offset = null)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT facture_id, date_emission, date_echeance, montant, montant_tva, montant_ht, statut, methode_paiement, id_devis, id_prestataire FROM facture";
-    $stmt = $db->query($sql);
-    return $stmt->fetchAll();
+    $params = [];
+
+    if (!empty($adress)) {
+        $sql .= " WHERE id_prestataire LIKE :id_prestataire";
+        $params['id_prestataire'] = "%" . $id_prestataire . "%";
+    }
+
+    // Gestion des paramètres LIMIT et OFFSET
+    if ($limit !== null) {
+        $sql .= " LIMIT " . (string) $limit;
+
+        if ($offset !== null) {
+            $sql .= " OFFSET " . (string) $offset;
+        }
+    }
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
 }
 
 function getInvoiceById($id)
