@@ -35,7 +35,7 @@ if (!$contracts) {
     return;
 }
 
-$result = []; // Initialize the result array
+$result = [];
 foreach ($contracts as $contract) {
     $result[] = [
         "devis_id" => $contract['devis_id'],
@@ -43,6 +43,8 @@ foreach ($contracts as $contract) {
         "date_fin" => $contract['date_fin'],
         "statut" => $contract['statut'],
         "montant" => $contract['montant'],
+        "montant_tva" => $contract['montant_tva'],
+        "montant_ht" => $contract['montant_ht'],
         "is_contract" => $contract['is_contract'],
         "fichier" => $contract['fichier'],
         "id_societe" => $contract['id_societe']

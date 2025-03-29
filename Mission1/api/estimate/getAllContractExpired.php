@@ -11,6 +11,7 @@ if (!methodIsAllowed('read')) {
 
 acceptedTokens(true, true, false, true);
 
+
 $limit = null;
 $offset = null;
 
@@ -27,26 +28,26 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$Estimates = getAllEstimate($limit, $offset);
+$contracts = getAllContractExpired($limit, $offset);
 
-if (!$Estimates) {
+if (!$contracts) {
     returnError(404, 'No estimate found');
     return;
 }
 
-$result = []; // Initialize the result array
-foreach ($Estimates as $Estimate) {
+$result = [];
+foreach ($contracts as $contract) {
     $result[] = [
-        "devis_id" => $Estimate['devis_id'],
-        "date_debut" => $Estimate['date_debut'],
-        "date_fin" => $Estimate['date_fin'],
-        "statut" => $Estimate['statut'],
-        "montant" => $Estimate['montant'],
-        "montant_tva" => $Estimate['montant_tva'],
-        "montant_ht" => $Estimate['montant_ht'],
-        "is_contract" => $Estimate['is_contract'],
-        "fichier" => $Estimate['fichier'],
-        "id_societe" => $Estimate['id_societe']
+        "devis_id" => $contract['devis_id'],
+        "date_debut" => $contract['date_debut'],
+        "date_fin" => $contract['date_fin'],
+        "statut" => $contract['statut'],
+        "montant" => $contract['montant'],
+        "montant_tva" => $contract['montant_tva'],
+        "montant_ht" => $contract['montant_ht'],
+        "is_contract" => $contract['is_contract'],
+        "fichier" => $contract['fichier'],
+        "id_societe" => $contract['id_societe']
     ];
 }
 
