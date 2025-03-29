@@ -9,6 +9,13 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+// Vérification du paramètre state (obligatoire)
+if (!isset($_GET['state'])) {
+    returnError(400, 'State parameter is required');
+    return;
+}
+$state = $_GET['state'];
+
 $id_prestataire = null;
 $limit = null;
 $offset = null;
@@ -19,7 +26,6 @@ if (isset($_GET['id_prestataire'])) {
         returnError(400, 'Id must be a positive number');
     }
 }
-
 
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
@@ -34,12 +40,11 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$invoices = getAllInvoice($id_prestataire, $limit, $offset);
+$invoices = getAllInvoiceByState($state, $id_prestataire, $limit, $offset);
 if($invoices === null){
     returnError(500, 'Internal Server Error');
     return;
 }
-
 
 $result = []; // Initialize the result array
 
@@ -58,7 +63,7 @@ foreach ($invoices as $invoice) {
     ];
 }
 if (empty($result)) {
-    returnError(404, 'No invoice found');
+    returnError(404, 'No invoice found with this state');
     return;
 }
 

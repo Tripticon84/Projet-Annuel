@@ -242,19 +242,19 @@ include_once "../includes/head.php";
         function fetchStatistics() {
             // Cette fonction récupérerait des statistiques sur les signalements
             fetch('../../api/report/getStatistics.php', {
-                headers: {
-                    'Authorization': 'Bearer ' + getToken()
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('pendingCount').textContent = data.pending || '0';
-                document.getElementById('resolvedCount').textContent = data.resolved || '0';
-                document.getElementById('companiesCount').textContent = data.companies || '0';
-            })
-            .catch(error => {
-                console.error('Erreur lors de la récupération des statistiques:', error);
-            });
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('pendingCount').textContent = data.pending || '0';
+                    document.getElementById('resolvedCount').textContent = data.resolved || '0';
+                    document.getElementById('companiesCount').textContent = data.companies || '0';
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération des statistiques:', error);
+                });
         }
 
         let currentPage = 1;
@@ -264,17 +264,17 @@ include_once "../includes/head.php";
             reportsList.innerHTML = '<tr><td colspan="6" class="text-center">Chargement des signalements...</td></tr>';
 
             fetch('../../api/report/getPendingReports.php', {
-                headers: {
-                    'Authorization': 'Bearer ' + getToken()
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                reportsList.innerHTML = '';
-                if (data && data.length > 0) {
-                    data.forEach(report => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    reportsList.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(report => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
                             <td>${report.signalement_id}</td>
                             <td>${formatDate(report.date_signalement)}</td>
                             <td>${report.nom_societe || 'Non spécifié'}</td>
@@ -289,16 +289,16 @@ include_once "../includes/head.php";
                                 </button>
                             </td>
                         `;
-                        reportsList.appendChild(row);
-                    });
-                } else {
-                    reportsList.innerHTML = '<tr><td colspan="6" class="text-center">Aucun signalement en attente</td></tr>';
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                reportsList.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des signalements</td></tr>';
-            });
+                            reportsList.appendChild(row);
+                        });
+                    } else {
+                        reportsList.innerHTML = '<tr><td colspan="6" class="text-center">Aucun signalement en attente</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    reportsList.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des signalements</td></tr>';
+                });
         }
 
         function fetchProcessedReports(search = '', page = 1, filter = 'all') {
@@ -319,17 +319,17 @@ include_once "../includes/head.php";
             }
 
             fetch(url, {
-                headers: {
-                    'Authorization': 'Bearer ' + getToken()
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                reportsList.innerHTML = '';
-                if (data && data.length > 0) {
-                    data.forEach(report => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    reportsList.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(report => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
                             <td>${report.signalement_id}</td>
                             <td>${formatDate(report.date_signalement)}</td>
                             <td>${report.date_traitement ? formatDate(report.date_traitement) : '-'}</td>
@@ -349,70 +349,70 @@ include_once "../includes/head.php";
                                 </div>
                             </td>
                         `;
-                        reportsList.appendChild(row);
-                    });
+                            reportsList.appendChild(row);
+                        });
 
-                    document.getElementById('paginationInfo').textContent = `Affichage de ${offset+1}-${offset+data.length} signalements`;
-                    updatePagination(data.length === limit, search, filter);
-                } else {
-                    reportsList.innerHTML = '<tr><td colspan="6" class="text-center">Aucun signalement traité trouvé</td></tr>';
-                    document.getElementById('paginationInfo').textContent = 'Aucun signalement traité trouvé';
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                reportsList.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des signalements</td></tr>';
-                document.getElementById('paginationInfo').textContent = 'Erreur lors du chargement des données';
-            });
+                        document.getElementById('paginationInfo').textContent = `Affichage de ${offset+1}-${offset+data.length} signalements`;
+                        updatePagination(data.length === limit, search, filter);
+                    } else {
+                        reportsList.innerHTML = '<tr><td colspan="6" class="text-center">Aucun signalement traité trouvé</td></tr>';
+                        document.getElementById('paginationInfo').textContent = 'Aucun signalement traité trouvé';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    reportsList.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des signalements</td></tr>';
+                    document.getElementById('paginationInfo').textContent = 'Erreur lors du chargement des données';
+                });
         }
 
         function viewReportDetails(reportId) {
             fetch(`../../api/report/getReportDetails.php?id=${reportId}`, {
-                headers: {
-                    'Authorization': 'Bearer ' + getToken()
-                }
-            })
-            .then(response => response.json())
-            .then(report => {
-                document.getElementById('modal-report-id').textContent = report.signalement_id;
-                document.getElementById('modal-report-date').textContent = formatDate(report.date_signalement);
-                document.getElementById('modal-report-company').textContent = report.nom_societe || 'Non spécifié';
-                document.getElementById('modal-report-problem').textContent = report.probleme;
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                .then(response => response.json())
+                .then(report => {
+                    document.getElementById('modal-report-id').textContent = report.signalement_id;
+                    document.getElementById('modal-report-date').textContent = formatDate(report.date_signalement);
+                    document.getElementById('modal-report-company').textContent = report.nom_societe || 'Non spécifié';
+                    document.getElementById('modal-report-problem').textContent = report.probleme;
 
-                const status = report.status || 'pending';
-                let statusText = 'En attente';
-                let statusClass = 'text-warning';
+                    const status = report.status || 'pending';
+                    let statusText = 'En attente';
+                    let statusClass = 'text-warning';
 
-                if (status === 'processing') {
-                    statusText = 'En cours de traitement';
-                    statusClass = 'text-info';
-                } else if (status === 'resolved') {
-                    statusText = 'Résolu';
-                    statusClass = 'text-success';
-                } else if (status === 'archived') {
-                    statusText = 'Archivé';
-                    statusClass = 'text-secondary';
-                }
+                    if (status === 'processing') {
+                        statusText = 'En cours de traitement';
+                        statusClass = 'text-info';
+                    } else if (status === 'resolved') {
+                        statusText = 'Résolu';
+                        statusClass = 'text-success';
+                    } else if (status === 'archived') {
+                        statusText = 'Archivé';
+                        statusClass = 'text-secondary';
+                    }
 
-                document.getElementById('modal-report-status').innerHTML = `<span class="${statusClass}">${statusText}</span>`;
-                document.getElementById('modal-report-processed-date').textContent = report.date_traitement ? formatDate(report.date_traitement) : '-';
+                    document.getElementById('modal-report-status').innerHTML = `<span class="${statusClass}">${statusText}</span>`;
+                    document.getElementById('modal-report-processed-date').textContent = report.date_traitement ? formatDate(report.date_traitement) : '-';
 
-                // Préparer le formulaire
-                document.getElementById('reportStatus').value = status;
-                document.getElementById('treatmentNotes').value = report.notes || '';
+                    // Préparer le formulaire
+                    document.getElementById('reportStatus').value = status;
+                    document.getElementById('treatmentNotes').value = report.notes || '';
 
-                // Configurer le bouton de sauvegarde
-                document.getElementById('saveChangesBtn').onclick = function() {
-                    updateReportStatus(reportId);
-                };
+                    // Configurer le bouton de sauvegarde
+                    document.getElementById('saveChangesBtn').onclick = function() {
+                        updateReportStatus(reportId);
+                    };
 
-                const modal = new bootstrap.Modal(document.getElementById('reportDetailModal'));
-                modal.show();
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Erreur lors du chargement des détails du signalement');
-            });
+                    const modal = new bootstrap.Modal(document.getElementById('reportDetailModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors du chargement des détails du signalement');
+                });
         }
 
         function updateReportStatus(reportId) {
@@ -420,38 +420,6 @@ include_once "../includes/head.php";
             const notes = document.getElementById('treatmentNotes').value;
 
             fetch('../../api/report/updateReportStatus.php', {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + getToken()
-                },
-                body: JSON.stringify({
-                    signalement_id: reportId,
-                    status: status,
-                    notes: notes
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Statut du signalement mis à jour avec succès');
-                    bootstrap.Modal.getInstance(document.getElementById('reportDetailModal')).hide();
-                    fetchPendingReports();
-                    fetchProcessedReports();
-                    fetchStatistics();
-                } else {
-                    alert('Erreur lors de la mise à jour du statut du signalement');
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                alert('Une erreur est survenue lors de la mise à jour du statut');
-            });
-        }
-
-        function markAsProcessed(reportId) {
-            if (confirm('Êtes-vous sûr de vouloir marquer ce signalement comme traité?')) {
-                fetch('../../api/report/updateReportStatus.php', {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -459,54 +427,86 @@ include_once "../includes/head.php";
                     },
                     body: JSON.stringify({
                         signalement_id: reportId,
-                        status: 'resolved'
+                        status: status,
+                        notes: notes
                     })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Signalement marqué comme traité avec succès');
+                        alert('Statut du signalement mis à jour avec succès');
+                        bootstrap.Modal.getInstance(document.getElementById('reportDetailModal')).hide();
                         fetchPendingReports();
                         fetchProcessedReports();
                         fetchStatistics();
                     } else {
-                        alert('Erreur lors du traitement du signalement');
+                        alert('Erreur lors de la mise à jour du statut du signalement');
                     }
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors du traitement du signalement');
+                    alert('Une erreur est survenue lors de la mise à jour du statut');
                 });
+        }
+
+        function markAsProcessed(reportId) {
+            if (confirm('Êtes-vous sûr de vouloir marquer ce signalement comme traité?')) {
+                fetch('../../api/report/updateReportStatus.php', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
+                        },
+                        body: JSON.stringify({
+                            signalement_id: reportId,
+                            status: 'resolved'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Signalement marqué comme traité avec succès');
+                            fetchPendingReports();
+                            fetchProcessedReports();
+                            fetchStatistics();
+                        } else {
+                            alert('Erreur lors du traitement du signalement');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue lors du traitement du signalement');
+                    });
             }
         }
 
         function archiveReport(reportId) {
             if (confirm('Êtes-vous sûr de vouloir archiver ce signalement?')) {
                 fetch('../../api/report/updateReportStatus.php', {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + getToken()
-                    },
-                    body: JSON.stringify({
-                        signalement_id: reportId,
-                        status: 'archived'
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
+                        },
+                        body: JSON.stringify({
+                            signalement_id: reportId,
+                            status: 'archived'
+                        })
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Signalement archivé avec succès');
-                        fetchProcessedReports();
-                        fetchStatistics();
-                    } else {
-                        alert('Erreur lors de l\'archivage du signalement');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors de l\'archivage du signalement');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Signalement archivé avec succès');
+                            fetchProcessedReports();
+                            fetchStatistics();
+                        } else {
+                            alert('Erreur lors de l\'archivage du signalement');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue lors de l\'archivage du signalement');
+                    });
             }
         }
 

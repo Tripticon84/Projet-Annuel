@@ -12,7 +12,7 @@ if (!methodIsAllowed('update')) {
 
 $data = getBody();
 
-//acceptedTokens(true, false, false, false);
+// acceptedTokens(true, false, false, false);
 
 
 if (!isset($data['facture_id'])) {
@@ -25,10 +25,9 @@ if (!isset($data['statut'])) {
     return;
 }
 
-
 $invoice = getInvoiceById($data['facture_id']);
 if (!$invoice) {
-    returnError(404, 'invoice not found');
+    returnError(404, 'Invoice not found');
     return;
 }
 

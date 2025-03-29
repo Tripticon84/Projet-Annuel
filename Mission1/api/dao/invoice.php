@@ -19,8 +19,6 @@ function createInvoice($date_emission,$date_echeance,$montant,$montant_tva,$mont
         'methode_paiement' => $methode_paiement,
         'id_devis' => $id_devis,
         'id_prestataire' => $id_prestataire
-
-        
     ]);
     if ($res) {
         return $db->lastInsertId();
@@ -50,6 +48,53 @@ function getAllInvoice( $id_prestataire = null,  $limit = null,  $offset = null)
     }
     $stmt = $db->prepare($sql);
     $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getAllInvoiceByState($state, $id_prestataire = "", int $limit = null, int $offset = null)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT facture_id, date_emission, date_echeance, montant, montant_tva, montant_ht, statut, methode_paiement, id_devis, id_prestataire FROM facture WHERE statut = :statut";
+    $params = ['statut' => $state];
+
+    if (!empty($id_prestataire)) {
+        $sql .= " AND id_prestataire LIKE :id_prestataire";
+        $params['id_prestataire'] = "%" . $id_prestataire . "%";
+    }
+
+    // Gestion des paramètres LIMIT et OFFSET
+    if ($limit !== null) {
+        $sql .= " LIMIT " . (string) $limit;
+
+        if ($offset !== null) {
+            $sql .= " OFFSET " . (string) $offset;
+        }
+    }
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getContractByProvider($providerId)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT f.facture_id, f.date_emission, f.date_echeance, f.montant, f.montant_tva, f.montant_ht,
+           f.statut, f.methode_paiement, f.id_devis, f.id_prestataire,
+           p.nom, p.prenom, p.email, p.type
+           FROM facture f
+           JOIN prestataire p ON f.id_prestataire = p.prestataire_id
+           WHERE f.id_prestataire = :providerId";
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['providerId' => $providerId]);
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -90,7 +135,7 @@ function modifyState($id,$state)
     $sql = "UPDATE facture SET statut = :statut WHERE facture_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
-        'id' => $id,    
+        'id' => $id,
         'statut' => $state
     ]);
     if ($res) {
@@ -168,7 +213,7 @@ function isValidStatus($status)
     if ($status === null) {
         return false;
     }
-    if ($status === "Attente" || $status === "payee" || $status === "annulee") {
+    if ($status === "Attente" || $status === "Payee" || $status === "Annulee") {
         return true;
     }
     return false;

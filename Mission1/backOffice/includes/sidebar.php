@@ -50,6 +50,11 @@ $current_page = basename($_SERVER['SCRIPT_NAME']); ?>
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link <?= ($current_page == 'invoice.php') ? 'active' : '' ?>" href="/backOffice/invoice/invoice.php">
+                    <i class="fas fa-file-invoice"></i> Factures
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link <?= ($current_page == 'catalogue.php') ? 'active' : '' ?>" href="/backOffice/catalogue/catalogue.php">
                     <i class="fas fa-book"></i> Catalogue services
                 </a>
