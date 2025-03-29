@@ -98,3 +98,78 @@ function modifyState($id,$state)
     }
     return null;
 }
+
+function updateInvoice($id,  $date_emission = null,  $date_echeance = null, $montant = null,  $montant_tva = null,  $montant_ht = null,  $statut = null,  $methode_paiement = null,  $id_devis = null,  $id_prestataire = null)
+{
+    $db = getDatabaseConnection();
+    $params = ['id' => $id];
+    $setFields = [];
+
+    if ($date_emission !== null) {
+        $setFields[] = "date_emission = :date_emission";
+        $params['date_emission'] = $date_emission;
+    }
+
+    if ($date_echeance !== null) {
+        $setFields[] = "date_echeance = :date_echeance";
+        $params['date_echeance'] = $date_echeance;
+    }
+
+    if ($montant !== null) {
+        $setFields[] = "montant = :montant";
+        $params['montant'] = $montant;
+    }
+
+    if ($montant_tva !== null) {
+        $setFields[] = "montant_tva = :montant_tva";
+        $params['montant_tva'] = $montant_tva;
+    }
+
+    if ($montant_ht !== null) {
+        $setFields[] = "montant_ht = :montant_ht";
+        $params['montant_ht'] = $montant_ht;
+    }
+
+    if ($statut !== null) {
+        $setFields[] = "statut = :statut";
+        $params['statut'] = $statut;
+    }
+
+    if ($methode_paiement !== null) {
+        $setFields[] = "methode_paiement = :methode_paiement";
+        $params['methode_paiement'] = $methode_paiement;
+    }
+
+    if ($id_devis !== null) {
+        $setFields[] = "id_devis = :id_devis";
+        $params['id_devis'] = $id_devis;
+    }
+
+    if ($id_prestataire !== null) {
+        $setFields[] = "id_prestataire = :id_prestataire";
+        $params['id_prestataire'] = $id_prestataire;
+    }
+
+    if (empty($setFields)) {
+        return 0; // Rien à mettre à jour
+    }
+
+    $sql = "UPDATE facture SET " . implode(", ", $setFields) . " WHERE facture_id = :id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
+}
+
+function isValidStatus($status)
+{
+    if ($status === null) {
+        return false;
+    }
+    if ($status === "en_attente" || $status === "payee" || $status === "annulee") {
+        return true;
+    }
+    return false;
+}
