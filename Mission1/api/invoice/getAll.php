@@ -9,7 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-$adress = '';
+$id_prestataire = '';
 $limit = null;
 $offset = null;
 
