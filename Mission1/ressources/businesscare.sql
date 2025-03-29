@@ -282,6 +282,7 @@ CREATE TABLE `signalement` (
   `probleme` text DEFAULT NULL,
   `description` text DEFAULT NULL,
   `date_signalement` datetime NOT NULL,
+  `statut` ENUM('non_traite', 'en_cours', 'resolu','annuler') DEFAULT 'non_traite',
   `id_societe` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -756,14 +757,12 @@ INSERT INTO note_prestataire (id_prestataire, id_evaluation) VALUES
 (3, 4),
 (2, 5);
 
--- Signalements de problèmes
-INSERT INTO signalement (probleme, description, date_signalement, id_societe) VALUES
-('Difficulté d\'accès à la plateforme de réservation des activités', 'Problème technique empêchant la réservation', '2025-04-01', 1),
-('Prestataire absent lors d\'une séance programmée', 'Le prestataire n\'est pas venu à l\'activité prévue', '2025-04-05', 2),
-('Matériel insuffisant pour l\'atelier nutrition', 'Manque de matériel pour tous les participants', '2025-04-10', 3),
-('Problème de coordination entre les différents services', 'Difficulté à organiser les activités entre services', '2025-04-15', 4),
-('Demande d\'activités plus adaptées aux horaires des équipes', 'Les horaires actuels ne conviennent pas à tous', '2025-04-20', 5);
-
+INSERT INTO signalement (probleme, description, date_signalement, id_societe, statut) VALUES
+('Problème de climatisation', 'La climatisation ne fonctionne pas dans plusieurs bureaux', '2025-05-20', 1, 'non_traite'),
+('Erreur dans les fiches de paie', 'Les fiches de paie contiennent des erreurs de calcul', '2025-05-25', 2, 'non_traite'),
+('Problème d\'accès à l\'intranet', 'Les collaborateurs ne peuvent pas accéder à l\'intranet depuis l\'extérieur', '2025-05-30', 3, 'non_traite'),
+('Demande de formation', 'Les collaborateurs demandent une formation sur les nouveaux outils déployés', '2025-06-01', 4, 'non_traite'),
+('Problème de stationnement', 'Le parking est souvent complet, causant des retards', '2025-06-05', 5, 'non_traite');
 
 -- Relations salon-collaborateurs (qui discute dans quel salon)
 INSERT INTO discute_dans (id_salon, id_collaborateur) VALUES
