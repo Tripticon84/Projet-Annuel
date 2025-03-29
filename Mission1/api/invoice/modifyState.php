@@ -32,6 +32,16 @@ if (!$invoice) {
     return;
 }
 
+if (!isValidStatus($data['statut'])) {
+    returnError(400, 'Invalid status provided: ' . $data['statut']);
+    return;
+}
+
+if ($data['statut'] == $invoice['statut']) {
+    returnError(400, 'State is already set to ' . $data['statut']);
+    return;
+}
+
 $modified = modifyState($data['facture_id'], $data['statut']);
 
 if ($modified) {

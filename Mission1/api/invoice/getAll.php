@@ -21,6 +21,7 @@ if (isset($_GET['id_prestataire'])) {
 }
 
 
+
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
     if ($limit < 1) {
@@ -33,8 +34,10 @@ if (isset($_GET['offset'])) {
         returnError(400, 'Offset must be a positive number');
     }
 }
-
+echo json_encode($id_prestataire);
 $invoices = getAllInvoice($id_prestataire, $limit, $offset);
+
+
 if($invoices === null){
     returnError(500, 'Internal Server Error');
     return;

@@ -29,13 +29,13 @@ function createInvoice($date_emission,$date_echeance,$montant,$montant_tva,$mont
 }
 
 
-function getAllInvoice( $id_prestataire = "", int $limit = null, int $offset = null)
+function getAllInvoice( $id_prestataire = null,  $limit = null,  $offset = null)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT facture_id, date_emission, date_echeance, montant, montant_tva, montant_ht, statut, methode_paiement, id_devis, id_prestataire FROM facture";
     $params = [];
 
-    if (!empty($adress)) {
+    if (!empty($id_prestataire)) {
         $sql .= " WHERE id_prestataire LIKE :id_prestataire";
         $params['id_prestataire'] = "%" . $id_prestataire . "%";
     }
@@ -168,7 +168,7 @@ function isValidStatus($status)
     if ($status === null) {
         return false;
     }
-    if ($status === "en_attente" || $status === "payee" || $status === "annulee") {
+    if ($status === "Attente" || $status === "payee" || $status === "annulee") {
         return true;
     }
     return false;
