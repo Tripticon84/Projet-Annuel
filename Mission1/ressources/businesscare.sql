@@ -12,11 +12,6 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
 --
 -- Base de données : `businesscare`
 --
@@ -42,7 +37,6 @@ CREATE TABLE `activite` (
   `nom` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
   `date` date DEFAULT NULL,
-  `lieu` varchar(255)  DEFAULT NULL,
   `id_devis` int(11) DEFAULT NULL,
   `desactivate` boolean DEFAULT 0,
   `id_prestataire` int(11)  DEFAULT NULL,
@@ -134,6 +128,8 @@ CREATE TABLE `devis` (
   `date_fin` date DEFAULT NULL,
   `statut` ENUM('brouillon', 'envoyé', 'accepté', 'refusé') DEFAULT 'brouillon',
   `montant` decimal(10,2) DEFAULT NULL,
+  `montant_ht` decimal(10,2) DEFAULT NULL,
+  `montant_tva` decimal(10,2) DEFAULT NULL,
   `fichier` varchar(255) DEFAULT NULL,
   `is_contract` tinyint(1) DEFAULT NULL,
   `id_societe` int(11) DEFAULT NULL
@@ -188,8 +184,12 @@ CREATE TABLE `evenements` (
 CREATE TABLE `facture` (
   `facture_id` int(11) NOT NULL,
   `date_emission` date DEFAULT NULL,
+  `date_echeance` date DEFAULT NULL,
   `montant` decimal(10,2) DEFAULT NULL,
-  `statut` varchar(255) DEFAULT NULL,
+  `montant_tva` decimal(10,2) DEFAULT NULL,
+  `montant_ht` decimal(10,2) DEFAULT NULL,
+  `statut` 	ENUM('Attente', 'Payee', 'Annulee') DEFAULT 'Attente',
+  `methode_paiement` VARCHAR(50)	DEFAULT NULL,
   `id_devis` int(11) DEFAULT NULL,
   `id_prestataire` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -280,6 +280,7 @@ CREATE TABLE `salon` (
 CREATE TABLE `signalement` (
   `signalement_id` int(11) NOT NULL,
   `probleme` text DEFAULT NULL,
+  `date_signalement` datetime NOT NULL,
   `id_societe` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -673,12 +674,13 @@ INSERT INTO collaborateur (nom, prenom, username, role, email, password, telepho
 VALUES ('Renaud', 'Marcel', 'mrenaud', 'employe', 'm.renaud@renault.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0688888888', 1, NOW(), '2025-04-01', 1);
 
 -- Devis pour différentes entreprises
-INSERT INTO devis (date_debut, date_fin, montant, is_contract, id_societe) VALUES
-('2025-03-15', '2025-06-15',  7500.00, 1, 1),
-('2025-04-01', '2025-10-31',  12800.00, 0, 2),
-('2025-02-20', '2025-05-20',  5200.00, 1, 3),
-('2025-05-01', '2025-08-31',  9750.00, 1, 4),
-('2025-03-10', '2025-12-31',  15300.00, 0, 5);
+INSERT INTO devis (date_debut, date_fin, montant, montant_ht, montant_tva, is_contract, id_societe) VALUES
+('2025-03-15', '2025-06-15', 7500.00, 6250.00, 1250.00, 1, 1),
+('2025-04-01', '2025-10-31', 12800.00, 10666.67, 2133.33, 0, 2),
+('2025-02-20', '2025-05-20', 5200.00, 4333.33, 866.67, 1, 3),
+('2025-05-01', '2025-08-31', 9750.00, 8125.00, 1625.00, 1, 4),
+('2025-03-10', '2025-12-31', 15300.00, 12750.00, 2550.00, 0, 5);
+
 
 -- Prestataires de services
 INSERT INTO prestataire (email, nom, prenom, type, description, tarif, date_debut_disponibilite, date_fin_disponibilite, est_candidat, password) VALUES
@@ -688,13 +690,12 @@ INSERT INTO prestataire (email, nom, prenom, type, description, tarif, date_debu
 ('celine.blanc@gmail.com', 'Blanc', 'Céline', 'Nutritionniste', 'Nutritionniste spécialisée en alimentation au travail', 250.00, '2025-03-01', '2025-09-30', 1, '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5'),
 ('pierre.lemoine@coach-sport.fr', 'Lemoine', 'Pierre', 'Coach sportif', 'Coach sportif spécialisé dans les exercices de bureau', 220.00, '2025-01-01', '2025-12-31', 0, '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5');
 
--- Factures liées aux devis et prestataires
-INSERT INTO facture (date_emission, montant, statut, id_devis, id_prestataire) VALUES
-('2025-04-15', 2500.00, 'Payée', 1, 1),
-('2025-05-01', 3200.00, 'En attente', 2, 2),
-('2025-03-20', 1800.00, 'Payée', 3, 3),
-('2025-05-15', 2400.00, 'En cours', 4, 5),
-('2025-04-10', 3000.00, 'En attente', 5, 4);
+INSERT INTO facture (date_emission, date_echeance, montant, montant_tva, montant_ht, statut, methode_paiement, id_devis, id_prestataire) VALUES
+('2025-04-15', '2025-05-15', 2500.00, 500.00, 2000.00, 'Payee', 'Virement bancaire', 1, 1),
+('2025-05-01', '2025-06-01', 3200.00, 640.00, 2560.00, 'Attente', 'Carte bancaire', 2, 2),
+('2025-03-20', '2025-04-20', 1800.00, 360.00, 1440.00, 'Payee', 'Chèque', 3, 3),
+('2025-05-15', '2025-06-15', 2400.00, 480.00, 1920.00, 'Annulee', 'Espèces', 4, 5),
+('2025-04-10', '2025-05-10', 3000.00, 600.00, 2400.00, 'Attente', 'Virement bancaire', 5, 4);
 
 -- Autres frais liés aux factures
 INSERT INTO autre_frais (nom, montant, id_facture) VALUES
@@ -721,13 +722,13 @@ INSERT INTO salon (nom, description) VALUES
 ('Méditation et relaxation', 'Discussions sur les techniques de détente et de méditation'),
 ('Équilibre vie pro/perso', 'Échanges sur la conciliation vie professionnelle et personnelle');
 
-INSERT INTO activite (nom, type, date, lieu, id_devis, id_prestataire, id_lieu) VALUES
-('Atelier gestion du stress', 'Atelier collectif', '2025-04-20', 'Salle de conférence A - Siège Renault', 1, 1, 1),
-('Séances de yoga', 'Cours collectif', '2025-05-10', 'Salle de détente - AXA', 2, 5, 2),
-('Consultation nutrition', 'Entretien individuel', '2025-03-25', 'Bureau 302 - Carrefour Massy', 3, 4, 3),
-('Team building nature', 'Sortie d\'équipe', '2025-06-05', 'Forêt de Fontainebleau', 4, 3, 4),
-('Atelier sommeil', 'Conférence', '2025-04-15', 'Auditorium - L\'Oréal Paris', 5, 2, 5),
-('Atelier test', 'test', '2025-06-30', 'Test location', 1, 1, 1);
+INSERT INTO activite (nom, type, date, id_devis, id_prestataire, id_lieu) VALUES
+('Atelier gestion du stress', 'Atelier collectif', '2025-04-20', 1, 1, 1),
+('Séances de yoga', 'Cours collectif', '2025-05-10', 2, 5, 2),
+('Consultation nutrition', 'Entretien individuel', '2025-03-25', 3, 4, 3),
+('Team building nature', 'Sortie d\'équipe', '2025-06-05', 4, 3, 4),
+('Atelier sommeil', 'Conférence', '2025-04-15', 5, 2, 5),
+('Atelier test', 'test', '2025-06-30', 1, 1, 1);
 
 -- Évaluations des collaborateurs
 INSERT INTO evaluation (note, commentaire, id_collaborateur) VALUES
@@ -760,7 +761,7 @@ INSERT INTO signalement (probleme, id_societe) VALUES
 ('Prestataire absent lors d\'une séance programmée', 2),
 ('Matériel insuffisant pour l\'atelier nutrition', 3),
 ('Problème de coordination entre les différents services', 4),
-('Demande d\'activités plus adaptées aux horaires des équipes', 5);
+("Demande d\'activités plus adaptées aux horaires des équipes", 5);
 
 -- Relations salon-collaborateurs (qui discute dans quel salon)
 INSERT INTO discute_dans (id_salon, id_collaborateur) VALUES
