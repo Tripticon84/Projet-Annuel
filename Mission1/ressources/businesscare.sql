@@ -280,6 +280,7 @@ CREATE TABLE `salon` (
 CREATE TABLE `signalement` (
   `signalement_id` int(11) NOT NULL,
   `probleme` text DEFAULT NULL,
+  `description` text DEFAULT NULL,
   `date_signalement` datetime NOT NULL,
   `id_societe` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -756,12 +757,13 @@ INSERT INTO note_prestataire (id_prestataire, id_evaluation) VALUES
 (2, 5);
 
 -- Signalements de problèmes
-INSERT INTO signalement (probleme, id_societe) VALUES
-('Difficulté d\'accès à la plateforme de réservation des activités', 1),
-('Prestataire absent lors d\'une séance programmée', 2),
-('Matériel insuffisant pour l\'atelier nutrition', 3),
-('Problème de coordination entre les différents services', 4),
-("Demande d\'activités plus adaptées aux horaires des équipes", 5);
+INSERT INTO signalement (probleme, description, date_signalement, id_societe) VALUES
+('Difficulté d\'accès à la plateforme de réservation des activités', 'Problème technique empêchant la réservation', '2025-04-01', 1),
+('Prestataire absent lors d\'une séance programmée', 'Le prestataire n\'est pas venu à l\'activité prévue', '2025-04-05', 2),
+('Matériel insuffisant pour l\'atelier nutrition', 'Manque de matériel pour tous les participants', '2025-04-10', 3),
+('Problème de coordination entre les différents services', 'Difficulté à organiser les activités entre services', '2025-04-15', 4),
+('Demande d\'activités plus adaptées aux horaires des équipes', 'Les horaires actuels ne conviennent pas à tous', '2025-04-20', 5);
+
 
 -- Relations salon-collaborateurs (qui discute dans quel salon)
 INSERT INTO discute_dans (id_salon, id_collaborateur) VALUES
