@@ -42,10 +42,8 @@ if (isset($_GET['offset'])) {
 }
 
 if ($companyId !== '') {
-    echo json_encode("companyId");
     $reports = getAllReportsByCompany($companyId, $limit, $offset);
 } else {
-    echo json_encode("probleme");
     $reports = getAllReports($probleme, $limit, $offset);
 }
 
@@ -64,8 +62,8 @@ foreach ($reports as $report) {
         "description" => $report['description'],
         "probleme" => $report['probleme'],
         "date_signalement" => $report['date_signalement'],
-        "id_societe" => $report['id_societe'],
-        "statut" => $report['statut']
+        "statut" => $report['statut'],
+        "id_societe" => $report['id_societe']
     ];
 }
 

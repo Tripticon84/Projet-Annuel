@@ -49,18 +49,6 @@ include_once "../includes/head.php";
                 <div class="card mt-4">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Signalements en attente</h5>
-                        <div class="d-flex">
-                            <div class="dropdown me-2">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-sort"></i> Trier
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
-                                    <li><a class="dropdown-item" href="#" onclick="sortReports('date', 'desc'); return false;">Date (récent)</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="sortReports('date', 'asc'); return false;">Date (ancien)</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="sortReports('company', 'asc'); return false;">Entreprise (A-Z)</a></li>
-                                </ul>
-                            </div>
-                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -70,7 +58,7 @@ include_once "../includes/head.php";
                                         <th scope="col">ID</th>
                                         <th scope="col">Date</th>
                                         <th scope="col">Entreprise</th>
-                                        <th scope="col">Description</th>
+                                        <th scope="col">Titre</th>
                                         <th scope="col">Statut</th>
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
@@ -90,22 +78,6 @@ include_once "../includes/head.php";
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Signalements traités</h5>
                         <div class="d-flex mt-2 mt-sm-0 align-items-center">
-                            <div class="input-group me-2" style="max-width: 200px;">
-                                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher..." aria-label="Search">
-                                <button class="btn btn-sm btn-outline-secondary" type="button" onclick="searchReports()">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-filter"></i> Filtrer
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
-                                    <li><a class="dropdown-item" href="#" onclick="filterReports('all'); return false;">Tous</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="filterReports('month'); return false;">Ce mois</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="filterReports('quarter'); return false;">Ce trimestre</a></li>
-                                </ul>
-                            </div>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -115,9 +87,8 @@ include_once "../includes/head.php";
                                     <tr>
                                         <th scope="col">ID</th>
                                         <th scope="col">Date signalement</th>
-                                        <th scope="col">Date traitement</th>
                                         <th scope="col">Entreprise</th>
-                                        <th scope="col">Description</th>
+                                        <th scope="col">Titre</th>
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
                                 </thead>
@@ -139,36 +110,30 @@ include_once "../includes/head.php";
                     </div>
                 </div>
 
-                <!-- Quick Action Cards -->
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <h5>Actions rapides</h5>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-chart-pie fa-2x text-primary"></i>
-                            </div>
-                            <h6>Générer un rapport</h6>
-                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="generateReport()">Créer un rapport</button>
+                <!-- Cancelled Reports Table -->
+                <div class="card mt-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Signalements annulés</h5>
+                        <div class="d-flex mt-2 mt-sm-0 align-items-center">
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-file-export fa-2x text-success"></i>
-                            </div>
-                            <h6>Exporter les données</h6>
-                            <a href="#" class="btn btn-sm btn-outline-success mt-2" onclick="exportData(); return false;">Exporter</a>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-bell fa-2x text-warning"></i>
-                            </div>
-                            <h6>Configurer les alertes</h6>
-                            <a href="#" class="btn btn-sm btn-outline-warning mt-2">Configurer</a>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Date signalement</th>
+                                        <th scope="col">Entreprise</th>
+                                        <th scope="col">Titre</th>
+                                        <th scope="col" class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cancelledReportsList">
+                                    <tr>
+                                        <td colspan="5" class="text-center">Chargement des signalements...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -188,31 +153,30 @@ include_once "../includes/head.php";
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <p><strong>ID:</strong> <span id="modal-report-id"></span></p>
-                            <p><strong>Date de signalement:</strong> <span id="modal-report-date"></span></p>
                             <p><strong>Entreprise:</strong> <span id="modal-report-company"></span></p>
                         </div>
                         <div class="col-md-6">
+                            <p><strong>Date:</strong> <span id="modal-report-date"></span></p>
+                        </div>
+                        <div class="col-md-6">
                             <p><strong>Statut:</strong> <span id="modal-report-status"></span></p>
-                            <p><strong>Date de traitement:</strong> <span id="modal-report-processed-date">-</span></p>
                         </div>
                     </div>
                     <div class="mb-3">
+
+                        <h5 class="p-3" id="modal-report-title"></h5>
                         <h6>Description du problème:</h6>
                         <div class="p-3 bg-light rounded" id="modal-report-problem"></div>
                     </div>
                     <div id="actionSection">
                         <h6>Actions:</h6>
                         <div class="mb-3">
-                            <label for="treatmentNotes" class="form-label">Notes de traitement:</label>
-                            <textarea class="form-control" id="treatmentNotes" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
                             <label for="reportStatus" class="form-label">Changer le statut:</label>
                             <select class="form-select" id="reportStatus">
-                                <option value="pending">En attente</option>
-                                <option value="processing">En cours de traitement</option>
-                                <option value="resolved">Résolu</option>
-                                <option value="archived">Archivé</option>
+                                <option value="non_traite">En attente</option>
+                                <option value="en_cours">En cours de traitement</option>
+                                <option value="resolu">Résolu</option>
+                                <option value="annuler">Archivé</option>
                             </select>
                         </div>
                     </div>
@@ -229,41 +193,28 @@ include_once "../includes/head.php";
         document.addEventListener('DOMContentLoaded', function() {
             fetchPendingReports();
             fetchProcessedReports();
-            fetchStatistics();
-
-            // Écouteur pour le bouton de recherche
-            document.getElementById('searchInput').addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    searchReports();
-                }
-            });
+            fetchCancelledReports();
         });
 
-        function fetchStatistics() {
-            // Cette fonction récupérerait des statistiques sur les signalements
-            fetch('../../api/report/getStatistics.php', {
-                    headers: {
-                        'Authorization': 'Bearer ' + getToken()
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('pendingCount').textContent = data.pending || '0';
-                    document.getElementById('resolvedCount').textContent = data.resolved || '0';
-                    document.getElementById('companiesCount').textContent = data.companies || '0';
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la récupération des statistiques:', error);
-                });
-        }
-
         let currentPage = 1;
+        // Variables pour stocker les données des signalements
+        let pendingReports = [];
+        let processedReports = [];
+        let cancelledReports = [];
+        let allCompanies = new Set();
+
+        // Fonction pour mettre à jour les compteurs statistiques
+        function updateStatCounters() {
+            document.getElementById('pendingCount').textContent = pendingReports.length;
+            document.getElementById('resolvedCount').textContent = processedReports.length;
+            document.getElementById('companiesCount').textContent = allCompanies.size;
+        }
 
         function fetchPendingReports() {
             const reportsList = document.getElementById('pendingReportsList');
             reportsList.innerHTML = '<tr><td colspan="6" class="text-center">Chargement des signalements...</td></tr>';
 
-            fetch('../../api/report/getPendingReports.php', {
+            fetch('../../api/report/getByStatus.php?statut=non_traite', {
                     headers: {
                         'Authorization': 'Bearer ' + getToken()
                     }
@@ -271,13 +222,26 @@ include_once "../includes/head.php";
                 .then(response => response.json())
                 .then(data => {
                     reportsList.innerHTML = '';
-                    if (data && data.length > 0) {
-                        data.forEach(report => {
+                    pendingReports = data && Array.isArray(data) ? data : [];
+
+                    // Mise à jour du compteur de signalements en attente
+                    document.getElementById('pendingCount').textContent = pendingReports.length;
+
+                    // Ajouter les entreprises uniques
+                    pendingReports.forEach(report => {
+                        if (report.id_societe) allCompanies.add(report.id_societe);
+                    });
+
+                    // Mise à jour du compteur d'entreprises
+                    document.getElementById('companiesCount').textContent = allCompanies.size;
+
+                    if (pendingReports.length > 0) {
+                        pendingReports.forEach(report => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
                             <td>${report.signalement_id}</td>
                             <td>${formatDate(report.date_signalement)}</td>
-                            <td>${report.nom_societe || 'Non spécifié'}</td>
+                            <td>${report.id_societe || 'Non spécifié'}</td>
                             <td>${truncateText(report.probleme, 50)}</td>
                             <td><span class="badge bg-warning">En attente</span></td>
                             <td class="text-end">
@@ -308,7 +272,7 @@ include_once "../includes/head.php";
 
             let limit = 5;
             let offset = (page - 1) * limit;
-            let url = `../../api/report/getProcessedReports.php?limit=${limit}&offset=${offset}`;
+            let url = `../../api/report/getByStatus.php?statut=resolu&limit=${limit}&offset=${offset}`;
 
             if (search) {
                 url += '&search=' + encodeURIComponent(search);
@@ -326,14 +290,26 @@ include_once "../includes/head.php";
                 .then(response => response.json())
                 .then(data => {
                     reportsList.innerHTML = '';
-                    if (data && data.length > 0) {
+                    processedReports = data && Array.isArray(data) ? data : [];
+
+                    // Mise à jour du compteur de signalements traités
+                    document.getElementById('resolvedCount').textContent = processedReports.length;
+
+                    // Ajouter les entreprises uniques
+                    processedReports.forEach(report => {
+                        if (report.id_societe) allCompanies.add(report.id_societe);
+                    });
+
+                    // Mise à jour du compteur d'entreprises
+                    document.getElementById('companiesCount').textContent = allCompanies.size;
+
+                    if (processedReports.length > 0) {
                         data.forEach(report => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
                             <td>${report.signalement_id}</td>
                             <td>${formatDate(report.date_signalement)}</td>
-                            <td>${report.date_traitement ? formatDate(report.date_traitement) : '-'}</td>
-                            <td>${report.nom_societe || 'Non spécifié'}</td>
+                            <td>${report.id_societe || 'Non spécifié'}</td>
                             <td>${truncateText(report.probleme, 50)}</td>
                             <td class="text-end">
                                 <div class="dropdown">
@@ -366,60 +342,128 @@ include_once "../includes/head.php";
                 });
         }
 
-        function viewReportDetails(reportId) {
-            fetch(`../../api/report/getReportDetails.php?id=${reportId}`, {
+        function fetchCancelledReports() {
+            const reportsList = document.getElementById('cancelledReportsList');
+            reportsList.innerHTML = '<tr><td colspan="5" class="text-center">Chargement des signalements annulés...</td></tr>';
+
+            fetch('../../api/report/getByStatus.php?statut=annuler', {
                     headers: {
                         'Authorization': 'Bearer ' + getToken()
                     }
                 })
-                .then(response => response.json())
-                .then(report => {
-                    document.getElementById('modal-report-id').textContent = report.signalement_id;
-                    document.getElementById('modal-report-date').textContent = formatDate(report.date_signalement);
-                    document.getElementById('modal-report-company').textContent = report.nom_societe || 'Non spécifié';
-                    document.getElementById('modal-report-problem').textContent = report.probleme;
-
-                    const status = report.status || 'pending';
-                    let statusText = 'En attente';
-                    let statusClass = 'text-warning';
-
-                    if (status === 'processing') {
-                        statusText = 'En cours de traitement';
-                        statusClass = 'text-info';
-                    } else if (status === 'resolved') {
-                        statusText = 'Résolu';
-                        statusClass = 'text-success';
-                    } else if (status === 'archived') {
-                        statusText = 'Archivé';
-                        statusClass = 'text-secondary';
+                .then(response => {
+                    if (!response.ok && response.status !== 200) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    reportsList.innerHTML = '';
+                    // Si la réponse est un objet unique avec signalement_id, la convertir en tableau
+                    if (data && !Array.isArray(data) && data.signalement_id) {
+                        data = [data];
+                    }
+                    cancelledReports = data && Array.isArray(data) ? data : [];
 
-                    document.getElementById('modal-report-status').innerHTML = `<span class="${statusClass}">${statusText}</span>`;
-                    document.getElementById('modal-report-processed-date').textContent = report.date_traitement ? formatDate(report.date_traitement) : '-';
+                    // Ajouter les entreprises uniques
+                    cancelledReports.forEach(report => {
+                        if (report.id_societe) allCompanies.add(report.id_societe);
+                    });
 
-                    // Préparer le formulaire
-                    document.getElementById('reportStatus').value = status;
-                    document.getElementById('treatmentNotes').value = report.notes || '';
+                    // Mise à jour du compteur d'entreprises
+                    document.getElementById('companiesCount').textContent = allCompanies.size;
 
-                    // Configurer le bouton de sauvegarde
-                    document.getElementById('saveChangesBtn').onclick = function() {
-                        updateReportStatus(reportId);
-                    };
-
-                    const modal = new bootstrap.Modal(document.getElementById('reportDetailModal'));
-                    modal.show();
+                    if (cancelledReports.length > 0) {
+                        cancelledReports.forEach(report => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                            <td>${report.signalement_id}</td>
+                            <td>${formatDate(report.date_signalement)}</td>
+                            <td>${report.id_societe || 'Non spécifié'}</td>
+                            <td>${truncateText(report.probleme, 50)}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-primary me-1" onclick="viewReportDetails(${report.signalement_id})">
+                                    <i class="fas fa-eye"></i> Détails
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="restoreReport(${report.signalement_id})">
+                                    <i class="fas fa-undo"></i> Restaurer
+                                </button>
+                            </td>
+                        `;
+                            reportsList.appendChild(row);
+                        });
+                    } else {
+                        reportsList.innerHTML = '<tr><td colspan="5" class="text-center">Aucun signalement annulé trouvé</td></tr>';
+                    }
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
-                    alert('Erreur lors du chargement des détails du signalement');
+                    reportsList.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erreur lors du chargement des signalements annulés</td></tr>';
+                });
+        }
+
+        function viewReportDetails(reportId) {
+            fetch(`../../api/report/getOne.php?signalement_id=${reportId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                .then(response => {
+                    if (!response.ok && response.status !== 200) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(report => {
+                    // Si la réponse est un objet avec signalement_id, l'utiliser directement
+                    if (report && report.signalement_id) {
+                        document.getElementById('modal-report-id').textContent = report.signalement_id;
+                        document.getElementById('modal-report-date').textContent = formatDate(report.date_signalement);
+                        document.getElementById('modal-report-company').textContent = report.id_societe || 'Non spécifié';
+                        document.getElementById('modal-report-title').textContent = report.probleme || 'Non spécifié';
+                        document.getElementById('modal-report-problem').textContent = report.description || 'Aucune description fournie';
+
+                        const status = report.statut || 'non_traite';
+                        let statusText = 'En attente';
+                        let statusClass = 'text-warning';
+
+                        if (status === 'en_cours') {
+                            statusText = 'En cours de traitement';
+                            statusClass = 'text-info';
+                        } else if (status === 'resolu') {
+                            statusText = 'Résolu';
+                            statusClass = 'text-success';
+                        } else if (status === 'annuler') {
+                            statusText = 'Archivé';
+                            statusClass = 'text-secondary';
+                        }
+
+                        document.getElementById('modal-report-status').innerHTML = `<span class="${statusClass}">${statusText}</span>`;
+
+                        // Préparer le formulaire
+                        document.getElementById('reportStatus').value = status;
+
+                        // Configurer le bouton de sauvegarde
+                        document.getElementById('saveChangesBtn').onclick = function() {
+                            updateReportStatus(reportId);
+                        };
+
+                        const modal = new bootstrap.Modal(document.getElementById('reportDetailModal'));
+                        modal.show();
+                    } else {
+                        throw new Error('Format de réponse invalide');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors du chargement des détails du signalement: ' + error.message);
                 });
         }
 
         function updateReportStatus(reportId) {
             const status = document.getElementById('reportStatus').value;
-            const notes = document.getElementById('treatmentNotes').value;
 
-            fetch('../../api/report/updateReportStatus.php', {
+            fetch('../../api/report/changeState.php', {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -427,31 +471,41 @@ include_once "../includes/head.php";
                     },
                     body: JSON.stringify({
                         signalement_id: reportId,
-                        status: status,
-                        notes: notes
+                        statut: status
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok && response.status !== 200) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.success) {
+                    // Considérer la réponse comme un succès si elle contient des données
+                    if (data && (data.success || data.signalement_id)) {
                         alert('Statut du signalement mis à jour avec succès');
                         bootstrap.Modal.getInstance(document.getElementById('reportDetailModal')).hide();
                         fetchPendingReports();
                         fetchProcessedReports();
-                        fetchStatistics();
+                        fetchCancelledReports();
+
                     } else {
                         alert('Erreur lors de la mise à jour du statut du signalement');
                     }
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors de la mise à jour du statut');
+                    if (!navigator.onLine) {
+                        alert('Erreur de connexion: Vérifiez votre connexion internet');
+                    } else {
+                        alert(`Une erreur est survenue: ${error.message}`);
+                    }
                 });
         }
 
         function markAsProcessed(reportId) {
             if (confirm('Êtes-vous sûr de vouloir marquer ce signalement comme traité?')) {
-                fetch('../../api/report/updateReportStatus.php', {
+                fetch('../../api/report/changeState.php', {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
@@ -459,30 +513,40 @@ include_once "../includes/head.php";
                         },
                         body: JSON.stringify({
                             signalement_id: reportId,
-                            status: 'resolved'
+                            statut: 'resolu'
                         })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok && response.status !== 200) {
+                            throw new Error(`Erreur HTTP: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data.success) {
+                        // Considérer comme succès si on a des données, même sans la propriété success
+                        if (data && (data.success || data.signalement_id || !data.empty)) {
                             alert('Signalement marqué comme traité avec succès');
                             fetchPendingReports();
                             fetchProcessedReports();
-                            fetchStatistics();
+
                         } else {
                             alert('Erreur lors du traitement du signalement');
                         }
                     })
                     .catch(error => {
-                        console.error('Erreur:', error);
-                        alert('Une erreur est survenue lors du traitement du signalement');
+                        console.error('Erreur lors du traitement du signalement:', error);
+                        if (!navigator.onLine) {
+                            alert('Erreur de connexion: Vérifiez votre connexion internet');
+                        } else {
+                            alert('Une erreur est survenue lors du traitement du signalement: ' + error.message);
+                        }
                     });
             }
         }
 
         function archiveReport(reportId) {
             if (confirm('Êtes-vous sûr de vouloir archiver ce signalement?')) {
-                fetch('../../api/report/updateReportStatus.php', {
+                fetch('../../api/report/changeState.php', {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
@@ -490,7 +554,7 @@ include_once "../includes/head.php";
                         },
                         body: JSON.stringify({
                             signalement_id: reportId,
-                            status: 'archived'
+                            statut: 'annuler'
                         })
                     })
                     .then(response => response.json())
@@ -498,7 +562,8 @@ include_once "../includes/head.php";
                         if (data.success) {
                             alert('Signalement archivé avec succès');
                             fetchProcessedReports();
-                            fetchStatistics();
+                            fetchCancelledReports();
+
                         } else {
                             alert('Erreur lors de l\'archivage du signalement');
                         }
@@ -510,20 +575,33 @@ include_once "../includes/head.php";
             }
         }
 
-        function searchReports() {
-            const searchTerm = document.getElementById('searchInput').value;
-            fetchProcessedReports(searchTerm, 1);
+        function restoreReport(reportId) {
+            if (confirm('Êtes-vous sûr de vouloir restaurer ce signalement?')) {
+                fetch('../../api/report/changeState.php', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
+                        },
+                        body: JSON.stringify({
+                            signalement_id: reportId,
+                            statut: 'non_traite'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.empty) {
+                            alert('Signalement restauré avec succès');
+                            fetchPendingReports();
+                            fetchCancelledReports();
+
+                        } else {
+                            alert('Erreur lors de la restauration du signalement');
+                        }
+                    })
+            }
         }
 
-        function sortReports(field, order) {
-            // Cette fonction trierait les signalements selon le champ et l'ordre spécifiés
-            console.log(`Tri par ${field} en ordre ${order}`);
-            // Implémenter la logique de tri
-        }
-
-        function filterReports(period) {
-            fetchProcessedReports('', 1, period);
-        }
 
         function updatePagination(hasMore, search = '', filter = 'all') {
             const paginationList = document.getElementById('paginationList');

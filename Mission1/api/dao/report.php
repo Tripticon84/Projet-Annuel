@@ -39,7 +39,7 @@ function ChangeState(int $id,$statut)
 function getReportById(int $id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT signalement_id, description, probleme, date_signalement, id_societe FROM signalement WHERE signalement_id = :id";
+    $sql = "SELECT signalement_id, description, probleme, date_signalement, statut, id_societe FROM signalement WHERE signalement_id = :id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['id' => $id]);
     return $stmt->fetch();
@@ -140,6 +140,29 @@ function getAllReportsByCompany($id_societe,$limit,$offset)
 
     $stmt = $db->prepare($sql);
     $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getReportsByStatus($statut, $limit = null, $offset = null)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT signalement_id, description, probleme, date_signalement, id_societe, statut FROM signalement WHERE statut = :statut";
+
+    // Gestion des paramètres LIMIT et OFFSET
+    if ($limit !== null) {
+        $sql .= " LIMIT " . (string) $limit;
+
+        if ($offset !== null) {
+            $sql .= " OFFSET " . (string) $offset;
+        }
+    }
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['statut' => $statut]);
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
