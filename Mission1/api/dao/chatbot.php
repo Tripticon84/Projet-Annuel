@@ -14,6 +14,18 @@ function createChatbot($question, $answer){
     return $db->lastInsertId();
 }
 
+function createSubChatbot($question, $answer, $parent_id){
+    $db = getDatabaseConnection();
+    $query = $db->prepare('INSERT INTO chatbot (question, reponse, parent_id) VALUES (:question, :answer, :parent_id)');
+    $params = [
+        'question' => $question,
+        'answer' => $answer,
+        'parent_id' => $parent_id
+    ];
+    $query->execute($params);
+    return $db->lastInsertId();
+}
+
 function deleteChatbot($chatbot_id){
     $db = getDatabaseConnection();
     $query = $db->prepare('DELETE FROM chatbot WHERE question_id = :chatbot_id');
@@ -85,3 +97,40 @@ function updateChatbot($chatbot_id, ?string $question = null, ?string $answer = 
     }
     return null;
 }
+
+function getParentChatbot($chatbot_id){
+    $db = getDatabaseConnection();
+    $query = $db->prepare('SELECT question_id,question,reponse FROM chatbot WHERE question_id = :chatbot_id');
+    $params = [
+        'chatbot_id' => $chatbot_id
+    ];
+    $query->execute($params);
+    return $query->fetch();
+}
+
+function getSubQuestions($parent_id){
+    $db = getDatabaseConnection();
+    $query = $db->prepare('SELECT question_id, question, reponse FROM chatbot WHERE parent_id = :parent_id');
+    $params = ['parent_id' => $parent_id];
+    $query->execute($params);
+    return $query->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+function getInitialQuestion($chatbot_id){
+    $db = getDatabaseConnection();
+    
+    while ($chatbot_id) { //car on ne sait pas combien de parents il y a
+        // On récupère la question et son parent
+        $query = $db->prepare('SELECT question_id, parent_id, question, reponse FROM chatbot WHERE question_id = :chatbot_id');
+        $query->execute(['chatbot_id' => $chatbot_id]);
+        $question = $query->fetch(PDO::FETCH_ASSOC);
+        if (!$question || !$question['parent_id']) {
+            return $question; // On a trouvé la question initiale
+        }
+
+        $chatbot_id = $question['parent_id']; // Remonter au parent
+    }
+    return null;
+}
+

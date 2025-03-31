@@ -92,7 +92,8 @@ CREATE TABLE `autre_frais` (
 CREATE TABLE `chatbot` (
   `question_id` int(11) NOT NULL,
   `question` text DEFAULT NULL,
-  `reponse` text DEFAULT NULL
+  `reponse` text DEFAULT NULL,
+  `parent_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -557,6 +558,11 @@ ALTER TABLE `activite`
   ADD CONSTRAINT `activite_ibfk_2` FOREIGN KEY (`id_prestataire`) REFERENCES `prestataire` (`prestataire_id`),
   ADD CONSTRAINT `activite_ibfk_3` FOREIGN KEY (`id_lieu`) REFERENCES `lieu` (`lieu_id`);
 
+--
+-- Contraintes pour la table `chatbot`
+--
+ALTER TABLE `chatbot`
+  ADD CONSTRAINT `chatbot_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `chatbot` (`question_id`) ON DELETE CASCADE;  -- on reference la question parente pour les sous-questions, on delete cascade pour supprimer les sous-questions si la question parente est supprimée
 
 --
 -- Contraintes pour la table `autre_frais`
@@ -713,12 +719,15 @@ INSERT INTO autre_frais (nom, montant, id_facture) VALUES
 ('Documentation personnalisée', 150.00, 5);
 
 -- Questions fréquentes pour le chatbot
-INSERT INTO chatbot (question, reponse) VALUES
-('Comment réserver une activité ?', 'Pour réserver une activité, connectez-vous à votre espace collaborateur, puis naviguez vers la section "Activités". Sélectionnez l\'activité qui vous intéresse et cliquez sur "Réserver".'),
-('Quels types d\'activités sont disponibles ?', 'Nous proposons divers types d\'activités pour le bien-être: coaching personnel, ateliers de gestion du stress, séances de yoga, consultations nutritionnelles, team building, et plus encore.'),
-('Comment annuler ma participation à une activité ?', 'Pour annuler votre participation, rendez-vous dans "Mes activités", sélectionnez l\'activité concernée et cliquez sur "Annuler ma participation". L\'annulation est possible jusqu\'à 48h avant l\'activité.'),
-('Comment évaluer un prestataire ?', 'Après avoir participé à une activité, vous recevrez automatiquement une invitation à évaluer le prestataire. Vous pouvez également vous rendre dans "Mes activités passées" et cliquer sur "Évaluer".'),
-('Puis-je proposer une nouvelle activité ?', 'Oui, vous pouvez soumettre vos idées d\'activités à votre responsable RH ou via le formulaire "Suggestions" dans votre espace collaborateur.');
+INSERT INTO chatbot (question, reponse,parent_id) VALUES
+('Comment réserver une activité ?', 'Pour réserver une activité, connectez-vous à votre espace collaborateur, puis naviguez vers la section "Activités". Sélectionnez l\'activité qui vous intéresse et cliquez sur "Réserver".',NULL),
+('Quels types d\'activités sont disponibles ?', 'Nous proposons divers types d\'activités pour le bien-être: coaching personnel, ateliers de gestion du stress, séances de yoga, consultations nutritionnelles, team building, et plus encore.',1),
+('Comment annuler ma participation à une activité ?', 'Pour annuler votre participation, rendez-vous dans "Mes activités", sélectionnez l\'activité concernée et cliquez sur "Annuler ma participation". L\'annulation est possible jusqu\'à 48h avant l\'activité.',2),
+('Comment contacter un prestataire ?', 'Vous pouvez contacter le prestataire via l\'onglet "Prestataires" dans votre espace collaborateur. Sélectionnez le prestataire et utilisez le formulaire de contact.',3),
+('Comment signaler un problème ?', 'Pour signaler un problème, allez dans la section "Assistance" de votre espace collaborateur et remplissez le formulaire de signalement.',4),
+('Comment modifier mes informations personnelles ?', 'Pour modifier vos informations personnelles, connectez-vous à votre espace collaborateur, allez dans "Mon profil" et mettez à jour les informations souhaitées.',5),
+('Comment participer à un événement entreprise ?', 'Pour participer à un événement, consultez la section "Événements" dans votre espace collaborateur et inscrivez-vous à ceux qui vous intéressent.',6);
+
 
 -- Salons de discussion
 INSERT INTO salon (nom, description) VALUES
