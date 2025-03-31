@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/chatbot.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/evaluation.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 header('Content-Type: application/json');
@@ -14,7 +14,15 @@ if (!methodIsAllowed('read')) {
 
 $limit = null;
 $offset = null;
-$chatbot_id = null;
+$note = null;
+
+
+if (isset($_GET['note'])) {
+    $note = intval($_GET['note']);
+    if ($note < 0 || $note > 5) {
+        returnError(400, 'Note must be a number between 0 and 5');
+    }
+}
 
 
 if (isset($_GET['limit'])) {
@@ -30,26 +38,27 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$chatbots = getAllChatbots($limit, $offset);
+$evals = getAllEvaluation($note, $limit, $offset);
 
-if (!$chatbots) {
-    returnError(404, 'No chatbot found');
+if (!$evals) {
+    returnError(404, 'No evaluation found');
     return;
 }
 
 $result = []; // Initialize the result array
 
-foreach ($chatbots as $chatbot) {
+foreach ($evals as $eval) {
     $result[] = [
-        "chatbot_id" => $chatbot['question_id'],
-        "question" => $chatbot['question'],
-        "answer" => $chatbot['reponse'],
-        "parent_id" => $chatbot['parent_id'],
+        "evaluation_id" => $eval['evaluation_id'],
+        "note" => $eval['note'],
+        "commentaire" => $eval['commentaire'],
+        "id_collaborateur" => $eval['id_collaborateur'],
+        "date_creation" => $eval['date_creation'],
     ];
 }
 
 if (empty($result)) {
-    returnError(404, 'No chatbot found');
+    returnError(404, 'No evaluation found');
     return;
 }
 

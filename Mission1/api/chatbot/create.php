@@ -41,7 +41,7 @@ if (isset($data['parent_id']) && !empty($data['parent_id'])) {
     }
 
     // Créer la sous-question
-    $chatbot_id = createSubChatbot($question, $answer, $parent_id);
+    $chatbot_id = createChatbot($question, $answer, $parent_id);
 } else {
     // Créer une question principale
     $chatbot_id = createChatbot($question, $answer);
