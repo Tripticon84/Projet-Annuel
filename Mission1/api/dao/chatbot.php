@@ -38,7 +38,7 @@ function deleteChatbot($chatbot_id){
 
 function getChatbot($chatbot_id){
     $db = getDatabaseConnection();
-    $query = $db->prepare('SELECT question_id,question,reponse FROM chatbot WHERE question_id = :chatbot_id');
+    $query = $db->prepare('SELECT question_id, question, reponse, parent_id FROM chatbot WHERE question_id = :chatbot_id');
     $params = [
         'chatbot_id' => $chatbot_id
     ];
@@ -49,7 +49,7 @@ function getChatbot($chatbot_id){
 function getAllChatbots($limit = null, $offset = null){
     $db = getDatabaseConnection();
     $params = [];
-    $sql = "SELECT question_id, question, reponse FROM chatbot";
+    $sql = "SELECT question_id, question, reponse, parent_id FROM chatbot";
 
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
@@ -69,7 +69,7 @@ function getAllChatbots($limit = null, $offset = null){
     return null;
 }
 
-function updateChatbot($chatbot_id, ?string $question = null, ?string $answer = null){
+function updateChatbot($chatbot_id, ?string $question = null, ?string $answer = null, $parent_id = null){
     $db = getDatabaseConnection();
     $params = ['chatbot_id' => $chatbot_id];
     $setFields = [];
@@ -82,6 +82,11 @@ function updateChatbot($chatbot_id, ?string $question = null, ?string $answer = 
     if ($answer !== null) {
         $setFields[] = "reponse = :answer";
         $params['answer'] = $answer;
+    }
+
+    if ($parent_id !== null) {
+        $setFields[] = "parent_id = :parent_id";
+        $params['parent_id'] = $parent_id;
     }
 
     if (empty($setFields)) {
@@ -111,15 +116,35 @@ function getParentChatbot($chatbot_id){
 function getSubQuestions($parent_id){
     $db = getDatabaseConnection();
     $query = $db->prepare('SELECT question_id, question, reponse FROM chatbot WHERE parent_id = :parent_id');
-    $params = ['parent_id' => $parent_id];
-    $query->execute($params);
+    $query->execute(['parent_id' => $parent_id]);
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function getAllChatbotsByParent($parent_id, $limit = null, $offset = null){
+    $db = getDatabaseConnection();
+    $params = ['parent_id' => $parent_id];
+    $sql = "SELECT question_id, question, reponse FROM chatbot WHERE parent_id = :parent_id";
+
+    // Gestion des paramètres LIMIT et OFFSET
+    if ($limit !== null) {
+        $sql .= " LIMIT " . (string) $limit;
+
+        if ($offset !== null) {
+            $sql .= " OFFSET " . (string) $offset;
+        }
+    }
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
 
 function getInitialQuestion($chatbot_id){
     $db = getDatabaseConnection();
-    
+
     while ($chatbot_id) { //car on ne sait pas combien de parents il y a
         // On récupère la question et son parent
         $query = $db->prepare('SELECT question_id, parent_id, question, reponse FROM chatbot WHERE question_id = :chatbot_id');
@@ -133,4 +158,3 @@ function getInitialQuestion($chatbot_id){
     }
     return null;
 }
-

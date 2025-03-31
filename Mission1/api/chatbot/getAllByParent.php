@@ -9,13 +9,17 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-acceptedTokens(true, false, false, false);
+// acceptedTokens(true, false, false, false);
 
+// Vérification du parent_id
+if (!isset($_GET['parent_id'])) {
+    returnError(400, 'Parent ID is required');
+    return;
+}
 
+$parent_id = intval($_GET['parent_id']);
 $limit = null;
 $offset = null;
-$chatbot_id = null;
-
 
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
@@ -30,10 +34,10 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$chatbots = getAllChatbots($limit, $offset);
+$chatbots = getAllChatbotsByParent($parent_id, $limit, $offset);
 
 if (!$chatbots) {
-    returnError(404, 'No company found');
+    returnError(404, 'No chatbot found for this parent');
     return;
 }
 
@@ -44,7 +48,6 @@ foreach ($chatbots as $chatbot) {
         "chatbot_id" => $chatbot['question_id'],
         "question" => $chatbot['question'],
         "answer" => $chatbot['reponse'],
-        "parent_id" => $chatbot['parent_id'],
     ];
 }
 

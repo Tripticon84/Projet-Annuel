@@ -23,14 +23,15 @@ if (!validateMandatoryParams($data, ['chatbot_id'])) {
 $chatbot_id = $data['chatbot_id'];
 $question = isset($data['question']) ? $data['question'] : null;
 $answer = isset($data['answer']) ? $data['answer'] : null;
+$parent_id = isset($data['parent_id']) ? $data['parent_id'] : null;
 
 // Vérifier si au moins un champ est fourni pour la mise à jour
-if ($question === null && $answer === null) {
+if ($question === null && $answer === null && $parent_id === null) {
     returnError(400, 'No data provided for update');
     return;
 }
 
-$updatedChatbot = updateChatbot($chatbot_id, $question, $answer);
+$updatedChatbot = updateChatbot($chatbot_id, $question, $answer, $parent_id);
 
 if (!$updatedChatbot) {
     // Log the error for debugging

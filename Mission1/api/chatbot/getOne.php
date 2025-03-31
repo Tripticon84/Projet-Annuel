@@ -30,6 +30,7 @@ $result = [
     "chatbot_id" => $chatbot['question_id'],
     "question" => $chatbot['question'],
     "answer" => $chatbot['reponse'],
+    "parent_id" => $chatbot['parent_id']
 ];
 
 if (empty($result)) {
