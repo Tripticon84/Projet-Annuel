@@ -175,6 +175,7 @@ CREATE TABLE `evenements` (
   `date` date DEFAULT NULL,
   `lieu` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
+  `statut` ENUM('en_cours', 'a_venir', 'termine') DEFAULT 'en_cours',
   `id_association` int(11)  DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -755,12 +756,13 @@ INSERT INTO evaluation (note, commentaire, id_collaborateur, date_creation) VALU
 
 
 -- Événements entreprise
-INSERT INTO evenements (nom, date, lieu, type, id_association) VALUES
-('Journée bien-être', '2025-05-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique', 1),
-('Semaine de la santé', '2025-06-15', 'Siège AXA - Paris', 'Semaine spéciale', 2),
-('Challenge pas quotidiens', '2025-04-01', 'Toutes les agences Carrefour', 'Challenge d\'équipe', 3),
-('Conférence Équilibre de vie', '2025-07-10', 'Tour BNP - La Défense', 'Conférence', 4),
-('Ateliers détente', '2025-05-05', 'Centre L\'Oréal - Paris', 'Ateliers pratiques', 1);
+INSERT INTO evenements (nom, date, lieu, type, statut, id_association) VALUES
+('Journée bien-être', '2025-05-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique', 'a_venir', 1),
+('Journée bien-être', '2025-03-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique', 'termine', 1),
+('Semaine de la santé', '2025-06-15', 'Siège AXA - Paris', 'Semaine spéciale', 'a_venir', 2),
+('Challenge pas quotidiens', '2025-04-01', 'Toutes les agences Carrefour', 'Challenge d\'équipe', 'en_cours', 3),
+('Conférence Équilibre de vie', '2025-07-10', 'Tour BNP - La Défense', 'Conférence', 'a_venir', 4),
+('Ateliers détente', '2025-05-05', 'Centre L\'Oréal - Paris', 'Ateliers pratiques', 'a_venir', 1);
 
 
 -- Notes des prestataires

@@ -81,9 +81,6 @@ include_once "../includes/head.php";
                         </div>
                     </div>
                     <div class="card-footer bg-white d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-muted small" id="paginationInfo">Chargement des données...</span>
-                        </div>
                         <nav aria-label="Table navigation">
                             <ul class="pagination pagination-sm mb-0" id="paginationList"></ul>
                         </nav>
@@ -217,11 +214,9 @@ include_once "../includes/head.php";
             const questionsList = document.getElementById('mainQuestionsList');
             questionsList.innerHTML = '<tr><td colspan="5" class="text-center">Chargement des questions...</td></tr>';
 
-            let limit = 10;
-            let offset = (page - 1) * limit;
 
             // Récupérer uniquement les questions principales (parent_id = null)
-            fetch('../../api/chatbot/getAll.php?limit=' + limit + '&offset=' + offset, {
+            fetch('../../api/chatbot/getAll.php', {
                 headers: {
                     'Authorization': 'Bearer ' + getToken()
                 }
@@ -240,7 +235,6 @@ include_once "../includes/head.php";
                 document.getElementById('subQuestionsCount').textContent = subQuestions.length;
                 document.getElementById('totalAnswersCount').textContent = data.length;
 
-                document.getElementById('paginationInfo').textContent = `Affichage de ${offset+1}-${offset+mainQuestions.length} questions`;
 
                 if (mainQuestions.length > 0) {
                     mainQuestions.forEach(question => {
@@ -262,7 +256,6 @@ include_once "../includes/head.php";
                         questionsList.appendChild(row);
                     });
 
-                    updatePagination(mainQuestions.length === limit);
                 } else {
                     questionsList.innerHTML = '<tr><td colspan="5" class="text-center">Aucune question trouvée</td></tr>';
                 }
