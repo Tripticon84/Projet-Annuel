@@ -160,7 +160,8 @@ CREATE TABLE `evaluation` (
   `note` int(11) DEFAULT NULL,
   `commentaire` text DEFAULT NULL,
   `id_collaborateur` int(11) DEFAULT NULL,
-  `date_creation` datetime DEFAULT NULL
+  `date_creation` datetime DEFAULT NULL,
+  `desactivate` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

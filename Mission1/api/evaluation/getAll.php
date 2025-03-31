@@ -15,12 +15,20 @@ if (!methodIsAllowed('read')) {
 $limit = null;
 $offset = null;
 $note = null;
+$desactivate = null;
 
 
 if (isset($_GET['note'])) {
     $note = intval($_GET['note']);
     if ($note < 0 || $note > 5) {
         returnError(400, 'Note must be a number between 0 and 5');
+    }
+}
+
+if (isset($_GET['desactivate'])) {
+    $desactivate = intval($_GET['desactivate']);
+    if ($desactivate < 0 || $desactivate > 1) {
+        returnError(400, 'Desactivate must be a number between 0 and 1');
     }
 }
 
@@ -38,7 +46,7 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$evals = getAllEvaluation($note, $limit, $offset);
+$evals = getAllEvaluation($note, $desactivate, $limit, $offset);
 
 if (!$evals) {
     returnError(404, 'No evaluation found');
@@ -54,6 +62,7 @@ foreach ($evals as $eval) {
         "commentaire" => $eval['commentaire'],
         "id_collaborateur" => $eval['id_collaborateur'],
         "date_creation" => $eval['date_creation'],
+        "desactivate" => $eval['desactivate']
     ];
 }
 
