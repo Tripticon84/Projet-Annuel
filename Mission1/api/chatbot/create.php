@@ -9,15 +9,16 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
-acceptedTokens(true, false, false, false);
+//acceptedTokens(true, false, false, false);
 
 
 $data = getBody();
 $question = $data['question'];
 $answer = $data['answer'];
+$parent_id = $data['parent_id'] ?? null; // Optional parameter
 
 if (validateMandatoryParams($data, ['question', 'answer'])) {
-    $newChatbotId = createChatbot($question, $answer);
+    $newChatbotId = createChatbot($question, $answer, $parent_id);
 
     if (!$newChatbotId) {
         // Log the error for debugging

@@ -11,29 +11,17 @@ if (!methodIsAllowed('read')) {
 
 //acceptedTokens(true, false, false, false);
 
-
-$limit = null;
-$offset = null;
-$chatbot_id = null;
-
-
-if (isset($_GET['limit'])) {
-    $limit = intval($_GET['limit']);
-    if ($limit < 1) {
-        returnError(400, 'Limit must be a positive and non zero number');
-    }
-}
-if (isset($_GET['offset'])) {
-    $offset = intval($_GET['offset']);
-    if ($offset < 0) {
-        returnError(400, 'Offset must be a positive number');
-    }
+if (!isset($_GET['parent_id'])) {
+    returnError(400, 'parent_id is required');
+    return;
 }
 
-$chatbots = getAllChatbots($limit, $offset);
+$parent_id = $_GET['parent_id'];
+
+$chatbots = getSubQuestions($parent_id);
 
 if (!$chatbots) {
-    returnError(404, 'No company found');
+    returnError(404, 'No chatbot found');
     return;
 }
 

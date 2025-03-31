@@ -3,18 +3,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/database.php';
 
 
-function createChatbot($question, $answer){
-    $db = getDatabaseConnection();
-    $query = $db->prepare('INSERT INTO chatbot (question, reponse) VALUES (:question, :answer)');
-    $params = [
-        'question' => $question,
-        'answer' => $answer
-    ];
-    $query->execute($params);
-    return $db->lastInsertId();
-}
-
-function createSubChatbot($question, $answer, $parent_id){
+function createChatbot($question, $answer, $parent_id = null){
     $db = getDatabaseConnection();
     $query = $db->prepare('INSERT INTO chatbot (question, reponse, parent_id) VALUES (:question, :answer, :parent_id)');
     $params = [
@@ -38,7 +27,7 @@ function deleteChatbot($chatbot_id){
 
 function getChatbot($chatbot_id){
     $db = getDatabaseConnection();
-    $query = $db->prepare('SELECT question_id,question,reponse FROM chatbot WHERE question_id = :chatbot_id');
+    $query = $db->prepare('SELECT question_id,question,reponse,parent_id FROM chatbot WHERE question_id = :chatbot_id');
     $params = [
         'chatbot_id' => $chatbot_id
     ];
@@ -49,7 +38,7 @@ function getChatbot($chatbot_id){
 function getAllChatbots($limit = null, $offset = null){
     $db = getDatabaseConnection();
     $params = [];
-    $sql = "SELECT question_id, question, reponse FROM chatbot";
+    $sql = "SELECT question_id, question, reponse,parent_id FROM chatbot";
 
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
@@ -69,7 +58,7 @@ function getAllChatbots($limit = null, $offset = null){
     return null;
 }
 
-function updateChatbot($chatbot_id, ?string $question = null, ?string $answer = null){
+function updateChatbot($chatbot_id, ?string $question = null, ?string $answer = null,?int $parent_id = null){
     $db = getDatabaseConnection();
     $params = ['chatbot_id' => $chatbot_id];
     $setFields = [];
@@ -82,6 +71,10 @@ function updateChatbot($chatbot_id, ?string $question = null, ?string $answer = 
     if ($answer !== null) {
         $setFields[] = "reponse = :answer";
         $params['answer'] = $answer;
+    }
+    if ($parent_id !== null) {
+        $setFields[] = "parent_id = :parent_id";
+        $params['parent_id'] = $parent_id;
     }
 
     if (empty($setFields)) {
@@ -98,19 +91,9 @@ function updateChatbot($chatbot_id, ?string $question = null, ?string $answer = 
     return null;
 }
 
-function getParentChatbot($chatbot_id){
-    $db = getDatabaseConnection();
-    $query = $db->prepare('SELECT question_id,question,reponse FROM chatbot WHERE question_id = :chatbot_id');
-    $params = [
-        'chatbot_id' => $chatbot_id
-    ];
-    $query->execute($params);
-    return $query->fetch();
-}
-
 function getSubQuestions($parent_id){
     $db = getDatabaseConnection();
-    $query = $db->prepare('SELECT question_id, question, reponse FROM chatbot WHERE parent_id = :parent_id');
+    $query = $db->prepare('SELECT question_id, question, reponse, parent_id FROM chatbot WHERE parent_id = :parent_id');
     $params = ['parent_id' => $parent_id];
     $query->execute($params);
     return $query->fetchAll(PDO::FETCH_ASSOC);
