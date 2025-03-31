@@ -9,19 +9,11 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, false, false);
 
 $data = getBody();
-$question = $data['question'];
-$answer = $data['answer'];
-$parent_id = $data['parent_id'] ?? null; // Optional parameter
 
-if (validateMandatoryParams($data, ['question', 'answer'])) {
-    $newChatbotId = createChatbot($question, $answer, $parent_id);
-
-    echo json_encode(['chatbot_id' => $newChatbotId]);
-    http_response_code(201);
-}else{
+if (!validateMandatoryParams($data, ['question', 'answer'])) {
     returnError(400, 'Missing required parameters');
     return;
 }
