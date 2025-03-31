@@ -37,6 +37,23 @@ if (!isset($_SESSION["admin_id"]) && $title != "Connexion") {
             window.location.href = "/backOffice/login/logout.php";
         }
 
+
+        document.addEventListener('hidden.bs.modal', function() {
+            // Attendre un court délai pour s'assurer que l'événement de fermeture est terminé
+            setTimeout(function() {
+                // Si aucune modal n'est visible, nettoyer toutes les backdrops
+                if (!document.querySelector('.modal.show')) {
+                    // Supprimer les backdrops
+                    document.querySelectorAll('.modal-backdrop').forEach(function(backdrop) {
+                        backdrop.remove();
+                    });
+                    // Supprimer les classes et styles ajoutés au body
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }
+            }, 150);
+        });
     </script>
     <style>
         :root {
