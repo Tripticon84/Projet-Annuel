@@ -518,9 +518,9 @@ $prestatairesActifs = 89;
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <span>Ateliers bien-être</span>
                                         <span>78%</span>
-                                            <div class="progress">
-                                                <div class="progress-bar bg-primary" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
                                     </div>
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between align-items-center mb-1">

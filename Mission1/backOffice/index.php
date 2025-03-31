@@ -7,7 +7,6 @@ if (isset($_SESSION['admin_id'])) {
     header('Location: home.php');
 }
 
-
 ?>
 <div class="container mt-5 d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="row justify-content-center">

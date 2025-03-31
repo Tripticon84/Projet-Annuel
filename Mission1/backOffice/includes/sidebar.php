@@ -35,6 +35,11 @@ $current_page = basename($_SERVER['SCRIPT_NAME']); ?>
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link <?= ($current_page == 'association.php') ? 'active' : '' ?>" href="/backOffice/association/association.php">
+                    <i class="fas fa-handshake"></i> Associations
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link <?= ($current_page == 'place.php') ? 'active' : '' ?>" href="/backOffice/place/place.php">
                     <i class="fas fa-map-marker-alt"></i> Lieux
                 </a>

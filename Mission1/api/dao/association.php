@@ -49,7 +49,7 @@ function getAssociationById($association_id){
 }
 
 function updateAssociation($association_id, ?string $name=null, ?string $description=null){
-    
+
     $db = getDatabaseConnection();
     $params = ['association_id' => $association_id];
     $setFields = [];
@@ -85,7 +85,7 @@ function deleteAssociation($association_id){
     // Need to bind the parameter
     $stmt->bindParam(':association_id', $association_id);
     $res = $stmt->execute();
-    
+
     // Check if any rows were affected
     return $stmt->rowCount() > 0;
 }
@@ -100,5 +100,39 @@ function getAssociationByName($name){
     } catch (PDOException $e) {
         echo "Erreur lors de la récupération de l'association: " . $e->getMessage();
         return null;
+    }
+}
+
+function getEmployeesByAssociation($association_id, $limit = null, $offset = null){
+    try{
+        $db = getDatabaseConnection();
+        $sql = "SELECT c.collaborateur_id, c.nom, c.prenom, c.username, c.email, c.role, c.telephone, c.id_societe, c.date_creation
+                FROM collaborateur c
+                JOIN participe_association pa ON c.collaborateur_id = pa.id_collaborateur
+                WHERE pa.id_association = :association_id AND c.desactivate = 0";
+
+        // Ajouter la pagination si les paramètres sont fournis
+        if ($limit !== null) {
+            $sql .= " LIMIT :limit";
+            if ($offset !== null) {
+                $sql .= " OFFSET :offset";
+            }
+        }
+
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':association_id', $association_id, PDO::PARAM_INT);
+
+        if ($limit !== null) {
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            if ($offset !== null) {
+                $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            }
+        }
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e){
+        echo "Erreur lors de la récupération des employés de l'association: " . $e->getMessage();
+        return [];
     }
 }
