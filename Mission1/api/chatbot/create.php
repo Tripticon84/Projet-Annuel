@@ -11,24 +11,39 @@ if (!methodIsAllowed('create')) {
 
 acceptedTokens(true, false, false, false);
 
-
 $data = getBody();
+
+if (!validateMandatoryParams($data, ['question', 'answer'])) {
+    returnError(400, 'Missing required parameters');
+    return;
+}
+
 $question = $data['question'];
 $answer = $data['answer'];
 
-if (validateMandatoryParams($data, ['question', 'answer'])) {
-    $newChatbotId = createChatbot($question, $answer);
+// Vérifier si c'est une sous-question
+if (isset($data['parent_id']) && !empty($data['parent_id'])) {
+    $parent_id = $data['parent_id'];
 
-    if (!$newChatbotId) {
-        // Log the error for debugging
-        error_log("Failed to create chatbot: " . print_r(error_get_last(), true));
-        returnError(500, 'Could not create the Chatbot. Database operation failed.');
+    // Vérifier que le parent existe
+    $parentChatbot = getChatbot($parent_id);
+    if (!$parentChatbot) {
+        returnError(404, 'Parent question not found');
         return;
     }
 
-    echo json_encode(['chatbot_id' => $newChatbotId]);
-    http_response_code(201);
-}else{
-    returnError(400, 'Missing required parameters');
+    // Créer la sous-question
+    $chatbot_id = createSubChatbot($question, $answer, $parent_id);
+} else {
+    // Créer une question principale
+    $chatbot_id = createChatbot($question, $answer);
+}
+
+if (!$chatbot_id) {
+    returnError(500, 'Internal Server Error');
     return;
+} else {
+    echo json_encode(['chatbot_id' => $chatbot_id]);
+    http_response_code(201);
+    exit();
 }
