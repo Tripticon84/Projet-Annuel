@@ -71,7 +71,7 @@ include_once "../includes/head.php"
                                 <i class="fas fa-calendar-check"></i>
                             </div>
                             <h3>185</h3>
-                            <p class="text-muted mb-0">Réservations ce mois</p>
+                            <p class="text-muted mb-0">Réservations du mois</p>
                             <div class="mt-2 text-success small">
                                 <i class="fas fa-arrow-up"></i> +15% depuis le mois dernier
                             </div>

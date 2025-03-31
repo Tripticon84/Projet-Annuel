@@ -1,6 +1,34 @@
 <?php
 $title = "Accueil";
-include_once "includes/head.php"
+include_once "includes/head.php";
+include_once "../api/dao/company.php";
+include_once "../api/dao/estimate.php";
+
+// Récupération des statistiques
+$companyStats = getCompaniesStats();
+if (!$companyStats) {
+    $companyStats = [
+        'total' => 0,
+        'new' => 0,
+        'totalVariation' => 0,
+        'newVariation' => 0,
+    ];
+}
+
+$contractStats = getContractStats();
+if (!$contractStats) {
+    $contractStats = [
+        'devis_totaux' => 0,
+        'contrats_actifs' => 0,
+        'montant_total_contrats_mois' => 0,
+        'taux_conversion' => 0,
+    ];
+}
+
+// Pour l'exemple, nous allons utiliser des valeurs fictives pour les événements et prestataires
+// Ces valeurs pourraient être remplacées par des appels API réels ultérieurement
+$evenementsActifs = 126;
+$prestatairesActifs = 89;
 ?>
 
 <body>
@@ -39,10 +67,11 @@ include_once "includes/head.php"
                             <div class="stat-icon bg-primary bg-opacity-10 text-primary">
                                 <i class="fas fa-building"></i>
                             </div>
-                            <h3>184</h3>
+                            <h3><?php echo number_format($companyStats['total'], 0, ',', ' '); ?></h3>
                             <p class="text-muted mb-0">Sociétés clientes</p>
-                            <div class="mt-2 text-success small">
-                                <i class="fas fa-arrow-up"></i> +5% depuis le mois dernier
+                            <div class="mt-2 <?php echo $companyStats['totalVariation'] >= 0 ? 'text-success' : 'text-danger'; ?> small">
+                                <i class="fas fa-arrow-<?php echo $companyStats['totalVariation'] >= 0 ? 'up' : 'down'; ?>"></i>
+                                <?php echo ($companyStats['totalVariation'] >= 0 ? '+' : '') . $companyStats['totalVariation']; ?>% depuis le mois dernier
                             </div>
                         </div>
                     </div>
@@ -51,7 +80,7 @@ include_once "includes/head.php"
                             <div class="stat-icon bg-success bg-opacity-10 text-success">
                                 <i class="fas fa-euro-sign"></i>
                             </div>
-                            <h3>57.2K€</h3>
+                            <h3><?php echo number_format($contractStats['montant_total_contrats_mois'], 0, ',', ' '); ?>€</h3>
                             <p class="text-muted mb-0">Revenus mensuels</p>
                             <div class="mt-2 text-success small">
                                 <i class="fas fa-arrow-up"></i> +8% depuis le mois dernier
@@ -63,7 +92,7 @@ include_once "includes/head.php"
                             <div class="stat-icon bg-warning bg-opacity-10 text-warning">
                                 <i class="fas fa-calendar-alt"></i>
                             </div>
-                            <h3>126</h3>
+                            <h3><?php echo $evenementsActifs; ?></h3>
                             <p class="text-muted mb-0">Événements actifs</p>
                             <div class="mt-2 text-danger small">
                                 <i class="fas fa-arrow-down"></i> -2% depuis le mois dernier
@@ -75,7 +104,7 @@ include_once "includes/head.php"
                             <div class="stat-icon bg-info bg-opacity-10 text-info">
                                 <i class="fas fa-user-tie"></i>
                             </div>
-                            <h3>89</h3>
+                            <h3><?php echo $prestatairesActifs; ?></h3>
                             <p class="text-muted mb-0">Prestataires actifs</p>
                             <div class="mt-2 text-success small">
                                 <i class="fas fa-arrow-up"></i> +10% depuis le mois dernier
@@ -489,179 +518,98 @@ include_once "includes/head.php"
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <span>Ateliers bien-être</span>
                                         <span>78%</span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
                                     </div>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span>Conférences thématiques</span>
+                                            <span>65%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span>Conférences thématiques</span>
-                                        <span>65%</span>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span>Cours de yoga</span>
+                                            <span>52%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 52%" aria-valuenow="52" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
                                     </div>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span>Consultations psy</span>
+                                            <span>48%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width: 48%" aria-valuenow="48" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span>Cours de yoga</span>
-                                        <span>52%</span>
-                                    </div>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-info" role="progressbar" style="width: 52%" aria-valuenow="52" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span>Consultations psy</span>
-                                        <span>48%</span>
-                                    </div>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 48%" aria-valuenow="48" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span>Team building</span>
-                                        <span>34%</span>
-                                    </div>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 34%" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span>Team building</span>
+                                            <span>34%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 34%" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Quick Action Cards -->
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <h5>Actions rapides</h5>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-user-plus fa-2x text-primary"></i>
+                    <!-- Quick Action Cards -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Actions rapides</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3 mb-3">
+                                <div class="mb-3">
+                                    <i class="fas fa-user-plus fa-2x text-primary"></i>
+                                </div>
+                                <h6>Nouveau client</h6>
+                                <a href="#" class="btn btn-sm btn-outline-primary mt-2">Ajouter</a>
                             </div>
-                            <h6>Nouveau client</h6>
-                            <a href="#" class="btn btn-sm btn-outline-primary mt-2">Ajouter</a>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3 mb-3">
+                                <div class="mb-3">
+                                    <i class="fas fa-calendar-plus fa-2x text-success"></i>
+                                </div>
+                                <h6>Nouvel événement</h6>
+                                <a href="#" class="btn btn-sm btn-outline-success mt-2">Créer</a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3 mb-3">
+                                <div class="mb-3">
+                                    <i class="fas fa-file-invoice fa-2x text-warning"></i>
+                                </div>
+                                <h6>Nouvelle facture</h6>
+                                <a href="#" class="btn btn-sm btn-outline-warning mt-2">Générer</a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3 mb-3">
+                                <div class="mb-3">
+                                    <i class="fas fa-chart-pie fa-2x text-info"></i>
+                                </div>
+                                <h6>Rapport analytique</h6>
+                                <a href="#" class="btn btn-sm btn-outline-info mt-2">Exporter</a>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-calendar-plus fa-2x text-success"></i>
-                            </div>
-                            <h6>Nouvel événement</h6>
-                            <a href="#" class="btn btn-sm btn-outline-success mt-2">Créer</a>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-file-invoice fa-2x text-warning"></i>
-                            </div>
-                            <h6>Nouvelle facture</h6>
-                            <a href="#" class="btn btn-sm btn-outline-warning mt-2">Générer</a>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-chart-pie fa-2x text-info"></i>
-                            </div>
-                            <h6>Rapport analytique</h6>
-                            <a href="#" class="btn btn-sm btn-outline-info mt-2">Exporter</a>
-                        </div>
-                    </div>
-                </div>
             </main>
         </div>
     </div>
 
 
-    <!-- Scripts pour les graphiques -->
-    <script>
-        // Revenue Chart
-        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        const revenueChart = new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'],
-                datasets: [{
-                        label: 'Revenus 2025 (K€)',
-                        data: [42.8, 45.3, 51.2, 52.7, 55.6, 57.2, 59.8, 61.5, 63.2, 64.7, 68.1, 72.5],
-                        borderColor: '#3a86ff',
-                        backgroundColor: 'rgba(58, 134, 255, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    },
-                    {
-                        label: 'Revenus 2024 (K€)',
-                        data: [38.2, 39.5, 42.1, 45.3, 47.8, 48.5, 50.2, 52.4, 53.8, 55.1, 58.7, 62.3],
-                        borderColor: '#8338ec',
-                        backgroundColor: 'rgba(131, 56, 236, 0.05)',
-                        tension: 0.3,
-                        fill: true,
-                        borderDash: [5, 5]
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value + ' K€';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Region Chart
-        const regionCtx = document.getElementById('regionChart').getContext('2d');
-        const regionChart = new Chart(regionCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Paris & Île-de-France', 'Auvergne-Rhône-Alpes', 'PACA', 'Nouvelle-Aquitaine', 'Grand-Est', 'Autres'],
-                datasets: [{
-                    data: [45, 18, 12, 10, 8, 7],
-                    backgroundColor: [
-                        '#3a86ff',
-                        '#8338ec',
-                        '#ff006e',
-                        '#fb5607',
-                        '#ffbe0b',
-                        '#38b000'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    }
-                }
-            }
-        });
-
-
-    </script>
 </body>
 
 </html>
