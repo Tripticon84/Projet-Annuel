@@ -6,7 +6,7 @@ function createAssociation($name, $description)
 {
     try{
         $db = getDatabaseConnection();
-        $sql = "INSERT INTO association (name, desciption) VALUES (:name, :description)";
+        $sql = "INSERT INTO association (name, description) VALUES (:name, :description)";
         $stmt = $db->prepare($sql);
 
         $res=$stmt->execute(['name' => $name, 'description' => $description]);
@@ -22,7 +22,7 @@ function createAssociation($name, $description)
 function getAllAssociations(){
     try{
         $db = getDatabaseConnection();
-        $sql = "SELECT id, name,description FROM association";
+        $sql = "SELECT association_id, name,description FROM association";
         $stmt = $db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e){
@@ -32,43 +32,73 @@ function getAllAssociations(){
 }
 
 
-function getAssociationById($id){
+function getAssociationById($association_id){
     try{
         $db = getDatabaseConnection();
-        $sql = "SELECT id, name, description FROM association WHERE id = :id";
+        $sql = "SELECT association_id, name, description FROM association WHERE association_id = :association_id";
         $stmt = $db->prepare($sql);
-        $res = $stmt->execute();
+        $res = $stmt->execute(['association_id' => $association_id]);
         if (!$res) {
-            return 404;
+            return null;
         }
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }catch (PDOException $e){
         echo "Erreur lors de la récupération de l'association: " . $e->getMessage();
         return null;
     }
 }
 
-function updateAssociation($id, $name, $description){
-    try{
-        $db = getDatabaseConnection();
-        $sql = "UPDATE association SET name = :name, description = :description WHERE id = :id";
-        $stmt = $db->prepare($sql);
+function updateAssociation($association_id, ?string $name=null, ?string $description=null){
+    
+    $db = getDatabaseConnection();
+    $params = ['association_id' => $association_id];
+    $setFields = [];
 
-        $res=$stmt->execute(['name' => $name, 'description' => $description]);
-        if ($res) {
-            return $stmt->rowCount();
-        }
-    }catch(PDOException $e){
-        echo "Erreur lors de la mise a jour de l'association: " . $e->getMessage();
-        return false;
+    if ($name !== null) {
+        $setFields[] = "name = :name";
+        $params['name'] = $name;
     }
+
+    if ($description !== null) {
+        $setFields[] = "description = :description";
+        $params['description'] = $description;
+    }
+
+    if (empty($setFields)) {
+        return 0; // Rien à mettre à jour
+    }
+
+    $sql = "UPDATE association SET " . implode(", ", $setFields) . " WHERE association_id = :association_id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);
+
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
 }
 
-function deleteAssociation($id){
+function deleteAssociation($association_id){
     $db = getDatabaseConnection();
-    $sql = "DELETE FROM association WHERE id=:id";
+    $sql = "DELETE FROM association WHERE association_id=:association_id";
     $stmt = $db->prepare($sql);
+    // Need to bind the parameter
+    $stmt->bindParam(':association_id', $association_id);
     $res = $stmt->execute();
-    if (!$res) {
-        return 404;
+    
+    // Check if any rows were affected
+    return $stmt->rowCount() > 0;
+}
+
+function getAssociationByName($name){
+    try{
+        $db = getDatabaseConnection();
+        $sql = "SELECT name, description FROM association WHERE name = :name";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(['name' => $name]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Erreur lors de la récupération de l'association: " . $e->getMessage();
+        return null;
     }
 }

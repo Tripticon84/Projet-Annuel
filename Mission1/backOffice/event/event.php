@@ -39,6 +39,7 @@ include_once "../includes/head.php";
                                         <th scope="col">Date</th>
                                         <th scope="col">Lieu</th>
                                         <th scope="col">Type</th>
+                                        <th scope="col">Statut</th>
                                         <th scope="col">Association</th>
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
@@ -86,6 +87,7 @@ include_once "../includes/head.php";
                                         <th scope="col">Date</th>
                                         <th scope="col">Lieu</th>
                                         <th scope="col">Type</th>
+                                        <th scope="col">Statut</th>
                                         <th scope="col">Association</th>
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
@@ -199,10 +201,10 @@ include_once "../includes/head.php";
         });
 
         function fetchUpcomingEvents() {
-            const upcomingEventsList = document.getElementById('upcomingEventsList');
+            const upcomingEventsList = document.getEventById('upcomingEventsList');
             upcomingEventsList.innerHTML = '<tr><td colspan="7" class="text-center">Chargement des événements...</td></tr>';
 
-            fetch('../../api/event/getUpcomingEvents.php', {
+            fetch('../../api/event/upcomingEvents.php', {
                 headers: {
                     'Authorization': 'Bearer ' + getToken()
                 }
@@ -261,7 +263,7 @@ include_once "../includes/head.php";
 
             let limit = 5;
             let offset = (page - 1) * limit;
-            let url = `../../api/event/getAllEvents.php?limit=${limit}&offset=${offset}`;
+            let url = `../../api/event/getAll.php?limit=${limit}&offset=${offset}`;
 
             if (search) {
                 url += '&search=' + encodeURIComponent(search);
@@ -282,7 +284,7 @@ include_once "../includes/head.php";
                     allEventsList.innerHTML = '';
                     if (data && data.length > 0) {
                         data.forEach(event => {
-                            const row = document.createElement('tr');
+                            const row = document.createEvent('tr');
                             row.innerHTML = `
                                 <td>${event.evenement_id}</td>
                                 <td>
@@ -305,7 +307,7 @@ include_once "../includes/head.php";
                                             <li><a class="dropdown-item" href="#" onclick="viewParticipants(${event.evenement_id}); return false;"><i class="fas fa-users me-2"></i>Voir participants</a></li>
                                             <li><a class="dropdown-item" href="modify.php?id=${event.evenement_id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>Supprimer</a></li>
+                                            <li><a class="dropdown-item text-danger" href=""><i class="fas fa-trash-alt me-2"></i>Supprimer</a></li>
                                         </ul>
                                     </div>
                                 </td>
@@ -313,30 +315,30 @@ include_once "../includes/head.php";
                             allEventsList.appendChild(row);
                         });
 
-                        document.getElementById('paginationInfo').textContent = `Affichage de 1-${data.length} événements`;
+                        document.getEventById('paginationInfo').textContent = `Affichage de 1-${data.length} événements`;
                         updatePagination(data.length === limit, search);
                     } else {
                         allEventsList.innerHTML = '<tr><td colspan="7" class="text-center">Aucun événement trouvé</td></tr>';
-                        document.getElementById('paginationInfo').textContent = 'Aucun événement trouvé';
+                        document.getEventById('paginationInfo').textContent = 'Aucun événement trouvé';
                     }
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
                     allEventsList.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Erreur lors du chargement des événements</td></tr>';
-                    document.getElementById('paginationInfo').textContent = 'Erreur lors du chargement des données';
+                    document.getEventById('paginationInfo').textContent = 'Erreur lors du chargement des données';
                 });
         }
 
         function updatePagination(hasMore, search = '') {
-            const paginationList = document.getElementById('paginationList');
+            const paginationList = document.getEventById('paginationList');
             paginationList.innerHTML = '';
             // Bouton précédent
-            let prevItem = document.createElement('li');
+            let prevItem = document.createEvent('li');
             prevItem.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
             prevItem.innerHTML = `<a class="page-link" href="#" onclick="fetchAllEvents('${search}', ${currentPage - 1}); return false;">Précédent</a>`;
             paginationList.appendChild(prevItem);
             // Bouton suivant
-            let nextItem = document.createElement('li');
+            let nextItem = document.createEvent('li');
             nextItem.className = 'page-item ' + (!hasMore ? 'disabled' : '');
             nextItem.innerHTML = `<a class="page-link" href="#" onclick="fetchAllEvents('${search}', ${currentPage + 1}); return false;">Suivant</a>`;
             paginationList.appendChild(nextItem);
