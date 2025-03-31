@@ -116,17 +116,17 @@ function updateEvent($event_id, string $nom = null, string $date = null, string 
     return null;
 }
 
-function deleteEvent($event_id) {
+function deleteEvent($evenement_id) {
     $db = getDatabaseConnection();
     
     $db->beginTransaction();
     
     try {
-        $query = $db->prepare('DELETE FROM participe_evenement WHERE id_evenement = :event_id');
-        $query->execute(['event_id' => $event_id]);
+        $query = $db->prepare('DELETE FROM participe_evenement WHERE id_evenement = :evenement_id');
+        $query->execute(['evenement_id' => $evenement_id]);
         
-        $query = $db->prepare('DELETE FROM evenements WHERE evenement_id = :event_id');
-        $query->execute(['event_id' => $event_id]);
+        $query = $db->prepare('DELETE FROM evenements WHERE evenement_id = :evenement_id');
+        $query->execute(['evenement_id' => $evenement_id]);
         
         $db->commit();
         return true;

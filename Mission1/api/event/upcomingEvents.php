@@ -19,6 +19,7 @@ foreach ($events as $event) {
     $result[] = [
         "evenement_id" => $event['evenement_id'],
         "nom" => $event['nom'],
+        "date" => $event['date'],
         "lieu" => $event['lieu'],
         "type" => $event['type'],
         "statut" => $event['statut'],

@@ -36,6 +36,7 @@ foreach ($events as $event) {
         "evenement_id" => $event['evenement_id'],
         "nom" => $event['nom'],
         "lieu" => $event['lieu'],
+        "date" => $event['date'],
         "type" => $event['type'],
         "statut" => $event['statut'],
         "id_association" => $event['id_association']

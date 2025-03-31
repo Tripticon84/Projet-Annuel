@@ -10,29 +10,30 @@ if (!methodIsAllowed('delete')) {
     return;
 }
 
-acceptedTokens(true, true, false, true);
+//acceptedTokens(true, true, false, true);
 
 $data = getBody();
-$id = $data['evenement_id'];
+$evenement_id = $data['evenement_id'];
 
 if (validateMandatoryParams($data, ['evenement_id'])) {
 
     // Vérifier l'id existe
-    $event = getEventById($id);
+    $event = getEventById($evenement_id);
+
     if (empty($event)) {
         returnError(400, 'Event does not exist');
         return;
     }
 
 
-    $res = deleteEvent($id);
+    $res = deleteEvent($evenement_id);
 
     if (!$res) {
         returnError(500, 'Could not delete the Event');
         return;
     }
 
-    echo json_encode(['id' => $id]);
+    echo json_encode(['evenement_id' => $evenement_id]);
     http_response_code(200);
     exit;
 } else {

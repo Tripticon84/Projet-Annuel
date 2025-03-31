@@ -9,7 +9,7 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
-acceptedTokens(true, true, false, true);
+//acceptedTokens(true, true, false, true);
 
 $data = getBody();
 
@@ -41,7 +41,7 @@ if ($date !== null && !DateTime::createFromFormat('Y-m-d', $date)) {
 }
 
 // Vérifie le statut
-if ($statut !== null && !in_array($statut, ['planifié', 'en cours', 'terminé', 'annulé'])) {
+if ($statut !== null && !in_array($statut, ['en_cours', 'termine', 'a_venir'])) {
     returnError(400, 'Invalide statut');
     return;
 }
