@@ -17,6 +17,8 @@ $data = getBody();
 $note = $data['note'];
 $commentaire = $data['commentaire'];
 $collaborateur_id = $data['collaborateur_id'];
+$date_creation = date('Y-m-d H:i:s'); // Get the current date and timeS
+$id_prestataire = $data['prestataire_id']; // Optional field
 
 if (validateMandatoryParams($data, ['note', 'commentaire', 'collaborateur_id'])) {
 
@@ -38,10 +40,17 @@ if (validateMandatoryParams($data, ['note', 'commentaire', 'collaborateur_id']))
         return;
     }
 
-
-    $newEvaluationId = createEvaluation($note, $commentaire, $collaborateur_id);
+    $newEvaluationId = createEvaluation($note, $commentaire, $collaborateur_id, $date_creation);
 
     if (!$newEvaluationId) {
+        // Log the error for debugging
+        error_log("Failed to create evaluation: " . print_r(error_get_last(), true));
+        returnError(500, 'Could not create the Evaluation. Database operation failed.');
+        return;
+    }
+
+    $insert=newEvaluationInNote_prestataire($newEvaluationId,$id_prestataire);
+    if (!$insert) {
         // Log the error for debugging
         error_log("Failed to create evaluation: " . print_r(error_get_last(), true));
         returnError(500, 'Could not create the Evaluation. Database operation failed.');

@@ -747,12 +747,13 @@ INSERT INTO activite (nom, type, date, id_devis, id_prestataire, id_lieu) VALUES
 ('Atelier test', 'test', '2025-06-30', 1, 1, 1);
 
 -- Évaluations des collaborateurs
-INSERT INTO evaluation (note, commentaire, id_collaborateur) VALUES
-(5, 'Excellent atelier, très instructif et pratique. Je me sens mieux équipé pour gérer mon stress quotidien.', 1),
-(4, 'Bonne séance, dynamique et adaptée à tous les niveaux. Quelques exercices supplémentaires auraient été appréciés.', 3),
-(5, 'Consultation très personnalisée, la nutritionniste a su répondre précisément à mes besoins.', 5),
-(3, 'Activité intéressante mais trop courte pour en tirer pleinement profit.', 2),
-(4, 'Conférence enrichissante avec de nombreux conseils pratiques à appliquer au quotidien.', 7);
+INSERT INTO evaluation (note, commentaire, id_collaborateur, date_creation) VALUES
+(5, 'Excellent atelier, très instructif et pratique. Je me sens mieux équipé pour gérer mon stress quotidien.', 1, NOW()),
+(4, 'Bonne séance, dynamique et adaptée à tous les niveaux. Quelques exercices supplémentaires auraient été appréciés.', 3, NOW()),
+(5, 'Consultation très personnalisée, la nutritionniste a su répondre précisément à mes besoins.', 5, NOW()),
+(3, 'Activité intéressante mais trop courte pour en tirer pleinement profit.', 2, NOW()),
+(4, 'Conférence enrichissante avec de nombreux conseils pratiques à appliquer au quotidien.', 7, NOW());
+
 
 -- Événements entreprise
 INSERT INTO evenements (nom, date, lieu, type, statut, id_association) VALUES
