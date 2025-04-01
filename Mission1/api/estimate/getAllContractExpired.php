@@ -9,7 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-acceptedTokens(true, true, false, true);
+// acceptedTokens(true, true, false, true);
 
 
 $limit = null;

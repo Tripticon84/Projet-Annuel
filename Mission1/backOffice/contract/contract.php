@@ -215,23 +215,26 @@ if (!$contractStats) {
             fetchContracts();
             fetchExpiredContracts();
         });
+
         function fetchQuotes() {
             const quotesList = document.getElementById('quotesList');
             quotesList.innerHTML = '<tr><td colspan="8" class="text-center">Chargement...</td></tr>';
             fetch('../../api/estimate/getAllEstimate.php', {
-            headers: {
-                'Authorization': 'Bearer ' + getToken()
-            }
-            })
-            .then(response => {
-                if (!response.ok) { throw new Error('Erreur'); }
-                return response.json();
-            })
-            .then(data => {
-                quotesList.innerHTML = '';
-                if (data && data.length > 0) {
-                data.forEach(item => {
-                    quotesList.innerHTML += `
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    quotesList.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            quotesList.innerHTML += `
                     <tr>
                         <td>${item.devis_id}</td>
                         <td>${formatDate(item.date_debut) || '-'}</td>
@@ -245,33 +248,35 @@ if (!$contractStats) {
                         <button class="btn btn-sm btn-outline-secondary">Voir</button>
                         </td>
                     </tr>`;
+                        });
+                    } else {
+                        quotesList.innerHTML = '<tr><td colspan="8" class="text-center">Aucun devis trouvé</td></tr>';
+                    }
+                })
+                .catch(() => {
+                    quotesList.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Erreur</td></tr>';
                 });
-                } else {
-                quotesList.innerHTML = '<tr><td colspan="8" class="text-center">Aucun devis trouvé</td></tr>';
-                }
-            })
-            .catch(() => {
-                quotesList.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Erreur</td></tr>';
-            });
         }
 
         function fetchContracts() {
             const contractsList = document.getElementById('contractsList');
             contractsList.innerHTML = '<tr><td colspan="8" class="text-center">Chargement...</td></tr>';
             fetch('../../api/estimate/getAllContract.php', {
-            headers: {
-                'Authorization': 'Bearer ' + getToken()
-            }
-            })
-            .then(response => {
-                if (!response.ok) { throw new Error('Erreur'); }
-                return response.json();
-            })
-            .then(data => {
-                contractsList.innerHTML = '';
-                if (data && data.length > 0) {
-                data.forEach(item => {
-                    contractsList.innerHTML += `
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    contractsList.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            contractsList.innerHTML += `
                     <tr>
                         <td>${item.devis_id}</td>
                         <td>${formatDate(item.date_debut) || '-'}</td>
@@ -280,38 +285,39 @@ if (!$contractStats) {
                         <td>${item.montant_tva || '-'}</td>
                         <td>${item.montant_ht || '-'}</td>
                         <td>${item.id_societe || '-'}</td>
-                        <td>-</td>
                         <td class="text-end">
                         <button class="btn btn-sm btn-outline-secondary">Voir</button>
                         </td>
                     </tr>`;
+                        });
+                    } else {
+                        contractsList.innerHTML = '<tr><td colspan="8" class="text-center">Aucun contrat trouvé</td></tr>';
+                    }
+                })
+                .catch(() => {
+                    contractsList.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Erreur</td></tr>';
                 });
-                } else {
-                contractsList.innerHTML = '<tr><td colspan="8" class="text-center">Aucun contrat trouvé</td></tr>';
-                }
-            })
-            .catch(() => {
-                contractsList.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Erreur</td></tr>';
-            });
         }
 
         function fetchExpiredContracts() {
             const expiredList = document.getElementById('expiredList');
             expiredList.innerHTML = '<tr><td colspan="8" class="text-center">Chargement...</td></tr>';
             fetch('../../api/estimate/getAllContractExpired.php', {
-            headers: {
-                'Authorization': 'Bearer ' + getToken()
-            }
-            })
-            .then(response => {
-                if (!response.ok) { throw new Error('Erreur'); }
-                return response.json();
-            })
-            .then(data => {
-                expiredList.innerHTML = '';
-                if (data && data.length > 0) {
-                data.forEach(item => {
-                    expiredList.innerHTML += `
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    expiredList.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            expiredList.innerHTML += `
                     <tr>
                         <td>${item.devis_id}</td>
                         <td>${item.date_debut ? formatDate(item.date_debut) : '-'}</td>
@@ -324,14 +330,14 @@ if (!$contractStats) {
                         <button class="btn btn-sm btn-outline-secondary">Voir</button>
                         </td>
                     </tr>`;
+                        });
+                    } else {
+                        expiredList.innerHTML = '<tr><td colspan="8" class="text-center">Aucun contrat expiré</td></tr>';
+                    }
+                })
+                .catch(() => {
+                    expiredList.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Erreur</td></tr>';
                 });
-                } else {
-                expiredList.innerHTML = '<tr><td colspan="8" class="text-center">Aucun contrat expiré</td></tr>';
-                }
-            })
-            .catch(() => {
-                expiredList.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Erreur</td></tr>';
-            });
         }
 
 
@@ -341,7 +347,7 @@ if (!$contractStats) {
             const date = new Date(dateStr);
             return date.toLocaleDateString('fr-FR');
         }
-
     </script>
 </body>
+
 </html>

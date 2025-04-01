@@ -137,7 +137,6 @@ include_once "../includes/head.php";
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="button" class="btn btn-danger me-2" id="deleteAssociationBtn">Supprimer</button>
                     <button type="button" class="btn btn-primary" id="saveChangesBtn">Enregistrer les modifications</button>
                 </div>
             </div>
@@ -309,37 +308,6 @@ include_once "../includes/head.php";
                 console.error('Erreur:', error);
                 alert('Erreur lors de la mise à jour de l\'association');
             });
-        }
-
-        function deleteAssociation() {
-            const associationId = document.getElementById('modal-association-id').textContent;
-
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette association ? Cette action ne peut pas être annulée.')) {
-                fetch('../../api/association/delete.php', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + getToken()
-                    },
-                    body: JSON.stringify({
-                        association_id: associationId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message === 'Association deleted') {
-                        alert('Association supprimée avec succès');
-                        currentModal.hide();
-                        fetchAssociations(currentPage);
-                    } else {
-                        alert('Erreur lors de la suppression de l\'association');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert('Erreur lors de la suppression de l\'association');
-                });
-            }
         }
 
         function refreshAssociations() {
