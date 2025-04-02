@@ -3,14 +3,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/hashPassword.php";
 
 
-function createSociety($nom, $email, $adresse, $contact_person, $password, $telephone)
+function createSociety($nom, $email, $adresse, $contact_person, $password, $telephone, $siret)
 {
     $db = getDatabaseConnection();
 
     // Hasher le mot de passe
     $password = hashPassword($password);
 
-    $sql = "INSERT INTO societe (nom, email, adresse, contact_person, password, telephone, date_creation) VALUES (:nom, :email, :adresse, :contact_person, :password, :telephone, :date_creation)";
+    $sql = "INSERT INTO societe (nom, email, adresse, contact_person, password, telephone, date_creation, siret) VALUES (:nom, :email, :adresse, :contact_person, :password, :telephone, :date_creation, :siret)";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         'nom' => $nom,
@@ -19,7 +19,8 @@ function createSociety($nom, $email, $adresse, $contact_person, $password, $tele
         'contact_person' => $contact_person,
         'password' => $password,
         'telephone' => $telephone,
-        'date_creation' => date('Y-m-d H:i:s')
+        'date_creation' => date('Y-m-d H:i:s'),
+        'siret' => $siret
     ]);
     if ($res) {
         return $db->lastInsertId("societe_id");
@@ -49,7 +50,7 @@ function getSocietyByTelephone($telephone)
 function getSocietyById($id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation FROM societe WHERE societe_id = :id";
+    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation,siret FROM societe WHERE societe_id = :id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
