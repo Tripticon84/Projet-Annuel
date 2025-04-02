@@ -11,7 +11,6 @@ if (!methodIsAllowed('create')) {
 
 $data = getBody();
 
-// Validation des paramètres obligatoires
 if (!validateMandatoryParams($data, ['salon_id', 'collaborateur_id'])) {
     returnError(400, "L'ID du salon et l'ID du collaborateur sont requis");
 }
