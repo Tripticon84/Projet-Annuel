@@ -34,6 +34,7 @@ foreach ($evals as $eval) {
         "commentaire" => $eval['commentaire'],
         "id_collaborateur" => $eval['id_collaborateur'],
         "date_creation" => $eval['date_creation'],
+        "desactivate" => $eval['desactivate']
     ];
 }
 

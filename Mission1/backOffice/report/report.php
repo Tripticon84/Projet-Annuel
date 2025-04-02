@@ -16,7 +16,7 @@ include_once "../includes/head.php";
 
                 <!-- Statistiques rapides -->
                 <div class="row mb-4">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="stat-card">
                             <div class="stat-icon bg-danger-subtle text-danger">
                                 <i class="fas fa-exclamation-triangle"></i>
@@ -25,7 +25,16 @@ include_once "../includes/head.php";
                             <h3 id="pendingCount">-</h3>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-warning-subtle text-warning">
+                                <i class="fas fa-spinner"></i>
+                            </div>
+                            <p class="text-muted mb-0">Signalements en cours</p>
+                            <h3 id="inProgressCount">-</h3>
+                        </div>
+                    </div>
+                    <div la class="col-md-3">
                         <div class="stat-card">
                             <div class="stat-icon bg-success-subtle text-success">
                                 <i class="fas fa-check-circle"></i>
@@ -34,7 +43,7 @@ include_once "../includes/head.php";
                             <h3 id="resolvedCount">-</h3>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="stat-card">
                             <div class="stat-icon bg-info-subtle text-info">
                                 <i class="fas fa-building"></i>
@@ -64,6 +73,34 @@ include_once "../includes/head.php";
                                     </tr>
                                 </thead>
                                 <tbody id="pendingReportsList">
+                                    <tr>
+                                        <td colspan="6" class="text-center">Chargement des signalements...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- In Progress Reports Table -->
+                <div class="card mt-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Signalements en cours de traitement</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Entreprise</th>
+                                        <th scope="col">Titre</th>
+                                        <th scope="col">Statut</th>
+                                        <th scope="col" class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inProgressReportsList">
                                     <tr>
                                         <td colspan="6" class="text-center">Chargement des signalements...</td>
                                     </tr>
@@ -192,6 +229,7 @@ include_once "../includes/head.php";
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             fetchPendingReports();
+            fetchInProgressReports();
             fetchProcessedReports();
             fetchCancelledReports();
         });
@@ -199,6 +237,7 @@ include_once "../includes/head.php";
         let currentPage = 1;
         // Variables pour stocker les données des signalements
         let pendingReports = [];
+        let inProgressReports = [];
         let processedReports = [];
         let cancelledReports = [];
         let allCompanies = new Set();
@@ -206,6 +245,7 @@ include_once "../includes/head.php";
         // Fonction pour mettre à jour les compteurs statistiques
         function updateStatCounters() {
             document.getElementById('pendingCount').textContent = pendingReports.length;
+            document.getElementById('inProgressCount').textContent = inProgressReports.length;
             document.getElementById('resolvedCount').textContent = processedReports.length;
             document.getElementById('companiesCount').textContent = allCompanies.size;
         }
@@ -232,8 +272,7 @@ include_once "../includes/head.php";
                         if (report.id_societe) allCompanies.add(report.id_societe);
                     });
 
-                    // Mise à jour du compteur d'entreprises
-                    document.getElementById('companiesCount').textContent = allCompanies.size;
+                    updateStatCounters();
 
                     if (pendingReports.length > 0) {
                         pendingReports.forEach(report => {
@@ -248,8 +287,8 @@ include_once "../includes/head.php";
                                 <button class="btn btn-sm btn-primary me-1" onclick="viewReportDetails(${report.signalement_id})">
                                     <i class="fas fa-eye"></i> Détails
                                 </button>
-                                <button class="btn btn-sm btn-success" onclick="markAsProcessed(${report.signalement_id})">
-                                    <i class="fas fa-check"></i> Traiter
+                                <button class="btn btn-sm btn-success" onclick="markAsInProgress(${report.signalement_id})">
+                                    <i class="fas fa-spinner"></i> Traiter
                                 </button>
                             </td>
                         `;
@@ -257,6 +296,60 @@ include_once "../includes/head.php";
                         });
                     } else {
                         reportsList.innerHTML = '<tr><td colspan="6" class="text-center">Aucun signalement en attente</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    reportsList.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des signalements</td></tr>';
+                });
+        }
+
+        function fetchInProgressReports() {
+            const reportsList = document.getElementById('inProgressReportsList');
+            reportsList.innerHTML = '<tr><td colspan="6" class="text-center">Chargement des signalements...</td></tr>';
+
+            fetch('../../api/report/getByStatus.php?statut=en_cours', {
+                    headers: {
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    reportsList.innerHTML = '';
+                    inProgressReports = data && Array.isArray(data) ? data : [];
+
+                    // Mise à jour du compteur de signalements en cours
+                    document.getElementById('inProgressCount').textContent = inProgressReports.length;
+
+                    // Ajouter les entreprises uniques
+                    inProgressReports.forEach(report => {
+                        if (report.id_societe) allCompanies.add(report.id_societe);
+                    });
+
+                    updateStatCounters();
+
+                    if (inProgressReports.length > 0) {
+                        inProgressReports.forEach(report => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                            <td>${report.signalement_id}</td>
+                            <td>${formatDate(report.date_signalement)}</td>
+                            <td>${report.id_societe || 'Non spécifié'}</td>
+                            <td>${truncateText(report.probleme, 50)}</td>
+                            <td><span class="badge bg-info">En cours</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-primary me-1" onclick="viewReportDetails(${report.signalement_id})">
+                                    <i class="fas fa-eye"></i> Détails
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="markAsProcessed(${report.signalement_id})">
+                                    <i class="fas fa-check"></i> Terminer
+                                </button>
+                            </td>
+                        `;
+                            reportsList.appendChild(row);
+                        });
+                    } else {
+                        reportsList.innerHTML = '<tr><td colspan="6" class="text-center">Aucun signalement en cours de traitement</td></tr>';
                     }
                 })
                 .catch(error => {
@@ -300,8 +393,7 @@ include_once "../includes/head.php";
                         if (report.id_societe) allCompanies.add(report.id_societe);
                     });
 
-                    // Mise à jour du compteur d'entreprises
-                    document.getElementById('companiesCount').textContent = allCompanies.size;
+                    updateStatCounters();
 
                     if (processedReports.length > 0) {
                         data.forEach(report => {
@@ -370,8 +462,7 @@ include_once "../includes/head.php";
                         if (report.id_societe) allCompanies.add(report.id_societe);
                     });
 
-                    // Mise à jour du compteur d'entreprises
-                    document.getElementById('companiesCount').textContent = allCompanies.size;
+                    updateStatCounters();
 
                     if (cancelledReports.length > 0) {
                         cancelledReports.forEach(report => {
@@ -486,6 +577,7 @@ include_once "../includes/head.php";
                         alert('Statut du signalement mis à jour avec succès');
                         bootstrap.Modal.getInstance(document.getElementById('reportDetailModal')).hide();
                         fetchPendingReports();
+                        fetchInProgressReports();
                         fetchProcessedReports();
                         fetchCancelledReports();
 
@@ -527,6 +619,7 @@ include_once "../includes/head.php";
                         if (data && (data.success || data.signalement_id || !data.empty)) {
                             alert('Signalement marqué comme traité avec succès');
                             fetchPendingReports();
+                            fetchInProgressReports();
                             fetchProcessedReports();
 
                         } else {
@@ -593,6 +686,7 @@ include_once "../includes/head.php";
                         if (!data.empty) {
                             alert('Signalement restauré avec succès');
                             fetchPendingReports();
+                            fetchInProgressReports();
                             fetchCancelledReports();
 
                         } else {
@@ -602,6 +696,45 @@ include_once "../includes/head.php";
             }
         }
 
+        function markAsInProgress(reportId) {
+            if (confirm('Êtes-vous sûr de vouloir prendre en charge ce signalement?')) {
+                fetch('../../api/report/changeState.php', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
+                        },
+                        body: JSON.stringify({
+                            signalement_id: reportId,
+                            statut: 'en_cours'
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok && response.status !== 200) {
+                            throw new Error(`Erreur HTTP: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Considérer comme succès si on a des données
+                        if (data && (data.success || data.signalement_id || !data.empty)) {
+                            alert('Signalement pris en charge avec succès');
+                            fetchPendingReports();
+                            fetchInProgressReports();
+                        } else {
+                            alert('Erreur lors de la prise en charge du signalement');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        if (!navigator.onLine) {
+                            alert('Erreur de connexion: Vérifiez votre connexion internet');
+                        } else {
+                            alert('Une erreur est survenue lors de la prise en charge du signalement: ' + error.message);
+                        }
+                    });
+            }
+        }
 
         function updatePagination(hasMore, search = '', filter = 'all') {
             const paginationList = document.getElementById('paginationList');

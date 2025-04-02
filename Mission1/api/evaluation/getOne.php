@@ -31,7 +31,8 @@ $result = [
     "note" => $eval['note'],
     "commentaire" => $eval['commentaire'],
     "id_collaborateur" => $eval['id_collaborateur'],
-    "date_creation" => $eval['date_creation']
+    "date_creation" => $eval['date_creation'],
+    "desactivate" => $eval['desactivate']
 ];
 
 if (empty($result)) {

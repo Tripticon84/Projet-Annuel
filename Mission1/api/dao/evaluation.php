@@ -21,7 +21,7 @@ function createEvaluation(int $note, String $commentaire, int $id_collaborateur,
 
 function getEvaluationByCollaboratorId(int $id){
     $db = getDatabaseConnection();
-    $sql = "SELECT note, commentaire, id_collaborateur, date_creation FROM evaluation WHERE id_collaborateur = :id";
+    $sql = "SELECT note, commentaire, id_collaborateur, date_creation, desactivate FROM evaluation WHERE id_collaborateur = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         'id' => $id
@@ -34,7 +34,7 @@ function getEvaluationByCollaboratorId(int $id){
 
 function getEvaluation($id){
     $db = getDatabaseConnection();
-    $sql = "SELECT evaluation_id, note, commentaire, id_collaborateur, date_creation FROM evaluation WHERE evaluation_id = :id";
+    $sql = "SELECT evaluation_id, note, commentaire, id_collaborateur, date_creation, desactivate FROM evaluation WHERE evaluation_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         'id' => $id
@@ -46,16 +46,22 @@ function getEvaluation($id){
 }
 
 
-function getAllEvaluation(?int $note,?int $limit, ?int $offset){
+function getAllEvaluation(?int $note = null,?int $desactivate = null,?int $limit, ?int $offset){
     $db = getDatabaseConnection();
     $params = [];
 
-    $sql = "SELECT evaluation_id, note, commentaire, id_collaborateur, date_creation FROM evaluation";
+    $sql = "SELECT evaluation_id, note, commentaire, id_collaborateur, date_creation, desactivate FROM evaluation";
 
     if ($note !== null) {
         $sql .= " WHERE note = :note";
         $params['note'] = $note;
     }
+
+    if ($desactivate !== null && $note === null) {
+        $sql .= " WHERE desactivate = :desactivate";
+        $params['desactivate'] = $desactivate;
+    }
+
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
         $sql .= " LIMIT " . (string) $limit;
@@ -73,58 +79,22 @@ function getAllEvaluation(?int $note,?int $limit, ?int $offset){
     return null;
 }
 
-function deleteEvaluationInEvaluation(int $id)
-{
+function deleteEvaluation(int  $id){
     $db = getDatabaseConnection();
-    $sql = "DELETE FROM evaluation WHERE evaluation_id = :id";
+    $sql = "UPDATE evaluation SET desactivate = :desactivate WHERE evaluation_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
-        'id' => $id
+        'id' => $id,
+        'desactivate' => 1
     ]);
     if ($res) {
-        return $stmt->rowCount(); // Retourne le nombre de lignes affectées
+        return $stmt->rowCount();
     }
-    return null; // En cas d'erreur, retourne null
+    return null;
 }
 
 
-function deleteInNote_prestataire(int $id)
-{
-    $db = getDatabaseConnection();
-    $sql = "DELETE FROM note_prestataire WHERE id_evaluation = :id";
-    $stmt = $db->prepare($sql);
-    $res = $stmt->execute([
-        'id' => $id
-    ]);
-    if ($res) {
-        return $stmt->rowCount(); // Retourne le nombre de lignes affectées
-    }
-    return null; // En cas d'erreur, retourne null
-}
-
-function deleteEvaluation(int $id)
-{
-     // Suppression de l'évaluation dans la table note_prestataire
-    $deletedNote = deleteInNote_prestataire($id);
-    if ($deletedNote === null) {
-        return false; // Échec de la suppression dans note_prestataire
-    }
-    echo json_encode($deletedNote);
-    // Vérification si la suppression a réussi  
-    // Suppression de l'évaluation dans la table evaluation
-    $deletedEval = deleteEvaluationInEvaluation($id);
-    if ($deletedEval === null) {
-        return false; // Échec de la suppression dans evaluation
-    }
-
-    if ($deletedEval && $deletedNote) {
-        return true; // Les deux suppressions ont réussi
-    }
-    return false; // Une ou les deux suppressions ont échoué
-}
-
-
-function updateEvent(?int $id, ?int $note = null, ?String $commentaire = null , ?int $id_collaborateur = null, $date_creation = null){
+function updateEvaluation(?int $id, ?int $note = null, ?String $commentaire = null , ?int $id_collaborateur = null, $date_creation = null, ?int $desactivate = null){
     $db = getDatabaseConnection();
     $params = ['id' => $id];
     $setFields = [];
@@ -147,6 +117,11 @@ function updateEvent(?int $id, ?int $note = null, ?String $commentaire = null , 
     if ($date_creation !== null) {
         $setFields[] = "date_creation = :date_creation";
         $params['date_creation'] = $date_creation;
+    }
+
+    if ($desactivate !== null) {
+        $setFields[] = "desactivate = :desactivate";
+        $params['desactivate'] = $desactivate;
     }
 
     if (empty($setFields)) {
