@@ -44,13 +44,15 @@ $result = []; // Initialize the result array
 
 foreach ($societes as $societe) {
     $result[] = [
-        "societe_id" => $societe['societe_id'],
-        "nom" => $societe['nom'],
-        "contact_person" => $societe['contact_person'],
-        "adresse" => $societe['adresse'],
-        "email" => $societe['email'],
-        "telephone" => $societe['telephone'],
-        "date_creation" => $societe['date_creation']
+        "societe_id" => $company['societe_id'],
+        "nom" => $company['nom'],
+        "contact_person" => $company['contact_person'],
+        "adresse" => $company['adresse'],
+        "email" => $company['email'],
+        "telephone" => $company['telephone'],
+        "date_creation" => $company['date_creation'],
+        "siret" => $company['siret'],
+        "desactivate" => $company['desactivate']
     ];
 }
 

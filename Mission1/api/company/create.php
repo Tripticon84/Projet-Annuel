@@ -2,6 +2,7 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/company.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/hashPassword.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/siret.php';
 
 header('Content-Type: application/json');
 
@@ -20,10 +21,23 @@ $adresse = $data['adresse'];
 $contact_person = $data['contact_person'];
 $password = hashPassword($data['password']);
 $telephone = $data['telephone'];
+$siret = $data['siret'];
 
 
-if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person', 'password', 'telephone'])) {
+
+if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person', 'password', 'telephone', 'siret'])) {
     try {
+
+        if (getCompanyBySiret($siret)) {
+            returnError(400, 'SIRET already exists');
+            return;
+        }
+
+        if (getInseeCompanyInfoBySiret($siret) === null) {
+            returnError(400, 'Invalid SIRET number');
+            return;
+        }
+
         // Valider le format de l'email
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             returnError(400, 'Invalid email format');
@@ -50,7 +64,7 @@ if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person',
             return;
         }
 
-        $newSocietyId = createSociety($nom, $email, $adresse, $contact_person, $password, $telephone);
+        $newSocietyId = createSociety($nom, $email, $adresse, $contact_person, $password, $telephone, $siret);
 
         if (!$newSocietyId) {
             // Log the error for debugging

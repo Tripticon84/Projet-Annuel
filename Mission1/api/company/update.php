@@ -1,5 +1,6 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/company.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/siret.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/hashPassword.php';
 
@@ -22,9 +23,10 @@ $adresse = isset($data['adresse']) ? $data['adresse'] : null;
 $contact_person = isset($data['contact_person']) ? $data['contact_person'] : null;
 $password = !empty($data['password']) ? hashPassword($data['password']) : null;
 $telephone = isset($data['telephone']) ? $data['telephone'] : null;
+$siret = isset($data['siret']) ? $data['siret'] : null;
 
 //verifier qu un champ est fourni pour la mise a jour
-if ($nom === null && $email === null && $adresse === null && $contact_person === null && $password === null && $telephone === null) {
+if ($nom === null && $email === null && $adresse === null && $contact_person === null && $password === null && $telephone === null && $siret === null) {
     returnError(400, 'No data provided for update');
     return;
 }
@@ -56,7 +58,20 @@ if ($password != null && strlen($data['password']) < 12) {
     return;
 }
 
-$res = updateSociety($id, $nom, $email, $adresse, $contact_person, $password, $telephone);
+// Vérifier le siret n'existe pas
+$company = getCompanyBySiret($siret);
+if (!empty($company) && $company['societe_id'] != $id) {
+    returnError(400, 'SIRET already exists');
+    return;
+}
+
+// Vérifier le siret est valide
+if ($siret != null && getInseeCompanyInfoBySiret($siret) === null) {
+    returnError(400, 'Invalid SIRET number');
+    return;
+}
+
+$res = updateSociety($id, $nom, $email, $adresse, $contact_person, $password, $telephone, $siret);
 
 if (!$res) {
     returnError(500, 'Could not update the company');

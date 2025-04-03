@@ -311,8 +311,8 @@ CREATE TABLE `societe` (
   `date_creation` datetime DEFAULT NULL,
   `token` varchar(255) DEFAULT NULL,
   `expiration` datetime NULL,
-  `siret` int(11) NOT NULL,
-  `activate` boolean DEFAULT NULL
+  `siret` varchar(255) DEFAULT NULL,
+  `desactivate` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -656,7 +656,7 @@ INSERT INTO lieu (adresse, ville, code_postal) VALUES
 ('14 Rue Royale', 'Paris', 75008);
 
 -- Sociétés (entreprises clients)
-INSERT INTO societe (nom, adresse, email, contact_person,telephone,password,date_creation,siret,activate) VALUES
+INSERT INTO societe (nom, adresse, email, contact_person,telephone,password,date_creation,siret,desactivate) VALUES
 ('Renault Group', '13 Quai Alphonse Le Gallo, 92100 Boulogne-Billancourt', 'contact@renault.com', 'Marie Dubois', '0123456789', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 33030',true),
 ('AXA Assurances', '25 Avenue Matignon, 75008 Paris', 'entreprises@axa.fr', 'Thomas Moreau', '0234567890', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 44040',false),
 ('Carrefour France', '93 Avenue de Paris, 91300 Massy', 'relations@carrefour.com', 'Sophie Lambert', '0345678901', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 44040',false),
