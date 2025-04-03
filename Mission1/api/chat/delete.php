@@ -5,7 +5,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/chat.php';
 header('Content-Type: application/json');
 
 // Vérification des tokens d'authentification
-acceptedTokens(true, false, false, false); // Admin et employés autorisés
+acceptedTokens(true, false, false, false); // Admin
 
 if (!methodIsAllowed('delete')) {
     returnError(405, "Méthode non autorisée");
