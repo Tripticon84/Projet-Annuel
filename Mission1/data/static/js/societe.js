@@ -68,20 +68,15 @@ function loadContracts(societyId, filters = {}) {
         tableBody.innerHTML += `
                     <tr>
                         <td>${contract.devis_id}</td>
-                        <td>${new Date(contract.stard_date).toLocaleDateString(
-                          "fr-FR"
-                        )}</td>
-                        <td>${new Date(contract.end_date).toLocaleDateString(
-                          "fr-FR"
-                        )}</td>
-                        <td><span class="badge bg-${getStatusBadge(
-                          contract.statut
-                        )}">${contract.statut}</span></td>
+                        <td>${new Date(contract.date_debut).toLocaleDateString("fr-FR")}</td>
+                        <td>${new Date(contract.date_fin).toLocaleDateString("fr-FR")}</td>
+                        <td><span class="badge bg-${getStatusBadge(contract.statut)}">${contract.statut}</span></td>
                         <td>${contract.montant} €</td>
+                        <td>${contract.montant_ht} €</td>
+                        <td>${contract.montant_tva} €</td>
                         <td>
                             <button class="btn btn-sm btn-info" onclick="viewContract(${
-                              contract.devis_id
-                            })">
+                              contract.devis_id})">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </td>
@@ -117,73 +112,15 @@ function resetContractFilters(societyId) {
   loadContracts(societyId);
 }
 
-// Fonction pour appliquer les filtres
-function applyContractFilters() {
-  const status = document.getElementById("statusFilter").value;
-  const startDate = document.getElementById("dateStartFilter").value;
-  const endDate = document.getElementById("dateEndFilter").value;
-
-  // Construire l'URL avec les filtres
-  let url = `/api/company/getContract.php?societe_id=${societyId}`;
-  if (status) url += `&statut=${status}`;
-  if (startDate) url += `&date_debut=${startDate}`;
-  if (endDate) url += `&date_fin=${endDate}`;
-
-  fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: "Bearer " + getToken(),
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      // Même logique que loadAllContracts pour afficher les résultats
-      const tableBody = document.getElementById("contracts-table");
-
-      if (data.length === 0) {
-        tableBody.innerHTML =
-          '<tr><td colspan="6" class="text-center">Aucun contrat trouvé avec ces critères</td></tr>';
-        return;
-      }
-
-      // Afficher les résultats filtrés (même code que dans loadAllContracts)
-      tableBody.innerHTML = "";
-      data.forEach((contract) => {
-        tableBody.innerHTML += `
-                  <tr>
-                      <td>${contract.devis_id}</td>
-                      <td>${new Date(contract.stard_date).toLocaleDateString(
-                        "fr-FR"
-                      )}</td>
-                      <td>${new Date(contract.end_date).toLocaleDateString(
-                        "fr-FR"
-                      )}</td>
-                      <td><span class="badge bg-${getStatusBadge(
-                        contract.statut
-                      )}">${contract.statut}</span></td>
-                      <td>${contract.montant} €</td>
-                      <td>
-                          <button class="btn btn-sm btn-info" onclick="viewContractDetails(${
-                            contract.devis_id
-                          })">
-                              <i class="fas fa-eye"></i>
-                          </button>
-                      </td>
-                  </tr>
-              `;
-      });
-    })
-    .catch((error) => {
-      console.error("Erreur lors de l'application des filtres:", error);
-      document.getElementById(
-        "contracts-table"
-      ).innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erreur lors de l'application des filtres</td></tr>`;
-    });
+// Fonction pour voir les détails d'un contrat
+function viewContract(id) {
+  // Appeler la fonction existante viewContractDetails pour afficher les détails du contrat
+  viewContractDetails(id);
 }
 
 // Fonction pour voir les détails d'un contrat
 function viewContractDetails(id) {
-  fetch(`/api/company/getContractDetails.php?contract_id=${id}`, {
+  fetch(`/api/estimate/getOne.php?devis_id=${id}`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + getToken(),
@@ -197,17 +134,19 @@ function viewContractDetails(id) {
                   <div class="col-md-6">
                       <p><strong>ID:</strong> ${contract.devis_id}</p>
                       <p><strong>Date de début:</strong> ${new Date(
-                        contract.stard_date
+                        contract.date_debut
                       ).toLocaleDateString("fr-FR")}</p>
                       <p><strong>Date de fin:</strong> ${new Date(
-                        contract.end_date
+                        contract.date_fin
                       ).toLocaleDateString("fr-FR")}</p>
                   </div>
                   <div class="col-md-6">
                       <p><strong>Statut:</strong> <span class="badge bg-${getStatusBadge(
                         contract.statut
                       )}">${contract.statut}</span></p>
-                      <p><strong>Montant:</strong> ${contract.montant} €</p>
+                      <p><strong>Montant TTC:</strong> ${contract.montant} €</p>
+                      <p><strong>Montant HT:</strong> ${contract.montant_ht} €</p>
+                      <p><strong>Montant TVA:</strong> ${contract.montant_tva} €</p>
                   </div>
               </div>
               <div class="row">
@@ -220,8 +159,6 @@ function viewContractDetails(id) {
               </div>
           `;
 
-      // Stocker l'ID pour l'édition
-      document.getElementById("editContract").setAttribute("data-id", id);
 
       // Afficher le modal
       const modal = new bootstrap.Modal(
@@ -232,65 +169,6 @@ function viewContractDetails(id) {
     .catch((error) => {
       console.error("Erreur lors du chargement des détails du contrat:", error);
       alert("Erreur lors du chargement des détails du contrat");
-    });
-}
-
-// Charger les devis
-function loadEstimates(societyId) {
-  fetch(`/api/company/getEstimate.php?societe_id=${societyId}`, {
-    method: "GET",
-    headers: {
-      Authorization: "Bearer " + getToken(),
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      const tableBody = document.getElementById("estimates-table");
-
-      if (data.length === 0) {
-        tableBody.innerHTML =
-          '<tr><td colspan="6" class="text-center">Aucun devis trouvé</td></tr>';
-        return;
-      }
-
-      tableBody.innerHTML = "";
-      data.forEach((estimate) => {
-        tableBody.innerHTML += `
-                    <tr>
-                        <td>${estimate.devis_id}</td>
-                        <td>${new Date(estimate.stard_date).toLocaleDateString(
-                          "fr-FR"
-                        )}</td>
-                        <td>${new Date(estimate.end_date).toLocaleDateString(
-                          "fr-FR"
-                        )}</td>
-                        <td><span class="badge bg-${getStatusBadge(
-                          estimate.statut
-                        )}">${estimate.statut}</span></td>
-                        <td>${estimate.montant} €</td>
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="viewEstimate(${
-                              estimate.devis_id
-                            })">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            ${
-                              estimate.statut === "En attente"
-                                ? `<button class="btn btn-sm btn-success" onclick="approveEstimate(${estimate.devis_id})">
-                                    <i class="fas fa-check"></i>
-                                 </button>`
-                                : ""
-                            }
-                        </td>
-                    </tr>
-                `;
-      });
-    })
-    .catch((error) => {
-      console.error("Erreur lors du chargement des devis:", error);
-      document.getElementById(
-        "estimates-table"
-      ).innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des devis</td></tr>`;
     });
 }
 
@@ -586,27 +464,10 @@ function getStatusBadge(status) {
   }
 }
 
-// Fonctions d'affichage des détails (à implémenter si nécessaire)
-function viewContract(id) {
-  alert(`Affichage du contrat ${id} (fonctionnalité à implémenter)`);
-}
-
-function viewEstimate(id) {
-  alert(`Affichage du devis ${id} (fonctionnalité à implémenter)`);
-}
-
-function viewCost(id) {
-  alert(`Affichage du frais ${id} (fonctionnalité à implémenter)`);
-}
-
-function approveEstimate(id) {
-  alert(`Approbation du devis ${id} (fonctionnalité à implémenter)`);
-}
-
 // Fonction pour charger les devis avec filtres optionnels
 function loadEstimates(societyId, filters = {}) {
   // Construire l'URL avec les filtres
-  let url = `/api/company/getEstimate.php?societe_id=${societyId}&is_contract=0`;
+  let url = `/api/company/getEstimate.php?societe_id=${societyId}`;
 
   // Ajouter les filtres s'ils sont définis
   if (filters.status) url += `&statut=${filters.status}`;
@@ -639,38 +500,35 @@ function loadEstimates(societyId, filters = {}) {
             <td><span class="badge bg-${getStatusBadge(estimate.statut)}">${
           estimate.statut
         }</span></td>
-            <td>${estimate.montant} €</td>
-            <td>${estimate.montant_ht} €</td>
-            <td>${estimate.montant_tva} €</td>
+            <td>${estimate.montant.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} €</td>
+            <td>${estimate.montant_ht.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} €</td>
+            <td>${estimate.montant_tva.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} €</td>
             <td>
-              <button class="btn btn-sm btn-info" onclick="viewEstimateDetails(${
-                estimate.devis_id
-              })">
-                <i class="fas fa-eye"></i>
+              <button class="btn btn-sm btn-info" onclick="viewEstimateDetails(${estimate.devis_id})">
+          <i class="fas fa-eye"></i>
               </button>
-              ${
-                estimate.statut === "envoyé"
-                  ? `<button class="btn btn-sm btn-success" onclick="approveEstimate(${estimate.devis_id})">
-                      <i class="fas fa-check"></i>
-                     </button>
-                     <button class="btn btn-sm btn-danger" onclick="rejectEstimate(${estimate.devis_id})">
-                      <i class="fas fa-times"></i>
-                     </button>`
-                  : ""
+              ${estimate.statut === "envoyé"
+            ? `<button class="btn btn-sm btn-success" onclick="approveEstimate(${estimate.devis_id})">
+                <i class="fas fa-check"></i>
+               </button>
+               <button class="btn btn-sm btn-danger" onclick="rejectEstimate(${estimate.devis_id})">
+                <i class="fas fa-times"></i>
+               </button>`
+            : ""
               }
               ${
-                estimate.statut === "brouillon"
-                  ? `<button class="btn btn-sm btn-warning" onclick="editEstimateDetails(${estimate.devis_id})">
-                      <i class="fas fa-edit"></i>
-                     </button>`
-                  : ""
+          estimate.statut === "brouillon"
+            ? `<button class="btn btn-sm btn-warning" onclick="editEstimateDetails(${estimate.devis_id})">
+                <i class="fas fa-edit"></i>
+               </button>`
+            : ""
               }
               ${
-                estimate.fichier
-                  ? `<a href="/uploads/devis/${estimate.fichier}" class="btn btn-sm btn-secondary" target="_blank">
-                      <i class="fas fa-file-pdf"></i>
-                     </a>`
-                  : ""
+          estimate.fichier
+            ? `<a href="/uploads/devis/${estimate.fichier}" class="btn btn-sm btn-secondary" target="_blank">
+                <i class="fas fa-file-pdf"></i>
+               </a>`
+            : ""
               }
             </td>
           </tr>
@@ -707,7 +565,7 @@ function resetEstimateFilters(societyId) {
 
 // Fonction pour voir les détails d'un devis
 function viewEstimateDetails(id) {
-  fetch(`/api/company/getEstimateDetails.php?devis_id=${id}`, {
+  fetch(`/api/estimate/getOne.php?devis_id=${id}`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + getToken(),
@@ -766,60 +624,9 @@ function viewEstimateDetails(id) {
     });
 }
 
-// Fonction pour ajouter un nouveau devis
-function addNewEstimate() {
-  // Créer un FormData pour gérer le fichier PDF
-  const formData = new FormData();
-  formData.append("societe_id", societyId);
-  formData.append("date_debut", document.getElementById("start_date").value);
-  formData.append("date_fin", document.getElementById("end_date").value);
-  formData.append("montant", document.getElementById("montant").value);
-  formData.append("montant_ht", document.getElementById("montant_ht").value);
-  formData.append("montant_tva", document.getElementById("montant_tva").value);
-  formData.append("statut", document.getElementById("statut").value);
-  formData.append("is_contract", document.getElementById("is_contract").checked ? 1 : 0);
-
-  // Ajouter le fichier s'il existe
-  const fichierInput = document.getElementById("fichier");
-  if (fichierInput.files.length > 0) {
-    formData.append("fichier", fichierInput.files[0]);
-  }
-
-  fetch("/api/company/addEstimate.php", {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + getToken(),
-    },
-    body: formData,
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        // Fermer le modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById("addEstimateModal"));
-        modal.hide();
-
-        // Réinitialiser le formulaire
-        document.getElementById("addEstimateForm").reset();
-
-        // Recharger les devis
-        loadEstimates(societyId);
-
-        // Afficher un message de succès
-        alert("Devis ajouté avec succès!");
-      } else {
-        alert(`Erreur: ${data.message || "Une erreur est survenue"}`);
-      }
-    })
-    .catch((error) => {
-      console.error("Erreur lors de l'ajout du devis:", error);
-      alert("Une erreur est survenue lors de l'ajout du devis");
-    });
-}
-
 // Fonction pour éditer un devis
 function editEstimateDetails(id) {
-  fetch(`/api/company/getEstimateDetails.php?devis_id=${id}`, {
+  fetch(`/api/estimate/getOne.php?devis_id=${id}`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + getToken(),
@@ -834,7 +641,6 @@ function editEstimateDetails(id) {
       document.getElementById("montant_ht").value = estimate.montant_ht;
       document.getElementById("montant_tva").value = estimate.montant_tva;
       document.getElementById("statut").value = estimate.statut;
-      document.getElementById("is_contract").checked = estimate.is_contract === 1;
 
       // Changer le titre et le bouton d'action du modal
       document.getElementById("addEstimateModalLabel").textContent = "Modifier le devis";
@@ -863,8 +669,8 @@ function editEstimateDetails(id) {
 // Fonction pour approuver un devis
 function approveEstimate(id) {
   if (confirm("Êtes-vous sûr de vouloir accepter ce devis ?")) {
-    fetch(`/api/company/updateEstimateStatus.php`, {
-      method: "POST",
+    fetch(`/api/estimate/modifyState.php`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + getToken(),
@@ -877,7 +683,6 @@ function approveEstimate(id) {
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          // Recharger les devis
           loadEstimates(societyId);
           alert("Devis accepté avec succès!");
         } else {
@@ -894,8 +699,8 @@ function approveEstimate(id) {
 // Fonction pour refuser un devis
 function rejectEstimate(id) {
   if (confirm("Êtes-vous sûr de vouloir refuser ce devis ?")) {
-    fetch(`/api/company/updateEstimateStatus.php`, {
-      method: "POST",
+    fetch(`/api/estimate/modifyState.php`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + getToken(),
@@ -925,8 +730,8 @@ function rejectEstimate(id) {
 // Fonction pour convertir un devis en contrat
 function convertEstimateToContract(id) {
   if (confirm("Êtes-vous sûr de vouloir convertir ce devis en contrat ?")) {
-    fetch(`/api/company/convertToContract.php`, {
-      method: "POST",
+    fetch(`/api/estimate/convertToContract.php`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + getToken(),
@@ -954,4 +759,112 @@ function convertEstimateToContract(id) {
         alert("Une erreur est survenue lors de la conversion du devis en contrat");
       });
   }
+}
+
+// Fonction pour réinitialiser le modal de devis
+function resetEstimateModal() {
+  document.getElementById("addEstimateModalLabel").textContent = "Ajouter un devis";
+  document.getElementById("saveEstimate").textContent = "Enregistrer";
+  document.getElementById("saveEstimate").removeAttribute("data-id");
+  document.getElementById("saveEstimate").removeAttribute("data-action");
+}
+
+// Fonction pour ajouter/modifier un devis
+function addNewEstimate() {
+  const saveButton = document.getElementById("saveEstimate");
+  const isEdit = saveButton.getAttribute("data-action") === "edit";
+  const devisId = isEdit ? saveButton.getAttribute("data-id") : null;
+
+  // Récupérer les données du formulaire
+  const formData = {
+    date_debut: document.getElementById("start_date").value,
+    date_fin: document.getElementById("end_date").value,
+    montant: parseFloat(document.getElementById("montant").value),
+    montant_ht: parseFloat(document.getElementById("montant_ht").value),
+    montant_tva: parseFloat(document.getElementById("montant_tva").value),
+    statut: document.getElementById("statut").value,
+    societe_id: societyId
+  };
+
+  // Ajouter l'ID du devis pour la modification
+  if (isEdit) {
+    formData.devis_id = devisId;
+  }
+
+  if (isEdit) {
+    updateEstimate(formData);
+  } else {
+    createEstimate(formData);
+  }
+}
+
+// Fonction pour créer un nouveau devis
+function createEstimate(formData) {
+  fetch("/api/estimate/create.php", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + getToken()
+    },
+    body: JSON.stringify(formData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Fermer le modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById("addEstimateModal"));
+      modal.hide();
+
+      // Réinitialiser le formulaire
+      document.getElementById("addEstimateForm").reset();
+
+      // Recharger les devis
+      loadEstimates(societyId);
+
+      // Afficher un message de succès
+      alert("Devis créé avec succès !");
+    } else {
+      alert(`Erreur: ${data.message || "Une erreur est survenue"}`);
+    }
+  })
+  .catch(error => {
+    console.error("Erreur lors de la création du devis:", error);
+    alert("Une erreur est survenue lors de la création du devis");
+  });
+}
+
+// Fonction pour mettre à jour un devis existant
+function updateEstimate(formData) {
+  fetch("/api/estimate/update.php", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + getToken()
+    },
+    body: JSON.stringify(formData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Fermer le modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById("addEstimateModal"));
+      modal.hide();
+
+      // Réinitialiser le formulaire et le modal
+      document.getElementById("addEstimateForm").reset();
+      resetEstimateModal();
+
+      // Recharger les devis
+      loadEstimates(societyId);
+
+      // Afficher un message de succès
+      alert("Devis mis à jour avec succès !");
+    } else {
+      alert(`Erreur: ${data.message || "Une erreur est survenue"}`);
+    }
+  })
+  .catch(error => {
+    console.error("Erreur lors de la mise à jour du devis:", error);
+    alert("Une erreur est survenue lors de la mise à jour du devis");
+  });
 }

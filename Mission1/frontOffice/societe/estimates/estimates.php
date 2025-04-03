@@ -148,18 +148,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                                 <option value="refusé">Refusé</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
-                            <label for="fichier" class="form-label">Fichier PDF</label>
-                            <input type="file" class="form-control" id="fichier" name="fichier" accept=".pdf">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="is_contract" name="is_contract">
-                            <label class="form-check-label" for="is_contract">
-                                Créer comme contrat
-                            </label>
-                        </div>
                     </div>
                 </form>
             </div>
@@ -211,6 +199,17 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
         document.getElementById('resetFilters').addEventListener('click', function() {
             resetEstimateFilters(societyId);
+        });
+
+        // Réinitialiser le modal lorsqu'il est ouvert pour un nouvel ajout
+        document.querySelector('[data-bs-target="#addEstimateModal"]').addEventListener('click', function() {
+            document.getElementById('addEstimateForm').reset();
+            resetEstimateModal();
+        });
+
+        // Réinitialiser le modal lorsqu'il est fermé
+        document.getElementById('addEstimateModal').addEventListener('hidden.bs.modal', function () {
+            resetEstimateModal();
         });
 
         document.getElementById('saveEstimate').addEventListener('click', function() {
