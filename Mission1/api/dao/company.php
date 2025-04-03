@@ -28,14 +28,6 @@ function createSociety($nom, $email, $adresse, $contact_person, $password, $tele
     return null;
 }
 
-function getCompanyBySiret($siret)
-{
-    $db = getDatabaseConnection();
-    $sql = "SELECT societe_id, siret FROM societe WHERE siret = :siret";
-    $stmt = $db->prepare($sql);
-    $stmt->execute(['siret' => $siret]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
 
 function getSocietyByEmail($email)
 {
@@ -67,16 +59,12 @@ function getSocietyById($id)
 function deleteSociety($id)
 {
     $db = getDatabaseConnection();
-    $sql = "UPDATE societe SET desactivate = 1 WHERE societe_id = :id";
-    $stmt = $db->prepare($sql); 
-    $res = $stmt->execute(['id' => $id]);
-    if ($res) {
-        return $stmt->rowCount();
-    }
-    return null;
+    $sql = "DELETE FROM societe WHERE societe_id = :id";
+    $stmt = $db->prepare($sql);
+    return $stmt->execute(['id' => $id]);
 }
 
-function updateSociety($id, ?string $nom = null, ?string $email = null, ?string $adresse = null, ?string $contact_person = null, ?string $password = null, ?int $telephone = null, ?string $siret = null)
+function updateSociety($id, ?string $nom = null, ?string $email = null, ?string $adresse = null, ?string $contact_person = null, ?string $password = null, ?int $telephone = null)
 {
     $db = getDatabaseConnection();
     $params = ['id' => $id];
@@ -112,11 +100,6 @@ function updateSociety($id, ?string $nom = null, ?string $email = null, ?string 
         $params['password'] = hashPassword($password);
     }
 
-    if ($siret !== null) {
-        $setFields[] = "siret = :siret";
-        $params['siret'] = $siret;
-    }
-
     if (empty($setFields)) {
         return 0; // Rien à mettre à jour
     }
@@ -136,7 +119,7 @@ function getAllSociety($name = "", $limit = null, $offset = null)
 {
     $db = getDatabaseConnection();
     $params = [];
-    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation, siret, desactivate FROM societe";
+    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation FROM societe";
     $conditions = [];
 
     if (!empty($name)) {
@@ -166,7 +149,7 @@ function getAllSociety($name = "", $limit = null, $offset = null)
 function getSociety($id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation, siret, desactivate FROM societe WHERE societe_id = :id";
+    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation FROM societe WHERE societe_id = :id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -286,12 +269,11 @@ function getCompaniesStats()
 function findCompanyByCredentials($email, $password)
 {
     $connection = getDatabaseConnection();
-    $hashedPassword = hashPassword($password);
     $sql = "SELECT societe_id FROM societe WHERE email = :email AND password = :password";
     $query = $connection->prepare($sql);
     $res = $query->execute([
         'email' => $email,
-        'password' => $hashedPassword
+        'password' => $password
     ]);
     if ($res) {
         return $query->fetch(PDO::FETCH_ASSOC);
@@ -302,7 +284,7 @@ function findCompanyByCredentials($email, $password)
 function setCompanySession($id, $token)
 {
     $connection = getDatabaseConnection();
-    $sql = "UPDATE societe SET token = :token, expiration = DATE_ADD(NOW(), INTERVAL 2 HOUR) WHERE societe_id = :id";
+    $sql = "UPDATE societe SET token = :token, expiration = DATE_ADD(NOW(), INTERVAL 24 HOUR) WHERE societe_id = :id";
     $query = $connection->prepare($sql);
     $res = $query->execute([
         'id' => $id,
