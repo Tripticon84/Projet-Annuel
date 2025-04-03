@@ -10,7 +10,7 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
-//acceptedTokens(true, true, false, false);
+acceptedTokens(true, false, false, false);
 
 
 $data = getBody();
@@ -29,7 +29,7 @@ if (validateMandatoryParams($data, ['nom', 'date', 'lieu', 'type', 'statut', 'id
         returnError(400, 'date must be in the format Y-m-d');
         return;
     }
-    
+
     $association = getAssociationById($data['id_association']);
     if (empty($association)) {
         returnError(400, 'association does not exist');

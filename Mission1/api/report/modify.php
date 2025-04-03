@@ -13,6 +13,9 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 // Récupérer les données de la requête
 $data = getBody();
 
@@ -41,7 +44,7 @@ $statut = isset($data['statut']) ? $data['statut'] : null;
 if ($date_signalement !== null && !isValidDate($date_signalement)) {
     returnError(400, 'Invalid date format for date_signalement. Expected format: YYYY-MM-DD');
     return;
-    
+
 }
 
 // Vérifier si au moins un champ est fourni pour la mise à jour

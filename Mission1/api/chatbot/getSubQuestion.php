@@ -9,7 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, true, true, true);
 
 if (!isset($_GET['parent_id'])) {
     returnError(400, 'parent_id is required');

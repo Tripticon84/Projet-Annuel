@@ -9,6 +9,9 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
+acceptedTokens(true, false, false, true);
+
+
 $data = getBody();
 
 if (!validateMandatoryParams($data, ['lieu_id'])) {

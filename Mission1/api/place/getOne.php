@@ -9,6 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, true, true);
 
 
 // Vérification de l'ID du lieu

@@ -10,6 +10,9 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
+acceptedTokens(true, false, true, false);
+
+
 $data = getBody();
 
 if (!validateMandatoryParams($data, ['description', 'probleme', 'date_signalement', 'id_societe'])) {

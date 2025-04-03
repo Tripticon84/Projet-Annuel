@@ -10,7 +10,7 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, true, false);
 
 
 $data = getBody();

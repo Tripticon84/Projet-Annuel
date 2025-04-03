@@ -9,7 +9,7 @@ if (!methodIsAllowed('delete')) {
     return;
 }
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, false, false);
 
 
 $data = getBody();

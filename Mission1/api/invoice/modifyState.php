@@ -12,7 +12,7 @@ if (!methodIsAllowed('update')) {
 
 $data = getBody();
 
-// acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, false, false);
 
 
 if (!isset($data['facture_id'])) {

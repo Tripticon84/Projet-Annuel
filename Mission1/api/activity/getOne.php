@@ -9,6 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, true, true);
 
 
 $activityId = $_GET['activite_id'];

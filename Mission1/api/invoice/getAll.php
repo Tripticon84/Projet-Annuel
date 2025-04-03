@@ -9,6 +9,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, false, true);
+
+
 $id_prestataire = null;
 $limit = null;
 $offset = null;

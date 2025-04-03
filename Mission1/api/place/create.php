@@ -9,11 +9,14 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
+acceptedTokens(true, false, false, true);
+
+
 $data = getBody();
 
 if (validateMandatoryParams($data, ['adresse', 'ville', 'code_postal'])) {
 
-    
+
     if (!is_string($data['adresse']) || !is_string($data['ville'])) {
         returnError(400, 'Invalid parameter type. nom, type and lieu must be strings.');
         return;

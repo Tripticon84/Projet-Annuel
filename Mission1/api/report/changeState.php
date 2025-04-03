@@ -11,7 +11,7 @@ if (!methodIsAllowed('update')) {
 
 $data = getBody();
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, true, false);
 
 
 if (!isset($data['signalement_id'])) {

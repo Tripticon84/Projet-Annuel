@@ -9,6 +9,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 // Récupérer l'ID de l'association depuis les paramètres
 if (!isset($_GET['association_id'])) {
     returnError(400, 'ID d\'association non spécifié');
