@@ -29,58 +29,73 @@ function createEstimate($date_debut, $date_fin, string $statut, float $montant, 
     return null;
 }
 
-function updateEstimate($date_debut = null,  $date_fin = null, string $statut = null, float $montant = null, int $is_contract = null, int $id_societe = null, string $fichier = null, int $devis_id)
-{
+function updateEstimate($date_debut, $date_fin, $statut, $montant, $montant_ht, $montant_tva, $is_contract, $id_societe, $fichier, $devis_id) {
     $db = getDatabaseConnection();
-    $sql = "UPDATE devis SET ";
-    $params = [
-        "id" => $devis_id
-    ];
-    $coma = "";
-    if ($date_debut !== null) {
-        $sql .= "date_debut = :date_debut";
-        $params['date_debut'] = $date_debut;
-        $coma = ",";
-    }
-    if ($date_fin !== null) {
-        $sql .= $coma . "date_fin = :date_fin";
-        $params['date_fin'] = $date_fin;
-        $coma = ",";
-    }
-    if ($statut !== null) {
-        $sql .= $coma . "statut = :statut";
-        $params['statut'] = $statut;
-        $coma = ",";
-    }
-    if ($montant !== null) {
-        $sql .= $coma . "montant = :montant";
-        $params['montant'] = $montant;
-        $coma = ",";
-    }
-    if ($is_contract !== null) {
-        $sql .= $coma . "is_contract = :is_contract";
-        $params['is_contract'] = $is_contract;
-        $coma = ",";
-    }
-    if ($id_societe !== null) {
-        $sql .= $coma . "id_societe = :id_societe";
-        $params['id_societe'] = $id_societe;
-        $coma = ",";
-    }
-    if ($fichier !== null) {
-        $sql .= $coma . "fichier = :fichier";
-        $params['fichier'] = $fichier;
-        $coma = ",";
-    }
-    $sql .= " WHERE devis_id = :id";
-    $stmt = $db->prepare($sql);
-    $res = $stmt->execute($params);
-    if ($res) {
-        return $stmt->rowCount();
-    }
-    return null;
-}
 
+    $sql = "UPDATE devis SET ";
+    $params = [];
+
+    if ($date_debut !== null) {
+        $sql .= "date_debut = :date_debut, ";
+        $params[':date_debut'] = $date_debut;
+    }
+
+    if ($date_fin !== null) {
+        $sql .= "date_fin = :date_fin, ";
+        $params[':date_fin'] = $date_fin;
+    }
+
+    if ($statut !== null) {
+        $sql .= "statut = :statut, ";
+        $params[':statut'] = $statut;
+    }
+
+    if ($montant !== null) {
+        $sql .= "montant = :montant, ";
+        $params[':montant'] = $montant;
+    }
+
+    if ($montant_ht !== null) {
+        $sql .= "montant_ht = :montant_ht, ";
+        $params[':montant_ht'] = $montant_ht;
+    }
+
+    if ($montant_tva !== null) {
+        $sql .= "montant_tva = :montant_tva, ";
+        $params[':montant_tva'] = $montant_tva;
+    }
+
+    if ($is_contract !== null) {
+        $sql .= "is_contract = :is_contract, ";
+        $params[':is_contract'] = $is_contract;
+    }
+
+    if ($id_societe !== null) {
+        $sql .= "id_societe = :id_societe, ";
+        $params[':id_societe'] = $id_societe;
+    }
+
+    if ($fichier !== null) {
+        $sql .= "fichier = :fichier, ";
+        $params[':fichier'] = $fichier;
+    }
+
+    // Enlever la virgule et l'espace à la fin
+    $sql = rtrim($sql, ", ");
+
+    $sql .= " WHERE devis_id = :devis_id";
+    $params[':devis_id'] = $devis_id;
+
+    $stmt = $db->prepare($sql);
+
+    if (!$stmt) {
+        return false;
+    }
+
+    $result = $stmt->execute($params);
+
+    return $result;
+}
 
 function deleteEstimate(int $id)
 {
@@ -227,4 +242,43 @@ function getContractStats()
         'montant_total_contrats_mois' => round($monthlyContractsAmount, 2),
         'taux_conversion' => round($conversionRate, 2)
     ];
+}
+
+function modifyState($id, $state)
+{
+    $db = getDatabaseConnection();
+    $sql = "UPDATE devis SET statut = :statut WHERE devis_id = :id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'id' => $id,
+        'statut' => $state
+    ]);
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
+}
+
+function isValidStatus($status)
+{
+    if ($status === null) {
+        return false;
+    }
+    $validStatuses = ['brouillon', 'envoyé', 'accepté', 'refusé'];
+    return in_array($status, $validStatuses);
+}
+
+function convertToContract($devis_id)
+{
+    $db = getDatabaseConnection();
+    $sql = "UPDATE devis SET is_contract = 1, statut = 'accepté' WHERE devis_id = :devis_id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'devis_id' => $devis_id
+    ]);
+
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
 }

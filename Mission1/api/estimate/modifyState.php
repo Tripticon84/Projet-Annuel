@@ -1,7 +1,7 @@
 <?php
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/api/dao/invoice.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/api/dao/estimate.php";
 
 header("Content-Type: application/json");
 
@@ -14,8 +14,7 @@ $data = getBody();
 
 acceptedTokens(true, true, false, false);
 
-
-if (!isset($data['facture_id'])) {
+if (!isset($data['devis_id'])) {
     returnError(400, 'Missing id');
     return;
 }
@@ -25,9 +24,9 @@ if (!isset($data['statut'])) {
     return;
 }
 
-$invoice = getInvoiceById($data['facture_id']);
-if (!$invoice) {
-    returnError(404, 'Invoice not found');
+$estimate = getEstimateById($data['devis_id']);
+if (!$estimate) {
+    returnError(404, 'Estimate not found');
     return;
 }
 
@@ -36,16 +35,16 @@ if (!isValidStatus($data['statut'])) {
     return;
 }
 
-if ($data['statut'] == $invoice['statut']) {
+if ($data['statut'] == $estimate['statut']) {
     returnError(400, 'State is already set to ' . $data['statut']);
     return;
 }
 
-$modified = modifyState($data['facture_id'], $data['statut']);
+$modified = modifyState($data['devis_id'], $data['statut']);
 
 if ($modified) {
-    echo json_encode(['message' => 'Invoice State Modified']);
+    echo json_encode(['success' => 'Estimate State Modified']);
     return http_response_code(200);
 } else {
-    returnError(500, 'Failed to modified Invoice State');
+    returnError(500, 'Failed to modify Estimate State');
 }

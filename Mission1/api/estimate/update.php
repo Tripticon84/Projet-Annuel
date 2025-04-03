@@ -11,7 +11,7 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
-acceptedTokens(true, true, false, true);
+acceptedTokens(true, true, false, false);
 
 $data = getBody();
 
@@ -20,12 +20,14 @@ $date_debut = isset($data['date_debut']) ? $data['date_debut'] : null;
 $date_fin = isset($data['date_fin']) ? $data['date_fin'] : null;
 $statut = isset($data['statut']) ? $data['statut'] : null;
 $montant = isset($data['montant']) ? $data['montant'] : null;
+$montant_ht = isset($data['montant_ht']) ? $data['montant_ht'] : null;
+$montant_tva = isset($data['montant_tva']) ? $data['montant_tva'] : null;
 $is_contract = !empty($data['is_contract']) ? $data['is_contract'] : null;
 $id_societe = isset($data['id_societe']) ? $data['id_societe'] : null;
 $fichier = isset($data['fichier']) ? $data['fichier'] : null;
 
 //verifier qu un champ est fourni pour la mise a jour
-if ($date_debut === null && $date_fin === null && $statut === null && $montant === null && $is_contract === null && $id_societe === null) {
+if ($date_debut === null && $date_fin === null && $statut === null && $montant === null && $montant_ht === null && $montant_tva === null && $is_contract === null && $id_societe === null) {
     returnError(400, 'No data provided for update');
     return;
 }
@@ -50,6 +52,16 @@ if ($id_societe != null && !is_numeric($id_societe)) {
 
 if ($montant != null && !is_numeric($montant)) {
     returnError(400, 'montant must be a number');
+    return;
+}
+
+if ($montant_ht != null && !is_numeric($montant_ht)) {
+    returnError(400, 'montant_ht must be a number');
+    return;
+}
+
+if ($montant_tva != null && !is_numeric($montant_tva)) {
+    returnError(400, 'montant_tva must be a number');
     return;
 }
 
@@ -78,13 +90,13 @@ if ($statut != null && $statut !== 'refusé' && $statut !== 'accepté' && $statu
     return;
 }
 
-$res = updateEstimate($date_debut, $date_fin, $statut, $montant, $is_contract, $id_societe,$fichier, $devis_id);
+$res = updateEstimate($date_debut, $date_fin, $statut, $montant, $montant_ht, $montant_tva, $is_contract, $id_societe, $fichier, $devis_id);
 
 
 if (!$res) {
-    returnError(500, 'Could not update the company');
+    returnError(500, 'Failed to update estimate');
     return;
 }else{
-    echo json_encode(['id' => $devis_id]);
+    echo json_encode(['success' => "Le devis id : " . $devis_id . " a été mis à jour avec succès"]);
     http_response_code(200);
 }

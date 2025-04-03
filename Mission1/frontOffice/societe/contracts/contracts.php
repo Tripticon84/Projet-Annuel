@@ -73,6 +73,8 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                                     <th>Date de fin</th>
                                     <th>Statut</th>
                                     <th>Montant</th>
+                                    <th>Montant HT</th>
+                                    <th>Montant TVA</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -158,7 +160,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" class="btn btn-warning" id="editContract">Modifier</button>
             </div>
         </div>
     </div>
@@ -189,56 +190,9 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         document.getElementById('saveContract').addEventListener('click', function() {
             addNewContract();
         });
+
+
     });
 
 
-    // Fonction pour éditer un contrat
-    function editContractDetails(id) {
-        // Rediriger vers un formulaire d'édition ou ouvrir un modal d'édition
-        alert(`Édition du contrat ${id} (fonctionnalité à implémenter)`);
-    }
-
-    // Fonction pour ajouter un nouveau contrat
-    function addNewContract() {
-        const formData = {
-            societe_id: societyId,
-            start_date: document.getElementById('start_date').value,
-            end_date: document.getElementById('end_date').value,
-            montant: document.getElementById('montant').value,
-            statut: document.getElementById('statut').value,
-            description: document.getElementById('description').value
-        };
-
-        fetch('/api/company/addContract.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + getToken()
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Fermer le modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addContractModal'));
-                modal.hide();
-
-                // Réinitialiser le formulaire
-                document.getElementById('addContractForm').reset();
-
-                // Recharger les contrats
-                loadContracts(societyId);
-
-                // Afficher un message de succès
-                alert('Contrat ajouté avec succès!');
-            } else {
-                alert(`Erreur: ${data.message || 'Une erreur est survenue'}`);
-            }
-        })
-        .catch(error => {
-            console.error('Erreur lors de l\'ajout du contrat:', error);
-            alert('Une erreur est survenue lors de l\'ajout du contrat');
-        });
-    }
 </script>

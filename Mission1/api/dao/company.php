@@ -200,7 +200,7 @@ function getSocietyEmployees($societe_id)
 function getCompanyEstimate($societe_id, $is_contract, $statut = null, $date_debut = null, $date_fin = null)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT devis_id, date_debut, date_fin, statut, montant FROM devis WHERE id_societe = :societe_id AND is_contract = :is_contract";
+    $sql = "SELECT devis_id, date_debut, date_fin, statut, montant, montant_ht, montant_tva, fichier FROM devis WHERE id_societe = :societe_id AND is_contract = :is_contract";
     $params = ['societe_id' => $societe_id, 'is_contract' => $is_contract];
 
     if ($statut !== null) {

@@ -38,10 +38,13 @@ $result = []; // Initialize the result array
 foreach ($estimates as $estimate) {
     $result[] = [
         "devis_id" => $estimate['devis_id'],
-        "stard_date" => $estimate['date_debut'],
-        "end_date" => $estimate['date_fin'],
+        "date_debut" => $estimate['date_debut'],
+        "date_fin" => $estimate['date_fin'],
         "statut" => $estimate['statut'],
-        "montant" => $estimate['montant']
+        "montant" => $estimate['montant'],
+        "montant_ht" => $estimate['montant_ht'],
+        "montant_tva" => $estimate['montant_tva'],
+        "fichier" => $estimate['fichier']
     ];
 }
 
