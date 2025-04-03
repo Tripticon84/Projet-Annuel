@@ -4,6 +4,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/chat.php';
 
 header('Content-Type: application/json');
 
+// Vérification des tokens d'authentification
+acceptedTokens(true, false, false, false); // Admin et employés autorisés
+
 if (!methodIsAllowed('delete')) {
     returnError(405, "Méthode non autorisée");
 }
@@ -16,10 +19,10 @@ if (!validateMandatoryParams($data, ['salon_id'])) {
 
 $salon_id = $data['salon_id'];
 
+
 if (getChat($salon_id) === null) {
     returnError(404, "Salon non trouvé");
 }
-
 
 $result = removeAllUsersFromChat($salon_id);
 

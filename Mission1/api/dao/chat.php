@@ -75,6 +75,9 @@ function updateChat($salon_id, ?string $name = null, ?string $description = null
     return null;
 }
 
+/**
+ * Supprime un salon de discussion
+ */
 function deleteChat($salon_id){
     $db = getDatabaseConnection();
     $query = $db->prepare('DELETE FROM salon WHERE salon_id = :salon_id');
@@ -164,7 +167,34 @@ function getUserChats($collaborateur_id){
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
 
+/**
+ * Vérifie si un utilisateur est dans un salon de discussion
+ */
+function isUserInChat($salon_id, $collaborateur_id):bool {
+    $db = getDatabaseConnection();
+
+    $query = $db->prepare('
+        SELECT COUNT(*) FROM discute_dans
+        WHERE id_salon = :salon_id AND id_collaborateur = :collaborateur_id
+    ');
+    $params = [
+        'salon_id' => $salon_id,
+        'collaborateur_id' => $collaborateur_id
+    ];
+    $query->execute($params);
+    return $query->fetchColumn() ? true : false;
+}
+
 // Fonctions pour la gestion des messages en JSON
+
+/**
+ * Enregistre un message dans le fichier JSON
+ * @param int $salon_id L'ID du salon
+ * @param int $collaborateur_id L'ID du collaborateur qui envoie le message
+ * @param string $message Le message à enregistrer
+ * @param int|null $timestamp Le timestamp du message (facultatif, sinon utilise time())
+ * @return bool|int Retourne le nombre d'octets écrits ou false en cas d'erreur
+ */
 function saveMessage($salon_id, $collaborateur_id, $message, $timestamp = null){
     if ($timestamp === null) {
         $timestamp = time();
@@ -196,6 +226,13 @@ function saveMessage($salon_id, $collaborateur_id, $message, $timestamp = null){
     return file_put_contents($messagesFile, json_encode($messages, JSON_PRETTY_PRINT));
 }
 
+/**
+ * Récupère les messages d'un salon de discussion
+ * @param int $salon_id L'ID du salon
+ * @param int|null $limit Le nombre maximum de messages à récupérer (facultatif)
+ * @param int $offset Le décalage pour la pagination (facultatif, par défaut 0)
+ * @return array Un tableau contenant les messages du salon
+ */
 function getMessages($salon_id, $limit = null, $offset = 0){
     $messagesFile = $_SERVER['DOCUMENT_ROOT'] . "/data/messages/salon_" . $salon_id . ".json";
 
@@ -219,6 +256,12 @@ function getMessages($salon_id, $limit = null, $offset = 0){
     return array_slice($messages, $offset);
 }
 
+/**
+ * Récupère les derniers messages d'un salon de discussion
+ * @param int $salon_id L'ID du salon
+ * @param int $count Le nombre de messages à récupérer (par défaut 20)
+ * @return array Un tableau contenant les derniers messages du salon
+ */
 function getLatestMessages($salon_id, $count = 20){
     $messagesFile = $_SERVER['DOCUMENT_ROOT'] . "/data/messages/salon_" . $salon_id . ".json";
 

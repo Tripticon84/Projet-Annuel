@@ -4,6 +4,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/chat.php';
 
 header('Content-Type: application/json');
 
+// Vérification des tokens d'authentification - seuls les admins peuvent voir tous les salons
+acceptedTokens(true, false, false, false); // Admin seulement
+
 if (!methodIsAllowed('read')) {
     returnError(405, "Méthode non autorisée");
 }
