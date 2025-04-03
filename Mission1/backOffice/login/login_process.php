@@ -73,10 +73,9 @@ curl_close($ch);
 
 $data = json_decode($response, true);
 if (isset($data['token'])) {
-    $_SESSION['token'] = $data['token'];
-    // Set a cookie 'token' with an expiration time of 1 hour from now (3600 seconds)
+    $_SESSION['admin_token'] = $data['token'];
     $expirationTimestamp = time() + 3600*2;
-    setcookie('token', $data['token'], $expirationTimestamp, '/');
+    setcookie('admin_token', $data['token'], $expirationTimestamp, '/');
 }
 
 // Redirection vers la page d'accueil

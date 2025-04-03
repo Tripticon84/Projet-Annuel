@@ -149,7 +149,7 @@ function getAllSociety($name = "", $limit = null, $offset = null)
 function getSociety($id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation FROM societe WHERE societe_id = :id";
+    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation, siret, desactivate FROM societe WHERE societe_id = :id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -165,12 +165,29 @@ function getSocietyEmployees($societe_id)
 }
 
 
-function getCompanyEstimate($societe_id, $is_contract)
+function getCompanyEstimate($societe_id, $is_contract, $statut = null, $date_debut = null, $date_fin = null)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT devis_id, date_debut, date_fin, statut, montant FROM devis WHERE id_societe = :societe_id AND is_contract = :is_contract";
+    $params = ['societe_id' => $societe_id, 'is_contract' => $is_contract];
+
+    if ($statut !== null) {
+        $sql .= " AND statut = :statut";
+        $params['statut'] = $statut;
+    }
+
+    if ($date_debut !== null) {
+        $sql .= " AND date_debut >= :date_debut";
+        $params['date_debut'] = $date_debut;
+    }
+
+    if ($date_fin !== null) {
+        $sql .= " AND date_fin <= :date_fin";
+        $params['date_fin'] = $date_fin;
+    }
+
     $stmt = $db->prepare($sql);
-    $stmt->execute(['societe_id' => $societe_id, 'is_contract' => $is_contract]);
+    $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -318,6 +335,32 @@ function getCompanyByToken($token)
     $res = $query->execute(['token' => $token]);
     if ($res) {
         return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getCompanyInvoices($societe_id, $limit = null, $offset = null)
+{
+    $db = getDatabaseConnection();
+
+    $sql = "SELECT f.facture_id, f.date_emission, f.date_echeance, f.montant, f.montant_tva,
+            f.montant_ht, f.statut, f.methode_paiement, f.id_devis, f.id_prestataire
+            FROM facture f
+            JOIN devis d ON f.id_devis = d.devis_id
+            WHERE d.id_societe = :societe_id";
+
+    if ($limit !== null) {
+        $sql .= " LIMIT " . intval($limit);
+        if ($offset !== null) {
+            $sql .= " OFFSET " . intval($offset);
+        }
+    }
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['societe_id' => $societe_id]);
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return null;
 }

@@ -79,9 +79,8 @@ $data = json_decode($response, true);
 
 if (isset($data['token'])) {
     $_SESSION['societe_token'] = $data['token'];
-    // Set a cookie 'token' with an expiration time of 1 hour from now (3600 seconds)
     $expirationTimestamp = time() + 3600*24; // 24 heures
-    setcookie('token', $data['token'], $expirationTimestamp, '/');
+    setcookie('societe_token', $data['token'], $expirationTimestamp, '/');
 }
 
 // Redirection vers la page d'accueil

@@ -22,11 +22,13 @@ if (!isset($_SESSION["societe_token"]) && $title != "Connexion") {
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script src="/data/static/js/societe.js"></script>
+
     <!-- Récupérer le token JWT depuis le cookie -->
     <script>
         const getToken = () => {
             const cookies = document.cookie.split('; ');
-            const tokenCookie = cookies.find(row => row.startsWith('token='));
+            const tokenCookie = cookies.find(row => row.startsWith('societe_token='));
             return tokenCookie ? tokenCookie.split('=')[1] : null;
         };
 
