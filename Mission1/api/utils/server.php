@@ -51,6 +51,25 @@ function validateMandatoryParams(array $data, array $mandatoryParams): bool
 }
 
 
+/**
+ * Valide et traite les jetons d'authentification pour différents types d'utilisateurs.
+ *
+ * Cette fonction vérifie si le jeton Bearer fourni dans l'en-tête Authorization
+ * correspond à une session utilisateur valide (admin, employé, entreprise ou fournisseur)
+ * et vérifie si le jeton n'a pas expiré. Elle s'assure également que le type d'utilisateur
+ * a la permission d'accéder à l'endpoint demandé.
+ *
+ * @param bool $admin    Si l'accès admin est autorisé (par défaut true)
+ * @param bool $company  Si l'accès entreprise est autorisé (par défaut false)
+ * @param bool $employee Si l'accès employé est autorisé (par défaut false)
+ * @param bool $provider Si l'accès fournisseur est autorisé (par défaut false)
+ *
+ * @return void Retourne immédiatement en cas d'authentification réussie ou d'erreur
+ *
+ * @throws Retourne une erreur 401 si le jeton est manquant, invalide ou expiré
+ * @throws Retourne une erreur 403 si le type d'utilisateur n'est pas autorisé à accéder
+ * @throws Retourne une erreur 500 si impossible de récupérer la date d'expiration du jeton
+ */
 function acceptedTokens($admin = true, $company = false, $employee = false, $provider = false) {
     include_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/admin.php';
     include_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/employee.php';
