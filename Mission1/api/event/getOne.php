@@ -9,7 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-acceptedTokens(true, true, true, true);
+acceptedTokens(true, false, true, false);
 
 
 // Vérification de l'ID de la societe

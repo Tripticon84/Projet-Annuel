@@ -9,6 +9,8 @@ if (!methodIsAllowed('delete')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
 $data = getBody();
 
 if (!isset($data['activite_id'])) {

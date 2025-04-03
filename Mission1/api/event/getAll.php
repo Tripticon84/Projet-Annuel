@@ -9,7 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, true, false);
 
 $limit = null;
 $offset = null;
@@ -29,7 +29,7 @@ if (isset($_GET['offset'])) {
 
 $events = getAllEvents( $limit, $offset);
 
-$result = []; 
+$result = [];
 
 foreach ($events as $event) {
     $result[] = [

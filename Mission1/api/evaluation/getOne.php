@@ -9,7 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, true, true);
 
 
 // Vérification de  l evaluation_id

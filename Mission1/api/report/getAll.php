@@ -10,6 +10,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 $probleme = '';
 $companyId = '';
 $limit = null;

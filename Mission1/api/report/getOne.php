@@ -9,7 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, false, false);
 
 // Vérification de l'ID de l'administrateur
 if (!isset($_GET['signalement_id'])) {

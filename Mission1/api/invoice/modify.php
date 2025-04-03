@@ -11,6 +11,9 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
+acceptedTokens(true, false, false, false);
+
+
 $data = getBody();
 
 if (!validateMandatoryParams($data, ['facture_id'])) {
@@ -68,7 +71,7 @@ $updatedInvoice = updateInvoice(
     $methode_paiement,
     $id_devis,
     $id_prestataire
-    
+
 );
 
 

@@ -9,7 +9,7 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, true, true, true);
 
 if (!isset($_GET['chatbot_id'])) {
     returnError(400, 'chatbot_id is required');
@@ -38,4 +38,3 @@ if (empty($result)) {
 
 echo json_encode($result);
 http_response_code(200);
-

@@ -9,6 +9,9 @@ if (!methodIsAllowed('read')) {
     returnError(405, 'Method not allowed');
     return;
 }
+
+acceptedTokens(true, true, false, true);
+
 // Vérification de l'ID du lieu
 if (!isset($_GET['facture_id'])) {
     returnError(400, 'facture_id not provided');

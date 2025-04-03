@@ -9,7 +9,7 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
-//acceptedTokens(true, true, false, true);
+acceptedTokens(true, false, false, false);
 
 $data = getBody();
 

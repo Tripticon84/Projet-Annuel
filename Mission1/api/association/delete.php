@@ -11,7 +11,7 @@ if (!methodIsAllowed('delete')) {
 
 $data = getBody();
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, false, false);
 
 
 if (!isset($data['association_id'])) {

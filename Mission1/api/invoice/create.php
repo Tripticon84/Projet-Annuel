@@ -11,7 +11,7 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
-//acceptedTokens(true, true, false, provider: true);
+acceptedTokens(true, false, false, false);
 
 $data = getBody();
 
@@ -31,7 +31,7 @@ if (validateMandatoryParams($data, ['date_emission', 'date_echeance', 'statut', 
         returnError(400, 'montant_ht must be a number');
         return;
     }
-    
+
 
     if ($data['statut'] != 'Attente' && $data['statut'] != 'Payee' && $data['statut'] != 'Annulee') {
         returnError(400, 'statut must be Attente, Payee or Annulee');
@@ -77,7 +77,7 @@ if (validateMandatoryParams($data, ['date_emission', 'date_echeance', 'statut', 
         return;
     }
 
-    
+
     $newInvoiceId = createInvoice($data['date_emission'], $data['date_echeance'], $estimate['montant'], $estimate['montant_tva'], $estimate
     ['montant_ht'], $data['statut'], $data['methode_paiement'], $data['id_devis'], $data['id_prestataire']);
 

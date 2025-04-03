@@ -12,11 +12,11 @@ if (!methodIsAllowed('create')) {
 
 $data = getBody();
 
-//acceptedTokens(true, false, false, false);
+acceptedTokens(true, false, false, false);
 
 
 if (validateMandatoryParams($data, ['name', 'description'])) {
-    
+
     $association = getAssociationByName($data['name']);
     if (!empty($association)) {
         returnError(400, 'Association already exist');

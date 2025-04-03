@@ -9,6 +9,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+acceptedTokens(true, true, false, true);
+
+
 // Vérification du paramètre state (obligatoire)
 if (!isset($_GET['state'])) {
     returnError(400, 'State parameter is required');

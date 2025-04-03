@@ -10,7 +10,7 @@ if (!methodIsAllowed('delete')) {
     return;
 }
 
-//acceptedTokens(true, true, false, true);
+acceptedTokens(true, false, false, false);
 
 $data = getBody();
 $evenement_id = $data['evenement_id'];

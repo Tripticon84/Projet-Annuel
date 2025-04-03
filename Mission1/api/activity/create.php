@@ -12,6 +12,8 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
+acceptedTokens(true, false, false, true);
+
 $data = getBody();
 
 if (validateMandatoryParams($data, ['nom', 'type', 'date', 'lieu', 'id_devis','id_prestataire'])) {
