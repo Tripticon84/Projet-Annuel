@@ -3,12 +3,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/siret.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 header("Content-Type: application/json");
 
-if (empty($_GET['siret']))
-    returnError(400, 'Mandatory parameter : siret');
+if (empty($_GET['siren']))
+    returnError(400, 'Mandatory parameter : siren');
 
-$siret = str_replace(' ', '', $_GET["siret"]);
+$siren = str_replace(' ', '', $_GET["siren"]);
 
-$response = getInseeCompanyInfoBySiret($siret);
+$response = getInseeCompanyInfoBySiren($siren);
 
 if ($response === null) returnError(503, 'No response from Insee api');
 

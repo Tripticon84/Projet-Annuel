@@ -146,7 +146,8 @@ CREATE TABLE `devis` (
 
 CREATE TABLE `discute_dans` (
   `id_salon` int(11) NOT NULL,
-  `id_collaborateur` int(11) NOT NULL
+  `id_collaborateur` int(11) NOT NULL,
+  `is_admin` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -782,13 +783,13 @@ INSERT INTO signalement (probleme, description, date_signalement, id_societe, st
 ('Problème de stationnement', 'Le parking est souvent complet, causant des retards', '2025-06-05', 5, 'non_traite');
 
 -- Relations salon-collaborateurs (qui discute dans quel salon)
-INSERT INTO discute_dans (id_salon, id_collaborateur) VALUES
-(1, 1), (1, 2), (1, 3),
-(1, 4), (2, 2), (2, 5),
-(2, 7), (3, 1), (3, 3),
-(3, 6), (4, 4), (4, 5),
-(4, 7), (5, 1), (5, 2),
-(5, 3), (5, 4), (5, 5);
+INSERT INTO discute_dans (id_salon, id_collaborateur,is_admin) VALUES
+(1, 1, 1), (1, 2, 0),
+(2, 3, 0), (2, 4, 0),
+(3, 5, 0), (3, 6, 0),
+(4, 6, 0), (4, 7, 0),
+(5, 1, 0), (5, 3, 0),
+(5, 7, 0);
 
 -- Participations aux activités
 INSERT INTO participe_activite (id_activite, id_collaborateur) VALUES
