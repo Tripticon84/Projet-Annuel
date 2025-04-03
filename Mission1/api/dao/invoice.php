@@ -2,6 +2,11 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/api/ressources/dompdf/autoload.inc.php";
+
+use Dompdf\Dompdf;
+use Dompdf\Options;
+
 
 function createInvoice($date_emission,$date_echeance,$montant,$montant_tva,$montant_ht,$statut,$methode_paiement,$id_devis,$id_prestataire)
 {
@@ -83,7 +88,7 @@ function getAllInvoiceByState($state, $id_prestataire = "", int $limit = null, i
     return null;
 }
 
-function getContractByProvider($providerId)
+function getInvoiceByProvider($providerId)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT f.facture_id, f.date_emission, f.date_echeance, f.montant, f.montant_tva, f.montant_ht,
@@ -100,6 +105,15 @@ function getContractByProvider($providerId)
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return null;
+}
+
+function getProviderByInvoice($id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT p.prestataire_id, p.nom, p.prenom, p.email, p.type, p.tarif, p.date_debut_disponibilite, p.date_fin_disponibilite, p.description FROM prestataire p JOIN facture f ON p.prestataire_id = f.id_prestataire WHERE f.facture_id = :id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch();
 }
 
 function getInvoiceById($id)
@@ -217,4 +231,110 @@ function isValidStatus($status)
         return true;
     }
     return false;
+}
+
+
+function generatePDFForProvider($factureId){
+    $options = new Options();
+    $options->set('defaultFont', 'Arial');
+    $options->set('isHtml5ParserEnabled', true);
+    $dompdf = new Dompdf($options);
+
+    $provider =  getProviderByInvoice($factureId);
+    if ($provider === null) {
+        returnError(404, 'Provider not found');
+    }
+    echo json_encode($provider);
+    $infos = getInvoiceByProvider($provider['prestataire_id']);
+    if ($infos === null) {
+        returnError(404, 'Invoice not found');
+    }
+    
+    echo json_encode($infos);
+
+    $html = '<html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+            table, th, td {
+                border: 1px solid black;
+            }
+            th, td {
+                padding: 10px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            h1, h2, h3 {
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Provider Information</h1>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>';
+    
+    foreach ($provider as $key => $value) {
+        $html .= '<tr>
+            <td>' . htmlspecialchars($key) . '</td>
+            <td>' . htmlspecialchars($value) . '</td>
+        </tr>';
+    }
+
+    $html .= '</table>
+        <h2>Invoices</h2>
+        <table>
+            <tr>
+                <th>Facture ID</th>
+                <th>Date Emission</th>
+                <th>Date Echeance</th>
+                <th>Montant</th>
+                <th>Montant TVA</th>
+                <th>Montant HT</th>
+                <th>Statut</th>
+                <th>Methode Paiement</th>
+                <th>ID Devis</th>
+                <th>ID Prestataire</th>
+            </tr>';
+
+    foreach ($infos as $info) {
+        $html .= '<tr>
+            <td>' . htmlspecialchars($info['facture_id']) . '</td>
+            <td>' . htmlspecialchars($info['date_emission']) . '</td>
+            <td>' . htmlspecialchars($info['date_echeance']) . '</td>
+            <td>' . htmlspecialchars($info['montant']) . '</td>
+            <td>' . htmlspecialchars($info['montant_tva']) . '</td>
+            <td>' . htmlspecialchars($info['montant_ht']) . '</td>
+            <td>' . htmlspecialchars($info['statut']) . '</td>
+            <td>' . htmlspecialchars($info['methode_paiement']) . '</td>
+            <td>' . htmlspecialchars($info['id_devis']) . '</td>
+            <td>' . htmlspecialchars($info['id_prestataire']) . '</td>
+        </tr>';
+    }
+
+    $html .= '</table>
+    </body>
+    </html>';
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+    $dompdf->stream("provider_invoices.pdf", ["Attachment" => false]); // false = affiche dans le navigateur
+    
+
+
+
 }
