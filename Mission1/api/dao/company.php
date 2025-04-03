@@ -59,9 +59,41 @@ function getSocietyById($id)
 function deleteSociety($id)
 {
     $db = getDatabaseConnection();
-    $sql = "DELETE FROM societe WHERE societe_id = :id";
+    // Check if desactivate is already 4
+    $checkSql = "SELECT desactivate FROM societe WHERE societe_id = :id";
+    $checkStmt = $db->prepare($checkSql);
+    $checkStmt->execute(['id' => $id]);
+    $currentStatus = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($currentStatus && $currentStatus['desactivate'] == 1) {
+        return 4;
+    }
+
+    // Update desactivate to 1
+    $sql = "UPDATE societe SET desactivate = 1 WHERE societe_id = :id";
     $stmt = $db->prepare($sql);
-    return $stmt->execute(['id' => $id]);
+    $res = $stmt->execute(['id' => $id]);
+    if (!$res) {
+        return null;
+    }
+
+    $resultat = desactivateEmployeeFromSociety($id);
+    if ($resultat && $res) {
+        return $stmt->rowCount();
+    }
+    return null;
+}
+
+function desactivateEmployeeFromSociety($societe_id)
+{
+    $db = getDatabaseConnection();
+    $sql = "UPDATE collaborateur SET desactivate = 1 WHERE id_societe = :societe_id AND desactivate = 0";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['societe_id' => $societe_id]);
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
 }
 
 function updateSociety($id, ?string $nom = null, ?string $email = null, ?string $adresse = null, ?string $contact_person = null, ?string $password = null, ?int $telephone = null)

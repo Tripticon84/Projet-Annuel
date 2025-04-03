@@ -10,7 +10,7 @@ if (!methodIsAllowed('update')) {
     return;
 }
 
-acceptedTokens(true, false, false, false);
+acceptedTokens(true, true, false, false);
 
 
 $data = getBody();
@@ -30,6 +30,8 @@ if (validateMandatoryParams($data, ['societe_id'])) {
     if (!$res) {
         returnError(500, 'Could not delete the Company');
         return;
+    }else if ($res == 4) {
+        returnError(400, 'Company already deleted.');
     }
 
     echo json_encode(['id' => $id]);
