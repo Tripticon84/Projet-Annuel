@@ -116,6 +116,19 @@ function getProviderByInvoice($id)
     return $stmt->fetch();
 }
 
+function getCompanyByInvoice($id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT c.societe_id, c.nom, c.siret, c.email, c.adresse, c.date_creation, c.concact_person, c.telephone 
+            FROM societe c 
+            JOIN devis d ON c.societe_id = d.id_societe 
+            JOIN facture f ON d.devis_id = f.id_devis 
+            WHERE f.facture_id = :id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch();
+}
+
 function getInvoiceById($id)
 {
     $db = getDatabaseConnection();
@@ -334,7 +347,102 @@ function generatePDFForProvider($factureId){
     $dompdf->render();
     $dompdf->stream("provider_invoices.pdf", ["Attachment" => false]); // false = affiche dans le navigateur
     
+}
 
+function generatePDFForCompany($factureId){
+    $options = new Options();
+    $options->set('defaultFont', 'Arial');
+    $options->set('isHtml5ParserEnabled', true);
+    $dompdf = new Dompdf($options);
 
+    $company =  getCompanyByInvoice($factureId);
+    if ($company === null) {
+        returnError(404, 'company not found');
+    }
+    echo json_encode($company);
+    $infos = getInvoiceById($factureId);
+    if ($infos === null) {
+        returnError(404, 'Invoice not found');
+    }
+    
+    echo json_encode($infos);
+    $html = '<html>
+        <head>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                table, th, td {
+                    border: 1px solid black;
+                }
+                th, td {
+                    padding: 10px;
+                    text-align: left;
+                }
+                th {
+                    background-color: #f2f2f2;
+                }
+                h1, h2, h3 {
+                    text-align: center;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>Company Information</h1>
+            <table>
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>';
+        
+        foreach ($company as $key => $value) {
+            $html .= '<tr>
+                <td>' . htmlspecialchars($key) . '</td>
+                <td>' . htmlspecialchars($value) . '</td>
+            </tr>';
+        }
 
+        $html .= '</table>
+            <h2>Invoice Details</h2>
+            <table>
+                <tr>
+                    <th>Facture ID</th>
+                    <th>Date Emission</th>
+                    <th>Date Echeance</th>
+                    <th>Montant</th>
+                    <th>Montant TVA</th>
+                    <th>Montant HT</th>
+                    <th>Statut</th>
+                    <th>Methode Paiement</th>
+                    <th>ID Devis</th>
+                    <th>ID Prestataire</th>
+                </tr>';
+
+        $html .= '<tr>
+            <td>' . htmlspecialchars($infos['facture_id']) . '</td>
+            <td>' . htmlspecialchars($infos['date_emission']) . '</td>
+            <td>' . htmlspecialchars($infos['date_echeance']) . '</td>
+            <td>' . htmlspecialchars($infos['montant']) . '</td>
+            <td>' . htmlspecialchars($infos['montant_tva']) . '</td>
+            <td>' . htmlspecialchars($infos['montant_ht']) . '</td>
+            <td>' . htmlspecialchars($infos['statut']) . '</td>
+            <td>' . htmlspecialchars($infos['methode_paiement']) . '</td>
+            <td>' . htmlspecialchars($infos['id_devis']) . '</td>
+            <td>' . htmlspecialchars($infos['id_prestataire']) . '</td>
+        </tr>';
+
+        $html .= '</table>
+        </body>
+        </html>';
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+    $dompdf->stream("provider_invoices.pdf", ["Attachment" => false]); // false = affiche dans le navigateur
 }
