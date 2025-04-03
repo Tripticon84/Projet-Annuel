@@ -5,7 +5,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 header('Content-Type: application/json');
 
-if (!methodIsAllowed('delete')) {
+if (!methodIsAllowed('update')) {
     returnError(405, 'Method not allowed');
     return;
 }
