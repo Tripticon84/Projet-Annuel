@@ -162,3 +162,38 @@ function getEventByStatut($statut) {
     $query->execute($params);
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
+
+function getCollaborateursByEvent($event_id) {
+    $db = getDatabaseConnection();
+    $query = $db->prepare('SELECT c.collaborateur_id, c.nom, c.prenom, c.email, c.telephone 
+                          FROM collaborateur c 
+                          JOIN participe_evenement pe ON c.collaborateur_id = pe.id_collaborateur 
+                          WHERE pe.id_evenement = :event_id AND c.desactivate = 0');
+    $params = [
+        'event_id' => $event_id
+    ];
+    $query->execute($params);
+    return $query->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function removeParticipant($event_id, $collaborator_id) {
+    $db = getDatabaseConnection();
+    $query = $db->prepare('DELETE FROM participe_evenement WHERE id_evenement = :event_id AND id_collaborateur = :collaborator_id');
+    $res = $query->execute([
+        'event_id' => $event_id,
+        'collaborator_id' => $collaborator_id
+    ]);
+    return $res;
+}
+
+function verifyEventAndCollaborator($event_id, $collaborator_id) {
+    $db = getDatabaseConnection();
+    $query = $db->prepare('SELECT COUNT(*) FROM participe_evenement 
+                          WHERE id_evenement = :event_id 
+                          AND id_collaborateur = :collaborator_id');
+    $query->execute([
+        'event_id' => $event_id,
+        'collaborator_id' => $collaborator_id
+    ]);
+    return $query->fetchColumn() > 0;
+}

@@ -212,13 +212,13 @@ include_once "../includes/head.php";
                     data.forEach(participant => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${participant.id_collaborateur}</td>
+                            <td>${participant.collaborateur_id}</td>
                             <td>${participant.nom || '-'}</td>
                             <td>${participant.prenom || '-'}</td>
                             <td>${participant.email || '-'}</td>
                             <td>${participant.telephone || '-'}</td>
                             <td>
-                                <button class="btn btn-sm btn-outline-danger" onclick="removeParticipant(${eventId}, ${participant.id_collaborateur})">
+                                <button class="btn btn-sm btn-outline-danger" onclick="removeParticipant(${eventId}, ${participant.collaborateur_id})">
                                     <i class="fas fa-user-minus"></i> Retirer
                                 </button>
                             </td>
@@ -237,24 +237,28 @@ include_once "../includes/head.php";
 
         function removeParticipant(eventId, collaboratorId) {
             if (confirm('Êtes-vous sûr de vouloir retirer ce participant de l\'événement ?')) {
+                const data = {
+                    id_evenement: parseInt(eventId),
+                    id_collaborateur: parseInt(collaboratorId)
+                };
+                console.log('Sending data:', data); // Debug log
+
                 fetch('../../api/event/removeParticipant.php', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + getToken()
                     },
-                    body: JSON.stringify({
-                        id_evenement: eventId,
-                        id_collaborateur: collaboratorId
-                    })
+                    body: JSON.stringify(data)
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         alert('Participant retiré avec succès.');
-                        viewParticipants(eventId); // Rafraîchir la liste des participants
+                        viewParticipants(eventId);
                     } else {
-                        alert('Erreur lors du retrait du participant. Veuillez réessayer.');
+                        alert('Erreur: ' + (data.error || 'Erreur inconnue'));
+                        console.error('Error data:', data);
                     }
                 })
                 .catch(error => {

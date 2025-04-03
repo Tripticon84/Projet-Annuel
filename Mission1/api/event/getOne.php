@@ -12,7 +12,7 @@ if (!methodIsAllowed('read')) {
 acceptedTokens(true, false, true, false);
 
 
-// Vérification de l'ID de la societe
+// Vérification de l'ID de l'évènement
 if (!isset($_GET['evenement_id']) || empty($_GET['evenement_id'])) {
     returnError(400, 'Event ID not provided');
     return;
