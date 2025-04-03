@@ -57,12 +57,12 @@ function getAllEmployees(string $username = "", int $limit = null, int $offset =
     $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur WHERE desactivate = 0";
 
     if (!empty($username)) {
-        $sql .= " WHERE username LIKE :username";
+        $sql .= " AND username LIKE :username";
         $params['username'] = "%" . $username . "%";
     }
 
     if (!is_null($id_societe)) {
-        $conditions[] = "id_societe = :id_societe";
+        $sql .= " AND id_societe = :id_societe";
         $params['id_societe'] = $id_societe;
     }
 
