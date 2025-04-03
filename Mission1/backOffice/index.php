@@ -3,10 +3,6 @@ $title = "Connexion";
 
 include_once "includes/head.php";
 
-if (isset($_SESSION['admin_id'])) {
-    header('Location: home.php');
-}
-
 ?>
 <div class="container mt-5 d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="row justify-content-center">
@@ -35,3 +31,8 @@ if (isset($_SESSION['admin_id'])) {
         </div>
     </div>
 </div>
+<script>
+    if (getToken() !== null) {
+        window.location.href = "home.php";
+    }
+</script>
