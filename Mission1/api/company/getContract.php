@@ -11,9 +11,14 @@ if (!methodIsAllowed('read')) {
 
 acceptedTokens(true, true, false, false);
 
-
 $idSociete = intval($_GET['societe_id']);
 $is_contract = true;
+
+// Récupérer les paramètres de filtrage
+$statut = isset($_GET['statut']) ? $_GET['statut'] : null;
+$date_debut = isset($_GET['date_debut']) ? $_GET['date_debut'] : null;
+$date_fin = isset($_GET['date_fin']) ? $_GET['date_fin'] : null;
+
 $company = getSocietyById($idSociete);
 
 if (!$company) {
@@ -21,7 +26,7 @@ if (!$company) {
     return;
 }
 
-$estimates = getCompanyEstimate($idSociete, $is_contract);
+$estimates = getCompanyEstimate($idSociete, $is_contract, $statut, $date_debut, $date_fin);
 
 if (!$estimates) {
     returnError(404, 'Estimates not found');

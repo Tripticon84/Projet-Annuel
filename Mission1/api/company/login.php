@@ -43,7 +43,7 @@ returnSuccess(
         'token' => $tokenHashed,
         'date' => date_add(
             date_create("now", new DateTimeZone('Europe/Paris')),
-            DateInterval::createFromDateString('3 hour')
+            DateInterval::createFromDateString('25 hour')
         )
     ]
 );

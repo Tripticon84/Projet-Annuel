@@ -28,7 +28,7 @@ if (!isset($_SESSION["admin_id"]) && $title != "Connexion") {
     <script>
         const getToken = () => {
             const cookies = document.cookie.split('; ');
-            const tokenCookie = cookies.find(row => row.startsWith('token='));
+            const tokenCookie = cookies.find(row => row.startsWith('admin_token='));
             return tokenCookie ? tokenCookie.split('=')[1] : null;
         };
 

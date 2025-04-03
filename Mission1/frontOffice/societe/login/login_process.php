@@ -7,43 +7,39 @@
 // }
 
 function error($message) {
-    header("location: ../index.php" . "?message=" . $message);
+    header("location: ../login.php" . "?message=" . $message);
     exit();
 }
 
 
 include_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 include_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
-
+include_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/hashPassword.php";
 
 // verifier si la methode est post
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if (!methodIsAllowed('login')) {
     error("Erreur la méthode n'est pas POST");
 }
 
 // Valider les paramètres
-$required = ['username', 'password'];
-if (!validateMandatoryParams($_POST, $required)) {
+if (!validateMandatoryParams($_POST, ['email', 'password'])) {
     error("Les paramètres ne sont pas les bons.");
 }
 
 // Connexion a la base de données
 $db = getDatabaseConnection();
 
-$username = $_POST['username'];
-$salt = 'quoicoube';
-$password_salt = $_POST['password'] . $salt;
-$password_hash = hash("sha256", $password_salt);
+$email = $_POST['email'];
+$password_hash = hashPassword($_POST['password']);
 
-
-$q = "SELECT admin_id, username, password FROM admin WHERE username = :username AND password = :password";
+$q = "SELECT * FROM societe WHERE email = :email AND password = :password";
 $req = $db->prepare($q);
 $req->execute([
-    'username' => $username,
+    'email' => $email,
     'password' => $password_hash
 ]);
 
-// Modification ici : utilisation de fetch() au lieu de fetchAll()
+
 $result = $req->fetch(PDO::FETCH_ASSOC);
 
 if (!$result) {
@@ -55,15 +51,23 @@ if (!$result) {
 
 session_start();
 
-$_SESSION["admin_id"] = $result["admin_id"];
-$_SESSION["username"] = $result["username"];
+// Vérifier si il n'y pas déjà de session active
+if (isset($_SESSION)) {
+    // Si une session est déjà active, on la détruit
+    session_destroy();
+    session_start();
+}
+
+
+$_SESSION["societe_id"] = $result["societe_id"];
+$_SESSION["email"] = $result["email"];
 
 // Login dans l'api pour récupérer le token
 $postData = [
-    'username' => $username,
+    'email' => $email,
     'password' => $_POST['password']
 ];
-$ch = curl_init('localhost/api/admin/login.php');
+$ch = curl_init('localhost/api/company/login.php');
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -72,10 +76,11 @@ $response = curl_exec($ch);
 curl_close($ch);
 
 $data = json_decode($response, true);
+
 if (isset($data['token'])) {
-    $_SESSION['admin_token'] = $data['token'];
-    $expirationTimestamp = time() + 3600*2;
-    setcookie('admin_token', $data['token'], $expirationTimestamp, '/');
+    $_SESSION['societe_token'] = $data['token'];
+    $expirationTimestamp = time() + 3600*24; // 24 heures
+    setcookie('societe_token', $data['token'], $expirationTimestamp, '/');
 }
 
 // Redirection vers la page d'accueil
