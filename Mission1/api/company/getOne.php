@@ -33,7 +33,9 @@ $result = [
     "adresse" => $company['adresse'],
     "email" => $company['email'],
     "telephone" => $company['telephone'],
-    "date_creation" => $company['date_creation']
+    "date_creation" => $company['date_creation'],
+    "siret" => $company['siret'],
+    "desactivate" => $company['desactivate']
 ];
 
 echo json_encode($result);

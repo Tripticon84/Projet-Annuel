@@ -28,6 +28,14 @@ function createSociety($nom, $email, $adresse, $contact_person, $password, $tele
     return null;
 }
 
+function getCompanyBySiret($siret)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT societe_id, siret FROM societe WHERE siret = :siret";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['siret' => $siret]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 function getSocietyByEmail($email)
 {
@@ -59,12 +67,16 @@ function getSocietyById($id)
 function deleteSociety($id)
 {
     $db = getDatabaseConnection();
-    $sql = "DELETE FROM societe WHERE societe_id = :id";
-    $stmt = $db->prepare($sql);
-    return $stmt->execute(['id' => $id]);
+    $sql = "UPDATE societe SET desactivate = 1 WHERE societe_id = :id";
+    $stmt = $db->prepare($sql); 
+    $res = $stmt->execute(['id' => $id]);
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
 }
 
-function updateSociety($id, ?string $nom = null, ?string $email = null, ?string $adresse = null, ?string $contact_person = null, ?string $password = null, ?int $telephone = null)
+function updateSociety($id, ?string $nom = null, ?string $email = null, ?string $adresse = null, ?string $contact_person = null, ?string $password = null, ?int $telephone = null, ?string $siret = null)
 {
     $db = getDatabaseConnection();
     $params = ['id' => $id];
@@ -100,6 +112,11 @@ function updateSociety($id, ?string $nom = null, ?string $email = null, ?string 
         $params['password'] = hashPassword($password);
     }
 
+    if ($siret !== null) {
+        $setFields[] = "siret = :siret";
+        $params['siret'] = $siret;
+    }
+
     if (empty($setFields)) {
         return 0; // Rien à mettre à jour
     }
@@ -119,7 +136,7 @@ function getAllSociety($name = "", $limit = null, $offset = null)
 {
     $db = getDatabaseConnection();
     $params = [];
-    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation FROM societe";
+    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation, siret, desactivate FROM societe";
     $conditions = [];
 
     if (!empty($name)) {
@@ -149,7 +166,7 @@ function getAllSociety($name = "", $limit = null, $offset = null)
 function getSociety($id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation FROM societe WHERE societe_id = :id";
+    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation, siret, desactivate FROM societe WHERE societe_id = :id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['id' => $id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
