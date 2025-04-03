@@ -15,15 +15,15 @@ $data = getBody();
 acceptedTokens(true, false, false, false);
 
 
-if (validateMandatoryParams($data, ['name', 'description'])) {
+if (validateMandatoryParams($data, ['name', 'description', 'logo', 'banniere'])) {
 
     $association = getAssociationByName($data['name']);
     if (!empty($association)) {
         returnError(400, 'Association already exist');
         return;
     }
-
-    $newAssociationId = createAssociation($data['name'], $data['description']);
+    
+    $newAssociationId = createAssociation($data['name'], $data['description'], $logo, $banniere);
 
     if (!$newAssociationId) {
         returnError(500, 'Could not create the association');

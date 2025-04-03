@@ -21,6 +21,10 @@ foreach ($associations as $association) {
         "id" => $association['association_id'],
         "name" => $association['name'],
         "description" => $association['description'],
+        "logo" => $association['logo'],
+        "banniere" => $association['banniere'],
+        "date_creation" => $association['date_creation'],
+        "desactivate" => $association['desactivate']
     ];
 }
 

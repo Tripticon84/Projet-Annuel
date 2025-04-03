@@ -197,3 +197,13 @@ function verifyEventAndCollaborator($event_id, $collaborator_id) {
     ]);
     return $query->fetchColumn() > 0;
 }
+
+function desactivateEventFromAssociation($id_association) {
+    $db = getDatabaseConnection();
+    $query = $db->prepare('UPDATE evenements SET desactivate=1 WHERE id_association = :id_association');
+    $res = $query->execute(['id_association' => $id_association]);
+    if ($res) {
+        return $query->rowCount();
+    }
+    return null;
+}

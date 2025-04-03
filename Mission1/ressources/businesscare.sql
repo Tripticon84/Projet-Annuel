@@ -66,7 +66,11 @@ CREATE TABLE `admin` (
 CREATE TABLE `association` (
   `association_id` int(11) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `description` text DEFAULT NULL
+  `description` text DEFAULT NULL,
+  `date_creation` datetime DEFAULT NULL,
+  `logo` varchar(255) DEFAULT NULL,
+  `banniere` varchar(255) DEFAULT NULL,
+  `desactivate` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -178,7 +182,8 @@ CREATE TABLE `evenements` (
   `lieu` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
   `statut` ENUM('en_cours', 'a_venir', 'termine') DEFAULT 'en_cours',
-  `id_association` int(11)  DEFAULT NULL
+  `id_association` int(11)  DEFAULT NULL,
+  `desactivate` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -668,12 +673,12 @@ INSERT INTO admin (username, password, token, expiration) VALUES
 ('admin', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL),
 ('superadmin', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL);
 
--- Associations partenaires
-INSERT INTO association (name, description) VALUES
-('Les Restos du Cœur', 'Association caritative d\'aide alimentaire et d\'insertion sociale'),
-('Médecins Sans Frontières', 'Organisation médicale humanitaire internationale'),
-('La Croix-Rouge française', 'Association d\'aide humanitaire qui vient en aide aux personnes en difficulté'),
-('WWF France', 'Organisation non gouvernementale de protection de l\'environnement');
+INSERT INTO association (name, description, date_creation, banniere, logo, desactivate) VALUES
+('Les Restos du Cœur', 'Association caritative d\'aide alimentaire et d\'insertion sociale', '2025-01-01', 'restos_banniere.jpg', 'restos_logo.jpg', 0),
+('Médecins Sans Frontières', 'Organisation médicale humanitaire internationale', '2025-02-01', 'msf_banniere.jpg', 'msf_logo.jpg', 0),
+('La Croix-Rouge française', 'Association d\'aide humanitaire qui vient en aide aux personnes en difficulté', '2025-03-01', 'croix_rouge_banniere.jpg', 'croix_rouge_logo.jpg', 0),
+('WWF France', 'Organisation non gouvernementale de protection de l\'environnement', '2025-04-01', 'wwf_banniere.jpg', 'wwf_logo.jpg', 1);
+
 
 -- Collaborateurs des entreprises
 INSERT INTO collaborateur (nom, prenom, username, role, email, password, telephone, id_societe, date_creation, date_activite) VALUES
@@ -758,13 +763,14 @@ INSERT INTO evaluation (note, commentaire, id_collaborateur, date_creation) VALU
 
 
 -- Événements entreprise
-INSERT INTO evenements (nom, date, lieu, type, statut, id_association) VALUES
-('Journée bien-être', '2025-05-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique', 'a_venir', 1),
-('Journée bien-être', '2025-03-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique', 'termine', 1),
-('Semaine de la santé', '2025-06-15', 'Siège AXA - Paris', 'Semaine spéciale', 'a_venir', 2),
-('Challenge pas quotidiens', '2025-04-01', 'Toutes les agences Carrefour', 'Challenge d\'équipe', 'en_cours', 3),
-('Conférence Équilibre de vie', '2025-07-10', 'Tour BNP - La Défense', 'Conférence', 'a_venir', 4),
-('Ateliers détente', '2025-05-05', 'Centre L\'Oréal - Paris', 'Ateliers pratiques', 'a_venir', 1);
+INSERT INTO evenements (nom, date, lieu, type, statut, id_association, desactivate) VALUES
+('Journée bien-être', '2025-05-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique', 'a_venir', 1, 0),
+('Journée bien-être', '2025-03-25', 'Campus Renault - Boulogne-Billancourt', 'Journée thématique', 'termine', 1, 0),
+('Semaine de la santé', '2025-06-15', 'Siège AXA - Paris', 'Semaine spéciale', 'a_venir', 2, 0),
+('Challenge pas quotidiens', '2025-04-01', 'Toutes les agences Carrefour', 'Challenge d\'équipe', 'en_cours', 3, 0),
+('Conférence Équilibre de vie', '2025-07-10', 'Tour BNP - La Défense', 'Conférence', 'a_venir', 4, 0),
+('Ateliers détente', '2025-05-05', 'Centre L\'Oréal - Paris', 'Ateliers pratiques', 'a_venir', 1, 0);
+
 
 
 -- Notes des prestataires

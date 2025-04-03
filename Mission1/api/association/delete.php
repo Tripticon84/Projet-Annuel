@@ -4,7 +4,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 header('Content-Type: application/json');
 
-if (!methodIsAllowed('delete')) {
+if (!methodIsAllowed('update')) {
     returnError(405, 'Method not allowed');
     return;
 }
@@ -33,9 +33,6 @@ if ($deleted) {
     echo json_encode(['message' => 'Association deleted']);
     return http_response_code(200);
 } else {
-    returnError(500, 'Failed to delete association');
+    returnError(500, 'association already deleted or error in the database');
 }
 
-
-echo json_encode(['message' => 'Association deleted']);
-http_response_code(200);

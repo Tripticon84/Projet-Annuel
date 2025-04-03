@@ -259,7 +259,7 @@
                     <div class="card pricing-card h-100">
                         <div class="pricing-header bg-primary-custom text-white text-center">
                             <h3 class="fw-bold">Starter</h3>
-                            <h4 class="fw-bold">180 €</h4>
+                            <h4 class="fw-bold">100 €</h4>
                             <p>par salarié / an</p>
                         </div>
                         <div class="card-body p-4">
@@ -316,7 +316,7 @@
                     <div class="card pricing-card h-100">
                         <div class="pricing-header bg-primary-custom text-white text-center">
                             <h3 class="fw-bold">Premium</h3>
-                            <h4 class="fw-bold">100 €</h4>
+                            <h4 class="fw-bold">180 €</h4>
                             <p>par salarié / an</p>
                         </div>
                         <div class="card-body p-4">
