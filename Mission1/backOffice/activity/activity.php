@@ -235,7 +235,7 @@ $activityStats = [
                                 <td>${activity.nom || '-'}</td>
                                 <td>${activity.type || '-'}</td>
                                 <td>${formatDate(activity.date)}</td>
-                                <td>${activity.lieu || '-'}</td>
+                                <td>${activity.id_lieu || '-'}</td>
                                 <td>${activity.id_prestataire || '-'}</td>
                                 <td>${activity.id_devis ? `<a href="#" onclick="viewQuote(${activity.id_devis}); return false;">Devis #${activity.id_devis}</a>` : '-'}</td>
                                 <td class="text-end">
