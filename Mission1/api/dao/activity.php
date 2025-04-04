@@ -36,18 +36,9 @@ function deleteActivity(int $id)
     return null;
 }
 
-function deleteEmployee(int $id)
-{
-    $db = getDatabaseConnection();
-    $sql = "UPDATE collaborateur SET desactivate = 1 WHERE collaborateur_id = :id";
-    $stmt = $db->prepare($sql);
-    $res = $stmt->execute(['id' => $id]);
-    return $res;
-}
-
 function updateActivity(string $nom = null, string $type = null, $date = null, $id_prestataire = null, $id_devis = null, int $activite_id, $desactivate = null, $id_lieu = null)
 {
-    
+
     $db = getDatabaseConnection();
     $params = ['id' => $activite_id];
     $setFields = [];
@@ -91,7 +82,7 @@ function updateActivity(string $nom = null, string $type = null, $date = null, $
         return 0; // Rien à mettre à jour
     }
 
-    
+
     $sql = "UPDATE activite SET " . implode(", ", $setFields) . " WHERE activite_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute($params);
@@ -137,5 +128,3 @@ function getAllActivity($limit = null, $offset = null)
     }
     return null;
 }
-
-
