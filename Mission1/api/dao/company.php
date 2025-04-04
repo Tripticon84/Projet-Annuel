@@ -151,7 +151,7 @@ function getAllSociety($name = "", $limit = null, $offset = null)
 {
     $db = getDatabaseConnection();
     $params = [];
-    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation FROM societe";
+    $sql = "SELECT societe_id, nom, email, adresse, contact_person, telephone, date_creation, siret, desactivate FROM societe WHERE desactivate = 0";
     $conditions = [];
 
     if (!empty($name)) {
