@@ -14,7 +14,6 @@ acceptedTokens(true, true, true, true);
 
 $limit = null;
 $offset = null;
-$nom = null;
 
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
@@ -28,11 +27,9 @@ if (isset($_GET['offset'])) {
         returnError(400, 'Offset must be a positive number');
     }
 }
-if (isset($_GET['nom'])) {
-    $nom = trim($_GET['nom']);
-}
 
-$activities = getAllActivity($limit, $offset, $nom);
+
+$activities = getAllActivity($limit, $offset);
 
 if (!$activities) {
     returnError(500, 'Failed to retrieve activities');

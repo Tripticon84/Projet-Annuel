@@ -118,7 +118,7 @@ function getActivityById($id)
 function getAllActivity($limit = null, $offset = null)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT activite_id, nom, type, date, id_prestataire, id_devis, id_lieu FROM activite";
+    $sql = "SELECT activite_id, nom, type, date, id_devis, id_prestataire, id_lieu FROM activite";
     $params = [];
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
@@ -139,3 +139,77 @@ function getAllActivity($limit = null, $offset = null)
 }
 
 
+function getActivityByType($type, $limit = null, $offset = null)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT activite_id, nom, type, date, id_prestataire, id_devis, id_lieu FROM activite WHERE type = :type";
+    $params = ['type' => $type];
+
+    if ($limit !== null) {
+        $sql .= " LIMIT " . (string) $limit;
+
+        if ($offset !== null) {
+            $sql .= " OFFSET " . (string) $offset;
+        }
+    }
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);  
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getActivityByDate($date, $limit = null, $offset = null)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT activite_id, nom, type, date, id_prestataire, id_devis, id_lieu FROM activite WHERE date = :date";
+    $params = ['date' => $date];
+
+    if ($limit !== null) {
+        $sql .= " LIMIT " . (string) $limit;
+
+        if ($offset !== null) {
+            $sql .= " OFFSET " . (string) $offset;
+        }
+    }
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);  
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function getActivityByPrice($minPrice, $maxPrice, $limit = null, $offset = null)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT a.activite_id, a.nom, a.type, a.date, a.id_prestataire, a.id_devis, a.id_lieu 
+            FROM activite a
+            INNER JOIN devis d ON a.id_devis = d.devis_id
+            WHERE d.montant BETWEEN :minPrice AND :maxPrice";
+    $params = [
+        'minPrice' => $minPrice,
+        'maxPrice' => $maxPrice
+    ];
+
+    if ($limit !== null) {
+        $sql .= " LIMIT " . (string) $limit;
+
+        if ($offset !== null) {
+            $sql .= " OFFSET " . (string) $offset;
+        }
+    }
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
