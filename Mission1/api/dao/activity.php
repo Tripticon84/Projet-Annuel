@@ -3,7 +3,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 
 
-function createActivity(string $nom,string $type,$date,int $id_devis,int $id_prestataire,int $id_lieu)
+function createActivity(string $nom, string $type, $date, int $id_devis, int $id_prestataire, int $id_lieu)
 {
     $db = getDatabaseConnection();
     $sql = "INSERT INTO activite (nom, type, date, id_devis, id_prestataire, id_lieu) VALUES (:nom, :type, :date, :id_devis, :id_prestataire, :id_lieu)";
@@ -36,7 +36,7 @@ function deleteActivity(int $id)
     return null;
 }
 
-function updateActivity(string $nom = null, string $type = null, $date = null, $id_prestataire = null, $id_devis = null, int $activite_id, $desactivate = null, $id_lieu = null)
+function updateActivity(int $activite_id, string $nom = null, string $type = null, $date = null, $id_prestataire = null, $id_devis = null, $desactivate = null, $id_lieu = null)
 {
 
     $db = getDatabaseConnection();

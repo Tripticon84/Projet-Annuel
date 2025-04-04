@@ -113,50 +113,6 @@ function updateAssociation($association_id, ?string $name = null, ?string $descr
     }
     return null;
 }
-{
-
-    $db = getDatabaseConnection();
-    $params = ['association_id' => $association_id];
-    $setFields = [];
-
-    if ($name !== null) {
-        $setFields[] = "name = :name";
-        $params['name'] = $name;
-    }
-
-    if ($description !== null) {
-        $setFields[] = "description = :description";
-        $params['description'] = $description;
-    }
-
-    if ($logo !== null) {
-        $setFields[] = "logo = :logo";
-        $params['logo'] = $logo;
-    }
-
-    if ($banniere !== null) {
-        $setFields[] = "banniere = :banniere";
-        $params['banniere'] = $banniere;
-    }
-
-    if ($desactivate !== null) {
-        $setFields[] = "desactivate = :desactivate";
-        $params['desactivate'] = $desactivate;
-    }
-
-    if (empty($setFields)) {
-        return 0; // Rien à mettre à jour
-    }
-
-    $sql = "UPDATE association SET " . implode(", ", $setFields) . " WHERE association_id = :association_id";
-    $stmt = $db->prepare($sql);
-    $res = $stmt->execute($params);
-
-    if ($res) {
-        return $stmt->rowCount();
-    }
-    return null;
-}
 
 function deleteAssociation($association_id)
 {
