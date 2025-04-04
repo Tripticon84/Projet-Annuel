@@ -119,14 +119,14 @@ function getProviderByInvoice($id)
 function getCompanyByInvoice($id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT c.societe_id, c.nom, c.siret, c.email, c.adresse, c.date_creation, c.concact_person, c.telephone 
-            FROM societe c 
-            JOIN devis d ON c.societe_id = d.id_societe 
-            JOIN facture f ON d.devis_id = f.id_devis 
+    $sql = "SELECT c.societe_id, c.nom, c.siret, c.email, c.adresse, c.date_creation, c.contact_person, c.telephone
+            FROM societe c
+            JOIN devis d ON c.societe_id = d.id_societe
+            JOIN facture f ON d.devis_id = f.id_devis
             WHERE f.facture_id = :id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['id' => $id]);
-    return $stmt->fetch();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 function getInvoiceById($id)
@@ -253,24 +253,25 @@ function generatePDFForProvider($factureId){
     $options->set('isHtml5ParserEnabled', true);
     $dompdf = new Dompdf($options);
 
-    $provider =  getProviderByInvoice($factureId);
+    $provider = getProviderByInvoice($factureId);
     if ($provider === null) {
         returnError(404, 'Provider not found');
     }
-    echo json_encode($provider);
+
     $infos = getInvoiceByProvider($provider['prestataire_id']);
     if ($infos === null) {
         returnError(404, 'Invoice not found');
     }
-    
-    echo json_encode($infos);
 
-    $html = '<html>
+    $html = '<!DOCTYPE html>
+    <html>
     <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <style>
             body {
                 font-family: Arial, sans-serif;
                 margin: 20px;
+                color: #333;
             }
             table {
                 width: 100%;
@@ -278,7 +279,7 @@ function generatePDFForProvider($factureId){
                 margin-bottom: 20px;
             }
             table, th, td {
-                border: 1px solid black;
+                border: 1px solid #ccc;
             }
             th, td {
                 padding: 10px;
@@ -289,22 +290,47 @@ function generatePDFForProvider($factureId){
             }
             h1, h2, h3 {
                 text-align: center;
+                color: #444;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .footer {
+                text-align: center;
+                font-size: 12px;
+                margin-top: 30px;
+                color: #666;
             }
         </style>
     </head>
     <body>
-        <h1>Provider Information</h1>
+        <div class="header">
+            <h1>Provider Information</h1>
+            <p>Generated on: ' . date('d/m/Y H:i:s') . '</p>
+        </div>
+
+        <h2>Provider Details</h2>
         <table>
             <tr>
                 <th>Field</th>
                 <th>Value</th>
             </tr>';
-    
+
     foreach ($provider as $key => $value) {
-        $html .= '<tr>
-            <td>' . htmlspecialchars($key) . '</td>
-            <td>' . htmlspecialchars($value) . '</td>
-        </tr>';
+        if ($value !== null) {
+            // Formater les dates si la clé contient "date"
+            if (strpos($key, 'date') !== false && $value != '') {
+                $date = date_create_from_format('Y-m-d', $value);
+                if ($date) {
+                    $value = date_format($date, 'd/m/Y');
+                }
+            }
+            $html .= '<tr>
+                <td>' . htmlspecialchars($key) . '</td>
+                <td>' . htmlspecialchars($value) . '</td>
+            </tr>';
+        }
     }
 
     $html .= '</table>
@@ -319,34 +345,39 @@ function generatePDFForProvider($factureId){
                 <th>Montant HT</th>
                 <th>Statut</th>
                 <th>Methode Paiement</th>
-                <th>ID Devis</th>
-                <th>ID Prestataire</th>
             </tr>';
 
     foreach ($infos as $info) {
+        // Formater les dates d'émission et d'échéance
+        $dateEmission = $info['date_emission'] ? date_create_from_format('Y-m-d', $info['date_emission']) : null;
+        $dateEcheance = $info['date_echeance'] ? date_create_from_format('Y-m-d', $info['date_echeance']) : null;
+
         $html .= '<tr>
             <td>' . htmlspecialchars($info['facture_id']) . '</td>
-            <td>' . htmlspecialchars($info['date_emission']) . '</td>
-            <td>' . htmlspecialchars($info['date_echeance']) . '</td>
-            <td>' . htmlspecialchars($info['montant']) . '</td>
-            <td>' . htmlspecialchars($info['montant_tva']) . '</td>
-            <td>' . htmlspecialchars($info['montant_ht']) . '</td>
+            <td>' . ($dateEmission ? date_format($dateEmission, 'd/m/Y') : '') . '</td>
+            <td>' . ($dateEcheance ? date_format($dateEcheance, 'd/m/Y') : '') . '</td>
+            <td>' . htmlspecialchars($info['montant']) . ' €</td>
+            <td>' . htmlspecialchars($info['montant_tva']) . ' €</td>
+            <td>' . htmlspecialchars($info['montant_ht']) . ' €</td>
             <td>' . htmlspecialchars($info['statut']) . '</td>
             <td>' . htmlspecialchars($info['methode_paiement']) . '</td>
-            <td>' . htmlspecialchars($info['id_devis']) . '</td>
-            <td>' . htmlspecialchars($info['id_prestataire']) . '</td>
         </tr>';
     }
 
     $html .= '</table>
+        <div class="footer">
+            <p>Document généré automatiquement. Ce document est confidentiel.</p>
+        </div>
     </body>
     </html>';
 
     $dompdf->loadHtml($html);
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
-    $dompdf->stream("provider_invoices.pdf", ["Attachment" => false]); // false = affiche dans le navigateur
-    
+
+    // Supprimer les echo qui polluent le PDF
+    $dompdf->stream("provider_invoices.pdf", ["Attachment" => true]);
+    exit;
 }
 
 function generatePDFForCompany($factureId){
@@ -355,94 +386,156 @@ function generatePDFForCompany($factureId){
     $options->set('isHtml5ParserEnabled', true);
     $dompdf = new Dompdf($options);
 
-    $company =  getCompanyByInvoice($factureId);
+    $company = getCompanyByInvoice($factureId);
     if ($company === null) {
-        returnError(404, 'company not found');
+        returnError(404, 'Company not found');
     }
-    echo json_encode($company);
+
     $infos = getInvoiceById($factureId);
     if ($infos === null) {
         returnError(404, 'Invoice not found');
     }
-    
-    echo json_encode($infos);
-    $html = '<html>
-        <head>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    margin: 20px;
+
+    $html = '<!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                color: #333;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+            table, th, td {
+                border: 1px solid #ccc;
+            }
+            th, td {
+                padding: 10px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            h1, h2, h3 {
+                text-align: center;
+                color: #444;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .footer {
+                text-align: center;
+                font-size: 12px;
+                margin-top: 30px;
+                color: #666;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Facture #' . htmlspecialchars($infos['facture_id']) . '</h1>
+            <p>Généré le : ' . date('d/m/Y H:i:s') . '</p>
+        </div>
+
+        <h2>Informations Société</h2>
+        <table>
+            <tr>
+                <th>Champ</th>
+                <th>Valeur</th>
+            </tr>';
+
+    foreach ($company as $key => $value) {
+        if ($value !== null) {
+            // Formater les dates si la clé contient "date"
+            if (strpos($key, 'date') !== false && $value != '') {
+                $date = date_create_from_format('Y-m-d', $value);
+                if ($date) {
+                    $value = date_format($date, 'd/m/Y');
                 }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 20px;
-                }
-                table, th, td {
-                    border: 1px solid black;
-                }
-                th, td {
-                    padding: 10px;
-                    text-align: left;
-                }
-                th {
-                    background-color: #f2f2f2;
-                }
-                h1, h2, h3 {
-                    text-align: center;
-                }
-            </style>
-        </head>
-        <body>
-            <h1>Company Information</h1>
-            <table>
-                <tr>
-                    <th>Field</th>
-                    <th>Value</th>
-                </tr>';
-        
-        foreach ($company as $key => $value) {
+            }
             $html .= '<tr>
                 <td>' . htmlspecialchars($key) . '</td>
                 <td>' . htmlspecialchars($value) . '</td>
             </tr>';
         }
+    }
+    $html .= '</table>';
 
-        $html .= '</table>
-            <h2>Invoice Details</h2>
-            <table>
-                <tr>
-                    <th>Facture ID</th>
-                    <th>Date Emission</th>
-                    <th>Date Echeance</th>
-                    <th>Montant</th>
-                    <th>Montant TVA</th>
-                    <th>Montant HT</th>
-                    <th>Statut</th>
-                    <th>Methode Paiement</th>
-                    <th>ID Devis</th>
-                    <th>ID Prestataire</th>
-                </tr>';
+    $html .= '<div class="page-break"></div>';
 
-        $html .= '<tr>
-            <td>' . htmlspecialchars($infos['facture_id']) . '</td>
-            <td>' . htmlspecialchars($infos['date_emission']) . '</td>
-            <td>' . htmlspecialchars($infos['date_echeance']) . '</td>
-            <td>' . htmlspecialchars($infos['montant']) . '</td>
-            <td>' . htmlspecialchars($infos['montant_tva']) . '</td>
-            <td>' . htmlspecialchars($infos['montant_ht']) . '</td>
-            <td>' . htmlspecialchars($infos['statut']) . '</td>
-            <td>' . htmlspecialchars($infos['methode_paiement']) . '</td>
-            <td>' . htmlspecialchars($infos['id_devis']) . '</td>
-            <td>' . htmlspecialchars($infos['id_prestataire']) . '</td>
-        </tr>';
+    // Formater les dates d'émission et d'échéance
+    $dateEmission = $infos['date_emission'] ? date_create_from_format('Y-m-d', $infos['date_emission']) : null;
+    $dateEcheance = $infos['date_echeance'] ? date_create_from_format('Y-m-d', $infos['date_echeance']) : null;
 
-        $html .= '</table>
-        </body>
-        </html>';
+    $html .= '
+        <h2>Détails de la Facture</h2>
+        <table>
+            <tr>
+                <th>Champ</th>
+                <th>Valeur</th>
+            </tr>
+            <tr>
+                <td>Facture ID</td>
+                <td>' . htmlspecialchars($infos['facture_id']) . '</td>
+            </tr>
+            <tr>
+                <td>Date Émission</td>
+                <td>' . ($dateEmission ? date_format($dateEmission, 'd/m/Y') : '') . '</td>
+            </tr>
+            <tr>
+                <td>Date Échéance</td>
+                <td>' . ($dateEcheance ? date_format($dateEcheance, 'd/m/Y') : '') . '</td>
+            </tr>
+            <tr>
+                <td>Montant TTC</td>
+                <td>' . htmlspecialchars($infos['montant']) . ' €</td>
+            </tr>
+            <tr>
+                <td>Montant TVA</td>
+                <td>' . htmlspecialchars($infos['montant_tva']) . ' €</td>
+            </tr>
+            <tr>
+                <td>Montant HT</td>
+                <td>' . htmlspecialchars($infos['montant_ht']) . ' €</td>
+            </tr>
+            <tr>
+                <td>Statut</td>
+                <td>' . htmlspecialchars($infos['statut']) . '</td>
+            </tr>
+            <tr>
+                <td>Méthode Paiement</td>
+                <td>' . htmlspecialchars($infos['methode_paiement']) . '</td>
+            </tr>
+            <tr>
+                <td>ID Devis</td>
+                <td>' . htmlspecialchars($infos['id_devis']) . '</td>
+            </tr>
+            <tr>
+                <td>ID Prestataire</td>
+                <td>' . htmlspecialchars($infos['id_prestataire']) . '</td>
+            </tr>
+        </table>
+
+        <div class="footer">
+            <p>Ce document fait office de facture. Merci pour votre confiance.</p>
+        </div>
+    </body>
+    </html>';
 
     $dompdf->loadHtml($html);
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
-    $dompdf->stream("provider_invoices.pdf", ["Attachment" => false]); // false = affiche dans le navigateur
+
+    // Supprimer les echo qui polluent le PDF
+    $dompdf->stream("facture_" . $factureId . ".pdf", ["Attachment" => true]);
+    exit;
 }

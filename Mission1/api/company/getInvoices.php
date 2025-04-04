@@ -21,6 +21,11 @@ $societe_id = intval($_GET['societe_id']);
 $limit = null;
 $offset = null;
 
+// Récupérer les paramètres de filtrage
+$statut = isset($_GET['statut']) ? $_GET['statut'] : null;
+$date_emission = isset($_GET['date_emission']) ? $_GET['date_emission'] : null;
+$date_echeance = isset($_GET['date_echeance']) ? $_GET['date_echeance'] : null;
+
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
     if ($limit < 1) {
@@ -36,7 +41,7 @@ if (isset($_GET['offset'])) {
     }
 }
 
-$invoices = getCompanyInvoices($societe_id, $limit, $offset);
+$invoices = getCompanyInvoices($societe_id, $limit, $offset, $statut, $date_emission, $date_echeance);
 
 if (!$invoices) {
     returnError(404, 'No invoices found');

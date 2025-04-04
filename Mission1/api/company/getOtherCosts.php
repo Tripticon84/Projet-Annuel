@@ -34,6 +34,7 @@ foreach ($otherCosts as $otherCost) {
         "other_cost_id" => $otherCost['autre_frais_id'],
         "name" => $otherCost['nom'],
         "price" => $otherCost['montant'],
+        "date_creation" => $otherCost['date_creation'],
         "facture_id" => $otherCost['id_facture']
     ];
 }

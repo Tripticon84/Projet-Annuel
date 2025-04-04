@@ -371,15 +371,31 @@ function getCompanyByToken($token)
     return null;
 }
 
-function getCompanyInvoices($societe_id, $limit = null, $offset = null)
+function getCompanyInvoices($societe_id, $limit = null, $offset = null, $statut = null, $date_emission = null, $date_echeance = null)
 {
     $db = getDatabaseConnection();
+    $params = ['societe_id' => $societe_id];
 
     $sql = "SELECT f.facture_id, f.date_emission, f.date_echeance, f.montant, f.montant_tva,
             f.montant_ht, f.statut, f.methode_paiement, f.id_devis, f.id_prestataire
             FROM facture f
             JOIN devis d ON f.id_devis = d.devis_id
             WHERE d.id_societe = :societe_id";
+
+    if ($statut !== null) {
+        $sql .= " AND f.statut = :statut";
+        $params['statut'] = $statut;
+    }
+
+    if ($date_emission !== null) {
+        $sql .= " AND f.date_emission >= :date_emission";
+        $params['date_emission'] = $date_emission;
+    }
+
+    if ($date_echeance !== null) {
+        $sql .= " AND f.date_echeance <= :date_echeance";
+        $params['date_echeance'] = $date_echeance;
+    }
 
     if ($limit !== null) {
         $sql .= " LIMIT " . intval($limit);
@@ -389,7 +405,7 @@ function getCompanyInvoices($societe_id, $limit = null, $offset = null)
     }
 
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute(['societe_id' => $societe_id]);
+    $res = $stmt->execute($params);
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

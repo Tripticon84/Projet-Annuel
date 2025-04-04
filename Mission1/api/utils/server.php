@@ -86,6 +86,8 @@ function acceptedTokens($admin = true, $company = false, $employee = false, $pro
         $token = str_replace('Bearer ', '', $headers['Authorization']);
     } elseif (isset($headers['authorization'])) {
         $token = str_replace('Bearer ', '', $headers['authorization']);
+    } elseif (isset($_GET['token'])) {
+        $token = $_GET['token'];
     } else {
         returnError(401, 'Unauthorized: Missing token');
         return;

@@ -186,32 +186,34 @@ function loadOtherCosts(societyId) {
 
       if (data.length === 0) {
         tableBody.innerHTML =
-          '<tr><td colspan="5" class="text-center">Aucun frais supplémentaire trouvé</td></tr>';
+          '<tr><td colspan="6" class="text-center">Aucun frais supplémentaire trouvé</td></tr>';
         return;
       }
 
       tableBody.innerHTML = "";
       data.forEach((cost) => {
+        const dateCreation = cost.date_creation ? new Date(cost.date_creation).toLocaleDateString('fr-FR') : 'N/A';
         tableBody.innerHTML += `
-                    <tr>
-                        <td>${cost.other_cost_id}</td>
-                        <td>${cost.name}</td>
-                        <td>${cost.price} €</td>
-                        <td>${cost.facture_id}</td>
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="viewCost(${cost.other_cost_id})">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
+          <tr>
+            <td>${cost.other_cost_id}</td>
+            <td>${cost.name}</td>
+            <td>${parseFloat(cost.price).toLocaleString('fr-FR')} €</td>
+            <td>${cost.facture_id}</td>
+            <td>${cost.date_creation}</td>
+            <td>
+              <button class="btn btn-sm btn-info" onclick="viewCost(${cost.other_cost_id})">
+                <i class="fas fa-eye"></i>
+              </button>
+            </td>
+          </tr>
+        `;
       });
     })
     .catch((error) => {
       console.error("Erreur lors du chargement des frais:", error);
       document.getElementById(
         "costs-table"
-      ).innerHTML = `<tr><td colspan="5" class="text-center text-danger">Erreur lors du chargement des frais</td></tr>`;
+      ).innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des frais</td></tr>`;
     });
 }
 
@@ -866,5 +868,496 @@ function updateEstimate(formData) {
   .catch(error => {
     console.error("Erreur lors de la mise à jour du devis:", error);
     alert("Une erreur est survenue lors de la mise à jour du devis");
+  });
+}
+
+function downloadInvoicePDF(invoiceId) {
+  // Construction de l'URL de l'API qui génère le PDF
+  const url = `/api/invoice/generatePDFForCompany.php?facture_id=${invoiceId}&token=${getToken()}`;
+
+  // Ouvrir l'URL dans un nouvel onglet
+  window.open(url, '_blank');
+
+  // Recharger les factures après un court délai
+  setTimeout(() => {
+    loadAllInvoices(societyId);
+  }, 1000);
+}
+
+
+  // Fonction pour charger toutes les factures
+  function loadAllInvoices(societyId) {
+      fetch(`/api/company/getInvoices.php?societe_id=${societyId}`, {
+          method: 'GET',
+          headers: {
+              'Authorization': 'Bearer ' + getToken()
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          const tableBody = document.getElementById('invoices-table');
+
+          if (data.length === 0) {
+              tableBody.innerHTML = '<tr><td colspan="8" class="text-center">Aucune facture trouvée</td></tr>';
+              return;
+          }
+
+          tableBody.innerHTML = '';
+          data.forEach(invoice => {
+              const statusClass = getStatusBadge(invoice.statut);
+              tableBody.innerHTML += `
+                  <tr>
+                      <td>${invoice.facture_id}</td>
+                      <td>${new Date(invoice.date_emission).toLocaleDateString('fr-FR')}</td>
+                      <td>${new Date(invoice.date_echeance).toLocaleDateString('fr-FR')}</td>
+                      <td>${invoice.montant.toLocaleString('fr-FR')} €</td>
+                      <td>${invoice.montant_tva.toLocaleString('fr-FR')} €</td>
+                      <td>${invoice.montant_ht.toLocaleString('fr-FR')} €</td>
+                      <td><span class="badge bg-${statusClass}">${invoice.statut}</span></td>
+                      <td>
+                          <button class="btn btn-sm btn-info" onclick="viewInvoiceDetails(${invoice.facture_id})">
+                              <i class="fas fa-eye"></i>
+                          </button>
+                          ${invoice.statut !== 'Payee' ?
+                              `<button class="btn btn-sm btn-success" onclick="markInvoiceAsPaid(${invoice.facture_id})">
+                                  <i class="fas fa-check"></i>
+                              </button>` : ''}
+                          <button class="btn btn-sm btn-danger" onclick="downloadInvoicePDF(${invoice.facture_id})">
+                              <i class="fas fa-file-pdf"></i>
+                          </button>
+                      </td>
+                  </tr>
+              `;
+          });
+      })
+      .catch(error => {
+          console.error('Erreur lors du chargement des factures:', error);
+          document.getElementById('invoices-table').innerHTML =
+              `<tr><td colspan="8" class="text-center text-danger">Erreur lors du chargement des factures</td></tr>`;
+      });
+  }
+
+  // Fonction pour appliquer les filtres
+  function applyInvoiceFilters() {
+      const status = document.getElementById('statusFilter').value;
+      const startDate = document.getElementById('dateStartFilter').value;
+      const endDate = document.getElementById('dateEndFilter').value;
+
+      // Construire l'URL avec les filtres
+      let url = `/api/company/getInvoices.php?societe_id=${societyId}`;
+      if (status) url += `&statut=${status}`;
+      if (startDate) url += `&date_debut=${startDate}`;
+      if (endDate) url += `&date_fin=${endDate}`;
+
+      fetch(url, {
+          method: 'GET',
+          headers: {
+              'Authorization': 'Bearer ' + getToken()
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          const tableBody = document.getElementById('invoices-table');
+
+          if (data.length === 0) {
+              tableBody.innerHTML = '<tr><td colspan="8" class="text-center">Aucune facture trouvée avec ces critères</td></tr>';
+              return;
+          }
+
+          // Afficher les résultats filtrés (même code que dans loadAllInvoices)
+          tableBody.innerHTML = '';
+          data.forEach(invoice => {
+              const statusClass = getStatusBadge(invoice.statut);
+              tableBody.innerHTML += `
+                  <tr>
+                      <td>${invoice.facture_id}</td>
+                      <td>${new Date(invoice.date_emission).toLocaleDateString('fr-FR')}</td>
+                      <td>${new Date(invoice.date_echeance).toLocaleDateString('fr-FR')}</td>
+                      <td>${invoice.montant.toLocaleString('fr-FR')} €</td>
+                      <td>${invoice.montant_tva.toLocaleString('fr-FR')} €</td>
+                      <td>${invoice.montant_ht.toLocaleString('fr-FR')} €</td>
+                      <td><span class="badge bg-${statusClass}">${invoice.statut}</span></td>
+                      <td>
+                          <button class="btn btn-sm btn-info" onclick="viewInvoiceDetails(${invoice.facture_id})">
+                              <i class="fas fa-eye"></i>
+                          </button>
+                          ${invoice.statut !== 'Payee' ?
+                              `<button class="btn btn-sm btn-success" onclick="markInvoiceAsPaid(${invoice.facture_id})">
+                                  <i class="fas fa-check"></i>
+                              </button>` : ''}
+                          <button class="btn btn-sm btn-danger" onclick="downloadInvoicePDF(${invoice.facture_id})">
+                              <i class="fas fa-file-pdf"></i>
+                          </button>
+                      </td>
+                  </tr>
+              `;
+          });
+      })
+      .catch(error => {
+          console.error('Erreur lors de l\'application des filtres:', error);
+          document.getElementById('invoices-table').innerHTML =
+              `<tr><td colspan="8" class="text-center text-danger">Erreur lors de l'application des filtres</td></tr>`;
+      });
+  }
+
+  // Fonction pour voir les détails d'une facture
+  function viewInvoiceDetails(id) {
+      fetch(`/api/invoice/getOne.php?facture_id=${id}`, {
+          method: 'GET',
+          headers: {
+              'Authorization': 'Bearer ' + getToken()
+          }
+      })
+      .then(response => response.json())
+      .then(invoice => {
+          const detailsContainer = document.getElementById('invoice-details');
+          detailsContainer.innerHTML = `
+              <div class="row mb-3">
+                  <div class="col-md-6">
+                      <p><strong>ID:</strong> ${invoice.facture_id}</p>
+                      <p><strong>Date d'émission:</strong> ${new Date(invoice.date_emission).toLocaleDateString('fr-FR')}</p>
+                      <p><strong>Date d'échéance:</strong> ${new Date(invoice.date_echeance).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                  <div class="col-md-6">
+                      <p><strong>Montant HT:</strong> ${invoice.montant_ht.toLocaleString('fr-FR')} €</p>
+                      <p><strong>TVA:</strong> ${invoice.montant_tva.toLocaleString('fr-FR')} €</p>
+                      <p><strong>Montant TTC:</strong> ${invoice.montant.toLocaleString('fr-FR')} €</p>
+                      <p><strong>Statut:</strong> <span class="badge bg-${getStatusBadge(invoice.statut)}">${invoice.statut}</span></p>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-12">
+                      <p><strong>Description:</strong></p>
+                      <p>${invoice.description || 'Aucune description disponible'}</p>
+                  </div>
+              </div>
+          `;
+
+          // Désactiver le bouton "Marquer comme payée" si déjà payée
+          const markAsPaidBtn = document.getElementById('markAsPaid');
+          if (invoice.statut === 'Payee') {
+              markAsPaidBtn.disabled = true;
+              markAsPaidBtn.classList.add('disabled');
+          } else {
+              markAsPaidBtn.disabled = false;
+              markAsPaidBtn.classList.remove('disabled');
+              markAsPaidBtn.setAttribute('data-id', invoice.facture_id);
+          }
+
+          // Afficher le modal
+          const modal = new bootstrap.Modal(document.getElementById('viewInvoiceModal'));
+          modal.show();
+      })
+      .catch(error => {
+          console.error('Erreur lors du chargement des détails de la facture:', error);
+          alert('Erreur lors du chargement des détails de la facture');
+      });
+  }
+
+  // Fonction pour marquer une facture comme payée
+  function markInvoiceAsPaid(id) {
+      if (confirm('Êtes-vous sûr de vouloir marquer cette facture comme payée ?')) {
+          fetch(`/api/company/updateInvoiceStatus.php`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + getToken()
+              },
+              body: JSON.stringify({
+                  facture_id: id,
+                  statut: 'Payee'
+              })
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Statut de la facture mis à jour avec succès !');
+
+                  // Fermer le modal de détails s'il est ouvert
+                  const detailModal = bootstrap.Modal.getInstance(document.getElementById('viewInvoiceModal'));
+                  if (detailModal) {
+                      detailModal.hide();
+                  }
+
+                  // Recharger les factures
+                  loadAllInvoices(societyId);
+              } else {
+                  alert(`Erreur: ${data.message || 'Une erreur est survenue'}`);
+              }
+          })
+          .catch(error => {
+              console.error('Erreur lors de la mise à jour du statut:', error);
+              alert('Une erreur est survenue lors de la mise à jour du statut');
+          });
+      }
+  }
+
+// Fonction pour afficher les détails d'un frais
+function viewCost(id) {
+  fetch(`/api/company/getOneCost.php?cost_id=${id}`, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + getToken(),
+    },
+  })
+    .then((response) => response.json())
+    .then((cost) => {
+      const detailsContainer = document.getElementById("otherCost-details");
+
+      // Formater la date
+      const dateCreation = cost.date_creation ? new Date(cost.date_creation).toLocaleDateString("fr-FR") : "N/A";
+
+      detailsContainer.innerHTML = `
+              <div class="row mb-3">
+                  <div class="col-md-6">
+                      <p><strong>ID:</strong> ${cost.other_cost_id}</p>
+                      <p><strong>Nom:</strong> ${cost.name}</p>
+                      <p><strong>Montant:</strong> ${cost.price.toLocaleString("fr-FR")} €</p>
+                  </div>
+                  <div class="col-md-6">
+                      <p><strong>Facture associée:</strong> ${cost.facture_id}</p>
+                      <p><strong>Date de création:</strong> ${dateCreation}</p>
+                  </div>
+              </div>
+          `;
+
+      // Préparer les boutons d'action avec l'ID
+      document.getElementById("editOtherCost").setAttribute("data-id", cost.other_cost_id);
+      document.getElementById("deleteOtherCost").setAttribute("data-id", cost.other_cost_id);
+
+      // Afficher le modal
+      const modal = new bootstrap.Modal(
+        document.getElementById("viewOtherCostModal")
+      );
+      modal.show();
+    })
+    .catch((error) => {
+      console.error("Erreur lors du chargement des détails du frais:", error);
+      alert("Erreur lors du chargement des détails du frais");
+    });
+}
+
+// Fonction pour charger les factures dans les listes déroulantes
+function loadInvoicesForSelect() {
+  fetch(`/api/company/getInvoices.php?societe_id=${societyId}`, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + getToken()
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const addSelect = document.getElementById('cost_facture');
+    const editSelect = document.getElementById('edit_cost_facture');
+
+    let options = '<option value="">Sélectionner une facture</option>';
+
+    data.forEach(invoice => {
+      options += `<option value="${invoice.facture_id}">Facture #${invoice.facture_id} - ${invoice.montant} €</option>`;
+    });
+
+    addSelect.innerHTML = options;
+    editSelect.innerHTML = options;
+  })
+  .catch(error => {
+    console.error("Erreur lors du chargement des factures:", error);
+  });
+}
+
+// Fonction pour ajouter un nouveau frais
+function addNewOtherCost() {
+  const formData = {
+    name: document.getElementById('cost_name').value,
+    price: parseFloat(document.getElementById('cost_montant').value),
+    facture_id: document.getElementById('cost_facture').value
+  };
+
+  fetch('/api/company/createOtherCost.php', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    },
+    body: JSON.stringify(formData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Fermer le modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('addOtherCostModal'));
+      modal.hide();
+
+      // Réinitialiser le formulaire
+      document.getElementById('addOtherCostForm').reset();
+
+      // Recharger la liste
+      loadOtherCosts(societyId);
+
+      // Afficher un message de succès
+      alert('Frais ajouté avec succès!');
+    } else {
+      alert(`Erreur: ${data.message || 'Une erreur est survenue'}`);
+    }
+  })
+  .catch(error => {
+    console.error('Erreur lors de l\'ajout du frais:', error);
+    alert('Une erreur est survenue lors de l\'ajout du frais');
+  });
+}
+
+// Fonction pour éditer un frais existant
+function editOtherCostDetails(id) {
+  fetch(`/api/company/getOneCost.php?cost_id=${id}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer ' + getToken()
+    }
+  })
+  .then(response => response.json())
+  .then(cost => {
+    // Pré-remplir le formulaire
+    document.getElementById('edit_other_cost_id').value = cost.other_cost_id;
+    document.getElementById('edit_cost_name').value = cost.name;
+    document.getElementById('edit_cost_montant').value = cost.price;
+    document.getElementById('edit_cost_facture').value = cost.facture_id;
+
+    // Fermer le modal de détails
+    const detailsModal = bootstrap.Modal.getInstance(document.getElementById('viewOtherCostModal'));
+    if (detailsModal) {
+      detailsModal.hide();
+    }
+
+    // Ouvrir le modal d'édition
+    const editModal = new bootstrap.Modal(document.getElementById('editOtherCostModal'));
+    editModal.show();
+  })
+  .catch(error => {
+    console.error('Erreur lors du chargement des détails du frais:', error);
+    alert('Erreur lors du chargement des détails du frais');
+  });
+}
+
+// Fonction pour mettre à jour un frais
+function updateOtherCostDetails() {
+  const formData = {
+    other_cost_id: document.getElementById('edit_other_cost_id').value,
+    name: document.getElementById('edit_cost_name').value,
+    price: parseFloat(document.getElementById('edit_cost_montant').value),
+    facture_id: document.getElementById('edit_cost_facture').value
+  };
+
+  fetch('/api/company/updateOtherCost.php', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    },
+    body: JSON.stringify(formData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Fermer le modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('editOtherCostModal'));
+      modal.hide();
+
+      // Recharger la liste
+      loadOtherCosts(societyId);
+
+      // Afficher un message de succès
+      alert('Frais mis à jour avec succès!');
+    } else {
+      alert(`Erreur: ${data.message || 'Une erreur est survenue'}`);
+    }
+  })
+  .catch(error => {
+    console.error('Erreur lors de la mise à jour du frais:', error);
+    alert('Une erreur est survenue lors de la mise à jour du frais');
+  });
+}
+
+// Fonction pour supprimer un frais
+function deleteOtherCost(id) {
+  if (confirm('Êtes-vous sûr de vouloir supprimer ce frais?')) {
+    fetch(`/api/company/deleteOtherCost.php`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ other_cost_id: id })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Fermer le modal de détails s'il est ouvert
+        const detailModal = bootstrap.Modal.getInstance(document.getElementById('viewOtherCostModal'));
+        if (detailModal) {
+          detailModal.hide();
+        }
+
+        // Recharger la liste
+        loadOtherCosts(societyId);
+
+        // Afficher un message de succès
+        alert('Frais supprimé avec succès!');
+      } else {
+        alert(`Erreur: ${data.message || 'Une erreur est survenue'}`);
+      }
+    })
+    .catch(error => {
+      console.error('Erreur lors de la suppression du frais:', error);
+      alert('Une erreur est survenue lors de la suppression du frais');
+    });
+  }
+}
+
+// Fonction pour appliquer les filtres
+function applyOtherCostFilters() {
+  const nameFilter = document.getElementById('nameFilter').value;
+  const dateStartFilter = document.getElementById('dateStartFilter').value;
+
+  // Construire l'URL avec les filtres
+  let url = `/api/company/getOtherCosts.php?societe_id=${societyId}`;
+  if (nameFilter) url += `&name=${encodeURIComponent(nameFilter)}`;
+  if (dateStartFilter) url += `&date_start=${dateStartFilter}`;
+
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer ' + getToken()
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const tableBody = document.getElementById('costs-table');
+
+    if (data.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucun frais trouvé</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = '';
+    data.forEach(cost => {
+      const dateCreation = cost.date_creation ? new Date(cost.date_creation).toLocaleDateString('fr-FR') : 'N/A';
+      tableBody.innerHTML += `
+        <tr>
+          <td>${cost.other_cost_id}</td>
+          <td>${cost.name}</td>
+          <td>${parseFloat(cost.price).toLocaleString('fr-FR')} €</td>
+          <td>${cost.facture_id}</td>
+          <td>${dateCreation}</td>
+          <td>
+            <button class="btn btn-sm btn-info" onclick="viewCost(${cost.other_cost_id})">
+              <i class="fas fa-eye"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  })
+  .catch(error => {
+    console.error('Erreur lors de l\'application des filtres:', error);
+    tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des frais</td></tr>';
   });
 }

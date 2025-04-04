@@ -11,12 +11,10 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-acceptedTokens(true, false, false, true);
-
-$data = getBody();
+// acceptedTokens(true, false, false, true);
 
 
-$factureId = $data['facture_id'];
+$factureId = $_GET['facture_id'];
 
 if (empty($factureId)) {
     returnError(400, 'Mandatory parameter : factureId');
@@ -32,10 +30,10 @@ if ($factureId < 0) {
 
 if ($factureId) {
     $pdf= generatePDFForProvider($factureId);
-    
+
     http_response_code(200);
     echo json_encode($pdf);
-    
+
 }else {
     returnError(500, 'No invoice found');
 }
