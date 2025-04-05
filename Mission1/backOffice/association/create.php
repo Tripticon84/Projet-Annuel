@@ -36,6 +36,16 @@ include_once "../includes/head.php";
                                 <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
                                 <div class="form-text">Décrivez brièvement les activités et la mission de l'association.</div>
                             </div>
+                            <div class="mb-3">
+                                <label for="logo" class="form-label">Logo</label>
+                                <input type="text" class="form-control" id="logo" name="logo">
+                                <div class="form-text">URL du logo de l'association.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="banniere" class="form-label">Bannière</label>
+                                <input type="text" class="form-control" id="banniere" name="banniere">
+                                <div class="form-text">URL de la bannière de l'association.</div>
+                            </div>
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                 <button type="button" class="btn btn-primary" id="submitBtn">
                                     <i class="fas fa-save"></i> Enregistrer
@@ -73,7 +83,7 @@ include_once "../includes/head.php";
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
 
             fetch('../../api/association/create.php', {
-                method: 'PUT',
+                method: 'PUT', // Assurez-vous que la méthode est POST
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + getToken()

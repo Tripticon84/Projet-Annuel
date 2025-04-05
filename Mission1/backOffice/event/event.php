@@ -53,11 +53,6 @@ include_once "../includes/head.php";
                 <div class="card mt-4">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Liste des Événements</h5>
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-secondary" onclick="refreshEvents()">
-                                <i class="fas fa-sync-alt"></i> Actualiser
-                            </button>
-                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -158,9 +153,12 @@ include_once "../includes/head.php";
                                 <button class="btn btn-sm btn-outline-primary me-1" onclick="viewParticipants(${event.evenement_id})">
                                     <i class="fas fa-users"></i>
                                 </button>
-                                <a href="modify.php?id=${event.evenement_id}" class="btn btn-sm btn-outline-secondary">
+                                <a href="modify.php?id=${event.evenement_id}" class="btn btn-sm btn-outline-secondary me-1">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteEvent(${event.evenement_id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </td>
                         `;
                         eventsList.appendChild(row);
@@ -213,7 +211,6 @@ include_once "../includes/head.php";
             if (!dateStr) return '-';
             return new Date(dateStr).toLocaleDateString('fr-FR');
         }
-
 
         function viewParticipants(eventId) {
             const participantsList = document.getElementById('participantsList');
@@ -286,6 +283,33 @@ include_once "../includes/head.php";
                 .catch(error => {
                     console.error('Erreur:', error);
                     alert('Une erreur est survenue lors du retrait du participant.');
+                });
+            }
+        }
+
+        function deleteEvent(eventId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ? Cette action est irréversible.')) {
+                fetch('../../api/event/delete.php', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify({ 'evenement_id': eventId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.evenement_id) {
+                        alert('Événement supprimé avec succès.');
+                        fetchEvents(); // Refresh the events list
+                    } else {
+                        alert('Erreur: ' + (data.error || 'Erreur inconnue'));
+                        console.error('Error data:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la suppression de l\'événement.');
                 });
             }
         }

@@ -97,7 +97,7 @@ include_once "../includes/head.php";
                 let url = `../../api/place/getAll.php?limit=${limit}&offset=${offset}`;
 
                 if (search) {
-                    url += `&search=${encodeURIComponent(search)}`;
+                    url += `&adresse=${encodeURIComponent(search)}`;
                 }
 
                 fetch(url, {

@@ -189,9 +189,12 @@ include_once "../includes/head.php";
                             <td>${association.name}</td>
                             <td>${truncateText(association.description, 50)}</td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-primary" onclick="viewAssociationDetails(${association.id})">
-                                    <i class="fas fa-edit"></i> Éditer
-                                </button>
+                                <a href="edit.php?id=${association.id}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                <a href="profil.php?id=${association.id}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Voir
+                                </a>
                             </td>
                         `;
                         associationsList.appendChild(row);

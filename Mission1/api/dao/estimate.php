@@ -327,6 +327,14 @@ function getCompanyByEstimate($id)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+function getContractDetailsById($id) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT devis_id, date_debut, date_fin, statut, montant, montant_ht, montant_tva, is_contract, fichier, id_societe FROM devis WHERE devis_id = :id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 function generatePDFForCompany($devisId)
 {
     $options = new Options();

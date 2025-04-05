@@ -249,6 +249,7 @@ if (!$contractStats) {
                                 <a href="modify.php?id=${item.devis_id}" class="btn btn-outline-primary"><i class="fas fa-edit"></i></a>
                                 <button class="btn btn-outline-secondary" onclick="openPDF(${item.devis_id})"><i class="fas fa-file-pdf"></i></button>
                             </div>
+                        <a href="viewDevis.php?id=${item.devis_id}" class="btn btn-sm btn-outline-secondary">Voir</a>
                         </td>
                     </tr>`;
                         });
@@ -293,6 +294,7 @@ if (!$contractStats) {
                                 <a href="modify.php?id=${item.devis_id}" class="btn btn-outline-primary"><i class="fas fa-edit"></i></a>
                                 <button class="btn btn-outline-secondary" onclick="openPDF(${item.devis_id})"><i class="fas fa-file-pdf"></i></button>
                             </div>
+                        <a href="viewContract.php?id=${item.devis_id}" class="btn btn-sm btn-outline-secondary">Voir</a>
                         </td>
                     </tr>`;
                         });
@@ -337,6 +339,7 @@ if (!$contractStats) {
                                 <a href="modify.php?id=${item.devis_id}" class="btn btn-outline-primary"><i class="fas fa-edit"></i></a>
                                 <button class="btn btn-outline-secondary" onclick="openPDF(${item.devis_id})"><i class="fas fa-file-pdf"></i></button>
                             </div>
+                        <a href="viewContract.php?id=${item.devis_id}" class="btn btn-sm btn-outline-secondary">Voir</a>
                         </td>
                     </tr>`;
                         });
