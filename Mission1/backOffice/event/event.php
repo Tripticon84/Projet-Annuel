@@ -129,7 +129,7 @@ include_once "../includes/head.php";
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             fetchEvents();
-            
+            fetchEventStats();
         });
 
         function fetchEvents() {
@@ -171,12 +171,34 @@ include_once "../includes/head.php";
             })
             .catch(error => {
                 console.error('Erreur:', error);
-                document.getElementById('eventsList').innerHTML = 
+                document.getElementById('eventsList').innerHTML =
                     '<tr><td colspan="8" class="text-center text-danger">Erreur lors du chargement des événements</td></tr>';
             });
         }
 
-
+        function fetchEventStats() {
+            fetch('../../api/event/getStats.php', {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('eventsCount').textContent = data.stats.total;
+                    document.getElementById('upcomingEventsCount').textContent = data.stats.upcoming;
+                    document.getElementById('participantsCount').textContent = data.stats.participants;
+                } else {
+                    console.error('Erreur:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                document.getElementById('eventsCount').textContent = 'Erreur';
+                document.getElementById('upcomingEventsCount').textContent = 'Erreur';
+                document.getElementById('participantsCount').textContent = 'Erreur';
+            });
+        }
 
         function getStatusBadgeClass(status) {
             switch(status) {

@@ -2,6 +2,10 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/api/ressources/dompdf/autoload.inc.php";
+
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 function createEstimate($date_debut, $date_fin, string $statut, float $montant, $is_contract, int $id_societe, $company_name)
 {
@@ -309,4 +313,186 @@ function getContractByProvider(int $provider_id)
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return null;
+}
+
+function getCompanyByEstimate($id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT c.societe_id, c.nom, c.siret, c.email, c.adresse, c.date_creation, c.contact_person, c.telephone
+            FROM societe c
+            JOIN devis d ON c.societe_id = d.id_societe
+            WHERE d.devis_id = :id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function generatePDFForCompany($devisId)
+{
+    $options = new Options();
+    $options->set('defaultFont', 'Arial');
+    $options->set('isHtml5ParserEnabled', true);
+    $dompdf = new Dompdf($options);
+
+    $estimate = getEstimateById($devisId);
+    if ($estimate === null) {
+        returnError(404, 'Estimate or contract not found');
+    }
+
+    $company = getCompanyByEstimate($devisId);
+    if ($company === null) {
+        returnError(404, 'Company not found for this estimate');
+    }
+
+    $documentType = $estimate['is_contract'] == 1 ? 'Contrat' : 'Devis';
+    $documentTitle = $estimate['is_contract'] == 1 ? 'Contrat #' . $devisId : 'Devis #' . $devisId;
+
+    $html = '<!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                color: #333;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+            table, th, td {
+                border: 1px solid #ccc;
+            }
+            th, td {
+                padding: 10px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            h1, h2, h3 {
+                text-align: center;
+                color: #444;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .footer {
+                text-align: center;
+                font-size: 12px;
+                margin-top: 30px;
+                color: #666;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>' . $documentTitle . '</h1>
+            <p>Généré le : ' . date('d/m/Y H:i:s') . '</p>
+        </div>
+
+        <h2>Informations Société</h2>
+        <table>
+            <tr>
+                <th>Champ</th>
+                <th>Valeur</th>
+            </tr>';
+
+    foreach ($company as $key => $value) {
+        if ($value !== null) {
+            // Formater les dates si la clé contient "date"
+            if (strpos($key, 'date') !== false && $value != '') {
+                $date = date_create_from_format('Y-m-d H:i:s', $value);
+                if ($date) {
+                    $value = date_format($date, 'd/m/Y');
+                }
+            }
+            $html .= '<tr>
+                <td>' . htmlspecialchars($key) . '</td>
+                <td>' . htmlspecialchars($value) . '</td>
+            </tr>';
+        }
+    }
+    $html .= '</table>';
+
+    $html .= '<div class="page-break"></div>';
+
+    // Formater les dates de début et fin
+    $dateDebut = $estimate['date_debut'] ? date_create_from_format('Y-m-d', $estimate['date_debut']) : null;
+    $dateFin = $estimate['date_fin'] ? date_create_from_format('Y-m-d', $estimate['date_fin']) : null;
+
+    $html .= '
+        <h2>Détails du ' . $documentType . '</h2>
+        <table>
+            <tr>
+                <th>Champ</th>
+                <th>Valeur</th>
+            </tr>
+            <tr>
+                <td>ID</td>
+                <td>' . htmlspecialchars($estimate['devis_id']) . '</td>
+            </tr>
+            <tr>
+                <td>Date de début</td>
+                <td>' . ($dateDebut ? date_format($dateDebut, 'd/m/Y') : '') . '</td>
+            </tr>
+            <tr>
+                <td>Date de fin</td>
+                <td>' . ($dateFin ? date_format($dateFin, 'd/m/Y') : '') . '</td>
+            </tr>
+            <tr>
+                <td>Montant TTC</td>
+                <td>' . htmlspecialchars($estimate['montant']) . ' €</td>
+            </tr>';
+
+    if ($estimate['montant_tva'] !== null) {
+        $html .= '<tr>
+                <td>Montant TVA</td>
+                <td>' . htmlspecialchars($estimate['montant_tva']) . ' €</td>
+            </tr>';
+    }
+
+    if ($estimate['montant_ht'] !== null) {
+        $html .= '<tr>
+                <td>Montant HT</td>
+                <td>' . htmlspecialchars($estimate['montant_ht']) . ' €</td>
+            </tr>';
+    }
+
+    $html .= '<tr>
+                <td>Statut</td>
+                <td>' . htmlspecialchars($estimate['statut']) . '</td>
+            </tr>
+            <tr>
+                <td>Type de document</td>
+                <td>' . $documentType . '</td>
+            </tr>
+        </table>
+
+        <div class="footer">';
+
+    if ($estimate['is_contract'] == 1) {
+        $html .= '<p>Ce document fait office de contrat. Merci pour votre confiance.</p>';
+    } else {
+        $html .= '<p>Ce document fait office de devis. Valable pendant 30 jours à compter de la date d\'émission.</p>';
+    }
+
+    $html .= '</div>
+    </body>
+    </html>';
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    // Générer le PDF
+    $docType = $estimate['is_contract'] == 1 ? 'contrat' : 'devis';
+    $dompdf->stream($docType . "_" . $devisId . ".pdf", ["Attachment" => true]);
+    exit;
 }

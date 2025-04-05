@@ -89,9 +89,7 @@ if (!$contractStats) {
                                     <button class="btn btn-sm btn-primary me-2">
                                         <i class="fas fa-plus"></i> Nouveau devis
                                     </button>
-                                    <button class="btn btn-sm btn-outline-secondary">
-                                        <i class="fas fa-download"></i> Exporter
-                                    </button>
+                                    <!-- Bouton Exporter supprimé -->
                                 </div>
                             </div>
                             <div class="card-body p-0">
@@ -129,9 +127,6 @@ if (!$contractStats) {
                                             <i class="fas fa-search"></i>
                                         </button>
                                     </div>
-                                    <button class="btn btn-sm btn-outline-secondary">
-                                        <i class="fas fa-download"></i> Exporter
-                                    </button>
                                 </div>
                             </div>
                             <div class="card-body p-0">
@@ -173,9 +168,6 @@ if (!$contractStats) {
                                             <i class="fas fa-search"></i>
                                         </button>
                                     </div>
-                                    <button class="btn btn-sm btn-outline-secondary">
-                                        <i class="fas fa-download"></i> Exporter
-                                    </button>
                                 </div>
                             </div>
                             <div class="card-body p-0">
@@ -216,6 +208,14 @@ if (!$contractStats) {
             fetchExpiredContracts();
         });
 
+        function openPDF(devisId) {
+            const token = getToken();
+            const url = `../../api/estimate/generatePDF.php?devis_id=${devisId}`;
+
+            // Ouvrir une nouvelle fenêtre pour le PDF
+            window.open(url, '_blank');
+        }
+
         function fetchQuotes() {
             const quotesList = document.getElementById('quotesList');
             quotesList.innerHTML = '<tr><td colspan="8" class="text-center">Chargement...</td></tr>';
@@ -245,7 +245,10 @@ if (!$contractStats) {
                         <td>${item.montant_ht || '-'}</td>
                         <td>${item.id_societe || '-'}</td>
                         <td class="text-end">
-                        <button class="btn btn-sm btn-outline-secondary">Voir</button>
+                            <div class="btn-group btn-group-sm">
+                                <a href="modify.php?id=${item.devis_id}" class="btn btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                <button class="btn btn-outline-secondary" onclick="openPDF(${item.devis_id})"><i class="fas fa-file-pdf"></i></button>
+                            </div>
                         </td>
                     </tr>`;
                         });
@@ -286,7 +289,10 @@ if (!$contractStats) {
                         <td>${item.montant_ht || '-'}</td>
                         <td>${item.id_societe || '-'}</td>
                         <td class="text-end">
-                        <button class="btn btn-sm btn-outline-secondary">Voir</button>
+                            <div class="btn-group btn-group-sm">
+                                <a href="modify.php?id=${item.devis_id}" class="btn btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                <button class="btn btn-outline-secondary" onclick="openPDF(${item.devis_id})"><i class="fas fa-file-pdf"></i></button>
+                            </div>
                         </td>
                     </tr>`;
                         });
@@ -327,7 +333,10 @@ if (!$contractStats) {
                         <td>${item.montant_ht || '-'}</td>
                         <td>${item.id_societe || '-'}</td>
                         <td class="text-end">
-                        <button class="btn btn-sm btn-outline-secondary">Voir</button>
+                            <div class="btn-group btn-group-sm">
+                                <a href="modify.php?id=${item.devis_id}" class="btn btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                <button class="btn btn-outline-secondary" onclick="openPDF(${item.devis_id})"><i class="fas fa-file-pdf"></i></button>
+                            </div>
                         </td>
                     </tr>`;
                         });
@@ -339,8 +348,6 @@ if (!$contractStats) {
                     expiredList.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Erreur</td></tr>';
                 });
         }
-
-
 
         function formatDate(dateStr) {
             if (!dateStr) return '-';
