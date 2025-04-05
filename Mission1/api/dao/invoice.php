@@ -8,15 +8,15 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 
 
-function createInvoice($date_emission,$date_echeance,$montant,$montant_tva,$montant_ht,$statut,$methode_paiement,$id_devis,$id_prestataire)
+function createInvoice($date_emission,$date_echeance,$montant,$montant_tva,$montant_ht,$statut,$methode_paiement,$id_devis,$id_prestataire = null)
 {
     $db = getDatabaseConnection();
-    $sql = "INSERT INTO facture (date_emission, date_echeance, montant, montant_tva, montant_ht,statut, methode_paiement,id_devis,id_prestataire) VALUES (:date_emission, :date_echance, :montant, :montant_tva, :montant_ht,
+    $sql = "INSERT INTO facture (date_emission, date_echeance, montant, montant_tva, montant_ht,statut, methode_paiement,id_devis,id_prestataire) VALUES (:date_emission, :date_echeance, :montant, :montant_tva, :montant_ht,
     :statut, :methode_paiement, :id_devis, :id_prestataire);";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         'date_emission' => $date_emission,
-        'date_echance' => $date_echeance,
+        'date_echeance' => $date_echeance,
         'montant' => $montant,
         'montant_tva' => $montant_tva,
         'montant_ht' => $montant_ht,
@@ -113,6 +113,12 @@ function getProviderByInvoice($id)
     $sql = "SELECT p.prestataire_id, p.nom, p.prenom, p.email, p.type, p.tarif, p.date_debut_disponibilite, p.date_fin_disponibilite, p.description FROM prestataire p JOIN facture f ON p.prestataire_id = f.id_prestataire WHERE f.facture_id = :id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['id' => $id]);
+    if ($stmt->rowCount() == 0) {
+        return null; // Aucun prestataire trouvé
+    }
+    if ($stmt->rowCount() > 1) {
+        returnError(500, 'Multiple providers found for the same invoice');
+    }
     return $stmt->fetch();
 }
 
@@ -154,6 +160,17 @@ function getInvoiceByEstimateId($id)
     $stmt = $db->prepare($sql);
     $stmt->execute(['id' => $id]);
     return $stmt->fetchAll();
+}
+function GetOtherFeesByInvoiceId($id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT autre_frais_id, montant,nom FROM autre_frais WHERE id_facture = :id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    if ($stmt->rowCount() == 0) {
+        return null; // Aucun frais trouvé
+    }
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function modifyState($id,$state)
@@ -255,13 +272,20 @@ function generatePDFForProvider($factureId){
 
     $provider = getProviderByInvoice($factureId);
     if ($provider === null) {
-        returnError(404, 'Provider not found');
+        returnError(404, 'No provider found for this invoice');
     }
 
     $infos = getInvoiceByProvider($provider['prestataire_id']);
     if ($infos === null) {
         returnError(404, 'Invoice not found');
     }
+
+    // Récupérer les autres frais
+    $autresFrais = GetOtherFeesByInvoiceId($factureId);
+    if ($autresFrais === null) {
+        $autresFrais = []; // Aucun autre frais trouvé
+    }
+    
 
     $html = '<!DOCTYPE html>
     <html>
@@ -363,6 +387,21 @@ function generatePDFForProvider($factureId){
             <td>' . htmlspecialchars($info['methode_paiement']) . '</td>
         </tr>';
     }
+    if (!empty($autresFrais)) {
+        $html .= '<h2>Autres Frais</h2>
+        <table>
+            <tr>
+                <th>Nom</th>
+                <th>Montant</th>
+            </tr>';
+        foreach ($autresFrais as $frais) {
+            $html .= '<tr>
+                <td>' . htmlspecialchars($frais['nom']) . '</td>
+                <td>' . htmlspecialchars($frais['montant']) . ' €</td>
+            </tr>';
+        }
+        $html .= '</table>';
+    }
 
     $html .= '</table>
         <div class="footer">
@@ -391,9 +430,20 @@ function generatePDFForCompany($factureId){
         returnError(404, 'Company not found');
     }
 
+    $provider = getProviderByInvoice($factureId);
+    if ($provider !== null) {
+        returnError(404,'This invoice is not for a company');
+    }
+
     $infos = getInvoiceById($factureId);
     if ($infos === null) {
         returnError(404, 'Invoice not found');
+    }
+
+    // Récupérer les autres frais
+    $autresFrais = GetOtherFeesByInvoiceId($factureId);
+    if ($autresFrais === null) {
+        $autresFrais = []; // Aucun autre frais trouvé
     }
 
     $html = '<!DOCTYPE html>
@@ -523,8 +573,24 @@ function generatePDFForCompany($factureId){
                 <td>ID Prestataire</td>
                 <td>' . htmlspecialchars($infos['id_prestataire']) . '</td>
             </tr>
-        </table>
+        </table>';
+        if (!empty($autresFrais)) {
+            $html .= '<h2>Autres Frais</h2>
+            <table>
+                <tr>
+                    <th>Nom</th>
+                    <th>Montant</th>
+                </tr>';
+            foreach ($autresFrais as $frais) {
+                $html .= '<tr>
+                    <td>' . htmlspecialchars($frais['nom']) . '</td>
+                    <td>' . htmlspecialchars($frais['montant']) . ' €</td>
+                </tr>';
+            }
+            $html .= '</table>';
+        }
 
+        $html .= '
         <div class="footer">
             <p>Ce document fait office de facture. Merci pour votre confiance.</p>
         </div>
