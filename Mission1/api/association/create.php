@@ -4,7 +4,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 header('Content-Type: application/json');
 
-
 if (!methodIsAllowed('create')) {
     returnError(405, 'Method not allowed');
     return;
@@ -14,8 +13,12 @@ $data = getBody();
 
 acceptedTokens(true, false, false, false);
 
+$name = $data['name'];
+$description = $data['description'];
+$logo = isset($data['logo']) ? $data['logo'] : null;
+$banniere = isset($data['banniere']) ? $data['banniere'] : null;
 
-if (validateMandatoryParams($data, ['name', 'description', 'logo', 'banniere'])) {
+if (validateMandatoryParams($data, ['name', 'description'])) {
 
     $association = getAssociationByName($data['name']);
     if (!empty($association)) {

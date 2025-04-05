@@ -245,7 +245,8 @@ if (!$contractStats) {
                         <td>${item.montant_ht || '-'}</td>
                         <td>${item.id_societe || '-'}</td>
                         <td class="text-end">
-                        <button class="btn btn-sm btn-outline-secondary">Voir</button>
+                        <a href="editDevis.php?id=${item.devis_id}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                        <a href="viewDevis.php?id=${item.devis_id}" class="btn btn-sm btn-outline-secondary">Voir</a>
                         </td>
                     </tr>`;
                         });
@@ -286,7 +287,8 @@ if (!$contractStats) {
                         <td>${item.montant_ht || '-'}</td>
                         <td>${item.id_societe || '-'}</td>
                         <td class="text-end">
-                        <button class="btn btn-sm btn-outline-secondary">Voir</button>
+                        <a href="editContract.php?id=${item.devis_id}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                        <a href="viewContract.php?id=${item.devis_id}" class="btn btn-sm btn-outline-secondary">Voir</a>
                         </td>
                     </tr>`;
                         });
@@ -327,7 +329,8 @@ if (!$contractStats) {
                         <td>${item.montant_ht || '-'}</td>
                         <td>${item.id_societe || '-'}</td>
                         <td class="text-end">
-                        <button class="btn btn-sm btn-outline-secondary">Voir</button>
+                        <a href="editContractOrEstimate.php?id=${item.devis_id}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                        <a href="viewContract.php?id=${item.devis_id}" class="btn btn-sm btn-outline-secondary">Voir</a>
                         </td>
                     </tr>`;
                         });
