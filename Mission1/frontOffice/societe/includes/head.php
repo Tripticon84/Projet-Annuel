@@ -2,7 +2,7 @@
 
 session_start();
 if (!isset($_SESSION["societe_token"]) && $title != "Connexion") {
-    header("location: frontOffice/societe/login/logout.php");
+    header("location: " . $_SERVER['DOCUMENT_ROOT'] .  "frontOffice/societe/login/logout.php");
     exit();
 }
 

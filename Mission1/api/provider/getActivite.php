@@ -50,7 +50,7 @@ foreach ($activities as $activitie) {
         "activite_id" => $activitie['activite_id'],
         "name" => $activitie['nom'],
         "date" => $activitie['date'],
-        "place" => $activitie['lieu'],
+        "place" => $activitie['id_lieu'],
         "type" => $activitie['type'],
         "id_estimate" => $activitie['id_devis']
     ];

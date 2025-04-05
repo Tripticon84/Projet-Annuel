@@ -235,7 +235,7 @@ include_once "../includes/head.php";
                                     <button class="btn btn-sm btn-success me-1" onclick="acceptCandidate(${candidate.id})">
                                         <i class="fas fa-check"></i> Accepter
                                     </button>
-                                    <button class="btn btn-sm btn-danger">
+                                    <button class="btn btn-sm btn-danger" onclick="refuseCandidate(${candidate.id})">
                                         <i class="fas fa-times"></i> Refuser
                                     </button>
                                 </td>
@@ -305,7 +305,7 @@ include_once "../includes/head.php";
                                             <li><a class="dropdown-item" href="#" onclick="viewActivities(${provider.id}); return false;"><i class="fas fa-calendar-alt me-2"></i>Voir activités</a></li>
                                             <li><a class="dropdown-item" href="modify.php?id=${provider.id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="deactivateProvider(${provider.id}); return false;"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
                                         </ul>
                                     </div>
                                 </td>
@@ -372,6 +372,34 @@ include_once "../includes/head.php";
             }
         }
 
+        function refuseCandidate(id) {
+            if (confirm('Êtes-vous sûr de vouloir refuser ce candidat ? Cette action supprimera définitivement le prestataire.')) {
+                fetch('../../api/provider/desactivate.php', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify({
+                        prestataire_id: id
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Candidat désactivé.');
+                        fetchCandidates();
+                    } else {
+                        alert('Erreur lors du refus du candidat. Veuillez réessayer.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors du refus du candidat.');
+                });
+            }
+        }
+
         function viewActivities(providerId) {
             const activityList = document.getElementById('activityList');
             activityList.innerHTML = '<tr><td colspan="6" class="text-center">Chargement des activités...</td></tr>';
@@ -385,21 +413,45 @@ include_once "../includes/head.php";
                 }
             })
                 .then(response => response.json())
-                .then(data => {
+                .then(async data => {
                     activityList.innerHTML = '';
                     if (data && data.length > 0) {
-                        data.forEach(activity => {
+                        // Pour chaque activité, on récupère les détails du lieu si nécessaire
+                        for (const activity of data) {
                             const row = document.createElement('tr');
+                            let placeName = '-';
+
+                            // Si l'activité a un lieu, on récupère les détails
+                            if (activity.place) {
+                                try {
+                                    const placeResponse = await fetch(`/api/place/getOne.php?lieu_id=${activity.place}`, {
+                                        headers: {
+                                            'Authorization': 'Bearer ' + getToken()
+                                        }
+                                    });
+
+                                    if (placeResponse.ok) {
+                                        const placeData = await placeResponse.json();
+                                        placeName = placeData.adresse || `Lieu #${activity.place}`;
+                                    } else {
+                                        placeName = `Lieu #${activity.place}`;
+                                    }
+                                } catch (error) {
+                                    console.error(`Erreur lors de la récupération des informations du lieu ${activity.place}:`, error);
+                                    placeName = `Lieu #${activity.place}`;
+                                }
+                            }
+
                             row.innerHTML = `
-                    <td>${activity.activite_id}</td>
-                    <td>${activity.name}</td>
-                    <td>${formatDate(activity.date)}</td>
-                    <td>${activity.place || '-'}</td>
-                    <td>${activity.type || '-'}</td>
-                    <td>${activity.id_estimate ? `<a href="#" class="btn btn-sm btn-outline-primary">Voir devis #${activity.id_estimate}</a>` : '-'}</td>
-                `;
+                                <td>${activity.activite_id}</td>
+                                <td>${activity.name}</td>
+                                <td>${formatDate(activity.date)}</td>
+                                <td>${placeName}</td>
+                                <td>${activity.type || '-'}</td>
+                                <td>${activity.id_estimate ? `<a href="#" class="btn btn-sm btn-outline-primary">Voir devis #${activity.id_estimate}</a>` : '-'}</td>
+                            `;
                             activityList.appendChild(row);
-                        });
+                        }
                     } else {
                         activityList.innerHTML = '<tr><td colspan="6" class="text-center">Aucune activité trouvée pour ce prestataire</td></tr>';
                     }
@@ -426,6 +478,39 @@ include_once "../includes/head.php";
             if (!dateStr) return '-';
             const date = new Date(dateStr);
             return date.toLocaleDateString('fr-FR');
+        }
+
+        function deactivateProvider(id) {
+            if (confirm('Êtes-vous sûr de vouloir désactiver ce prestataire ? Il ne sera plus visible pour les utilisateurs.')) {
+                fetch('../../api/provider/desactivate.php', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify({
+                        prestataire_id: id
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la désactivation du prestataire');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('Prestataire désactivé avec succès.');
+                        fetchVerifiedProviders(document.getElementById('searchInput').value, currentPage);
+                    } else {
+                        alert('Erreur lors de la désactivation du prestataire: ' + (data.error || 'Erreur inconnue'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la désactivation du prestataire.');
+                });
+            }
         }
     </script>
 
