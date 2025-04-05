@@ -46,8 +46,11 @@ include_once "../includes/head.php";
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="lieu" class="form-label">Lieu <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="lieu" name="lieu" required>
+                                    <label for="id_lieu" class="form-label">Lieu <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="id_lieu" name="id_lieu" required>
+                                        <option value="">Sélectionner un lieu</option>
+                                    </select>
+                                    <div id="lieu_details" class="mt-2 small text-muted"></div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="type" class="form-label">Type<span class="text-danger">*</span></label>
@@ -101,7 +104,8 @@ include_once "../includes/head.php";
                 return;
             }
 
-            
+            // Chargement des lieux
+            loadLocations();
 
             // Récupération des données de la société
             fetch(`../../api/event/getOne.php?evenement_id=${eventId}`, {
@@ -125,10 +129,38 @@ include_once "../includes/head.php";
                     document.getElementById('evenement_id').value = event.evenement_id;
                     document.getElementById('nom').value = event.nom || '';
                     document.getElementById('date').value = event.date || '';
-                    document.getElementById('lieu').value = event.lieu || '';
                     document.getElementById('type').value = event.type || '';
                     document.getElementById('statut').value = event.statut || '';
                     document.getElementById('association').value = event.association || '';
+
+                    // Gestion du lieu si un ID est disponible
+                    if (event.id_lieu) {
+                        const lieuInterval = setInterval(() => {
+                            const lieuSelect = document.getElementById('id_lieu');
+                            if (lieuSelect.options.length > 1) {
+                                lieuSelect.value = event.id_lieu;
+                                showLocationDetails(event.id_lieu);
+                                clearInterval(lieuInterval);
+                            }
+                        }, 100);
+                    } else if (event.lieu) {
+                        // Pour la compatibilité - si on a seulement le nom du lieu sans ID
+                        // Rechercher le lieu correspondant dans la liste
+                        const lieuNom = event.lieu;
+                        const lieuInterval = setInterval(() => {
+                            if (window.locationDetails) {
+                                for (const id in window.locationDetails) {
+                                    const lieu = window.locationDetails[id];
+                                    if (lieu.adresse && lieu.adresse.includes(lieuNom)) {
+                                        document.getElementById('id_lieu').value = id;
+                                        showLocationDetails(id);
+                                        break;
+                                    }
+                                }
+                                clearInterval(lieuInterval);
+                            }
+                        }, 100);
+                    }
 
                     // Afficher le formulaire
                     document.getElementById('loadingIndicator').style.display = 'none';
@@ -140,9 +172,14 @@ include_once "../includes/head.php";
                     document.getElementById('notFoundMessage').style.display = 'block';
                 });
 
-                association();
-            // Récupération des associations pour le select
+            association();
+            
+            // Écouteur de changement pour lieu sélectionné
+            document.getElementById('id_lieu').addEventListener('change', function() {
+                showLocationDetails(this.value);
+            });
 
+            // Récupération des associations pour le select
             function association() {
                 const associationSelect = document.getElementById('association');
 
@@ -202,9 +239,72 @@ include_once "../includes/head.php";
                         alert('Une erreur est survenue lors de la modification de la société.');
                     });
             });
-
         });
+
+        // Fonction pour charger les lieux depuis l'API
+        function loadLocations() {
+            const locationSelect = document.getElementById('id_lieu');
+
+            fetch('../../api/place/getAll.php', {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    locationSelect.innerHTML = '<option value="">Sélectionnez un lieu</option>';
+
+                    // Stocker les détails du lieu pour affichage ultérieur
+                    window.locationDetails = {};
+
+                    data.forEach(location => {
+                        const option = document.createElement('option');
+                        option.value = location.lieu_id;
+                        option.textContent = `${location.adresse}, ${location.ville} (${location.code_postal})`;
+                        locationSelect.appendChild(option);
+
+                        // Stocker les détails pour référence
+                        window.locationDetails[location.lieu_id] = location;
+                    });
+                } else {
+                    locationSelect.innerHTML = '<option value="" disabled>Aucun lieu disponible</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des lieux:', error);
+                locationSelect.innerHTML = '<option value="" disabled>Erreur de chargement</option>';
+            });
+        }
+
+        // Fonction pour afficher les détails du lieu sélectionné
+        function showLocationDetails(locationId) {
+            const detailsDiv = document.getElementById('lieu_details');
+
+            if (!locationId || !window.locationDetails || !window.locationDetails[locationId]) {
+                detailsDiv.innerHTML = '';
+                return;
+            }
+
+            const location = window.locationDetails[locationId];
+            detailsDiv.innerHTML = `
+                <div class="card p-2 bg-light">
+                    <p class="m-0"><strong>Adresse complète:</strong> ${location.adresse}</p>
+                    <p class="m-0"><strong>Ville:</strong> ${location.ville}</p>
+                    <p class="m-0"><strong>Code Postal:</strong> ${location.code_postal}</p>
+                </div>
+            `;
+        }
     </script>
+
+    <style>
+        #lieu_details {
+            margin-top: 0.5rem;
+        }
+        #lieu_details .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+    </style>
 </body>
 
 </html>
