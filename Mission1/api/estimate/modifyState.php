@@ -30,7 +30,7 @@ if (!$estimate) {
     return;
 }
 
-if (!isValidStatus($data['statut'])) {
+if (!isValidEstimateStatus($data['statut'])) {
     returnError(400, 'Invalid status provided: ' . $data['statut']);
     return;
 }
@@ -40,7 +40,7 @@ if ($data['statut'] == $estimate['statut']) {
     return;
 }
 
-$modified = modifyState($data['devis_id'], $data['statut']);
+$modified = modifyEstimateState($data['devis_id'], $data['statut']);
 
 if ($modified) {
     echo json_encode(['success' => 'Estimate State Modified']);

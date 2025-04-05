@@ -4,6 +4,11 @@ $title = "Connexion";
 include_once "includes/head.php";
 
 ?>
+<script>
+    if (getToken() !== null) {
+        window.location.href = "home.php";
+    }
+</script>
 <div class="container mt-5 d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="row justify-content-center">
         <div class="w-100 m-5">
@@ -31,8 +36,3 @@ include_once "includes/head.php";
         </div>
     </div>
 </div>
-<script>
-    if (getToken() !== null) {
-        window.location.href = "home.php";
-    }
-</script>

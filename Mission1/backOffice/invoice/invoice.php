@@ -59,12 +59,6 @@ include_once "../includes/head.php";
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Toutes les factures</h5>
                         <div class="d-flex mt-2 mt-sm-0 align-items-center">
-                            <div class="input-group me-2" style="max-width: 200px;">
-                                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher..." aria-label="Search">
-                                <button class="btn btn-sm btn-outline-secondary" type="button">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
                             <a type="button" class="btn btn-sm btn-primary me-2" href="create.php">
                                 <i class="fas fa-plus"></i> Créer une facture
                             </a>
@@ -182,18 +176,6 @@ include_once "../includes/head.php";
             fetchPendingInvoices();
             fetchAllInvoices();
 
-            // Écouteur pour le bouton de recherche
-            document.querySelector('.btn-outline-secondary[type="button"]').addEventListener('click', function() {
-                fetchAllInvoices(document.getElementById('searchInput').value);
-            });
-
-            // Écouteur pour la touche Entrée dans le champ de recherche
-            document.getElementById('searchInput').addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    fetchAllInvoices(this.value);
-                }
-            });
-
             // Écouteur pour le bouton de sauvegarde du statut
             document.getElementById('saveStatusBtn').addEventListener('click', function() {
                 const invoiceId = document.getElementById('invoiceId').value;
@@ -242,7 +224,7 @@ include_once "../includes/head.php";
 
         let currentPage = 1;
 
-        function fetchAllInvoices(search = '', page = 1) {
+        function fetchAllInvoices(page = 1) {
             currentPage = page;
             const allInvoicesList = document.getElementById('allInvoicesList');
             allInvoicesList.innerHTML = '<tr><td colspan="7" class="text-center">Chargement des factures...</td></tr>';
@@ -250,10 +232,6 @@ include_once "../includes/head.php";
             let limit = 5;
             let offset = (page - 1) * limit;
             let url = `../../api/invoice/getAll.php?limit=${limit}&offset=${offset}`;
-
-            if (search) {
-            url += '&search=' + encodeURIComponent(search);
-            }
 
             fetch(url, {
             headers: {
@@ -278,7 +256,7 @@ include_once "../includes/head.php";
                 });
 
                 document.getElementById('paginationInfo').textContent = `Affichage de 1-${filteredInvoices.length} factures`;
-                updatePagination(data.length === limit, search);
+                updatePagination(data.length === limit);
                 } else {
                 allInvoicesList.innerHTML = '<tr><td colspan="7" class="text-center">Aucune facture trouvée</td></tr>';
                 document.getElementById('paginationInfo').textContent = 'Aucune facture trouvée';
@@ -334,18 +312,18 @@ include_once "../includes/head.php";
             container.appendChild(row);
         }
 
-        function updatePagination(hasMore, search = '') {
+        function updatePagination(hasMore) {
             const paginationList = document.getElementById('paginationList');
             paginationList.innerHTML = '';
             // Bouton précédent
             let prevItem = document.createElement('li');
             prevItem.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
-            prevItem.innerHTML = `<a class="page-link" href="#" onclick="fetchAllInvoices('${search}', ${currentPage - 1}); return false;">Précédent</a>`;
+            prevItem.innerHTML = `<a class="page-link" href="#" onclick="fetchAllInvoices(${currentPage - 1}); return false;">Précédent</a>`;
             paginationList.appendChild(prevItem);
             // Bouton suivant
             let nextItem = document.createElement('li');
             nextItem.className = 'page-item ' + (!hasMore ? 'disabled' : '');
-            nextItem.innerHTML = `<a class="page-link" href="#" onclick="fetchAllInvoices('${search}', ${currentPage + 1}); return false;">Suivant</a>`;
+            nextItem.innerHTML = `<a class="page-link" href="#" onclick="fetchAllInvoices(${currentPage + 1}); return false;">Suivant</a>`;
             paginationList.appendChild(nextItem);
         }
 

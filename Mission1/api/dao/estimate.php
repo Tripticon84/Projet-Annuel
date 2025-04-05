@@ -151,13 +151,21 @@ function getAllEstimate(int $limit = null, int $offset = null)
     return null;
 }
 /**
- * tout les params sont optionnels: le premier pour filtrer par username, le deuxième pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
+ * tout les params sont optionnels: le premier pour définir la limite de résultats,
+ * le deuxième pour définir où on commence (utile pour la pagination)
+ * et le troisième pour filtrer par prestataire
  */
-function getAllContract(int $limit = null, int $offset = null)
+function getAllContract(int $limit = null, int $offset = null, int $provider_id = null)
 {
     $db = getDatabaseConnection();
     $sql = "SELECT devis_id, date_debut, date_fin, statut, montant, montant_ht, montant_tva, is_contract, fichier, id_societe FROM devis Where is_contract = 1 AND date_fin > NOW()";
     $params = [];
+
+    // Filtrage par prestataire
+    if ($provider_id !== null) {
+        $sql .= " AND id_societe = :provider_id";
+        $params[':provider_id'] = $provider_id;
+    }
 
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
@@ -169,7 +177,7 @@ function getAllContract(int $limit = null, int $offset = null)
     }
 
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
+    $res = $stmt->execute($params);
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -244,7 +252,7 @@ function getContractStats()
     ];
 }
 
-function modifyState($id, $state)
+function modifyEstimateState($id, $state)
 {
     $db = getDatabaseConnection();
     $sql = "UPDATE devis SET statut = :statut WHERE devis_id = :id";
@@ -259,7 +267,7 @@ function modifyState($id, $state)
     return null;
 }
 
-function isValidStatus($status)
+function isValidEstimateStatus($status)
 {
     if ($status === null) {
         return false;
@@ -279,6 +287,26 @@ function convertToContract($devis_id)
 
     if ($res) {
         return $stmt->rowCount();
+    }
+    return null;
+}
+
+function getContractByProvider(int $provider_id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT DISTINCT d.devis_id, d.date_debut, d.date_fin, d.statut, d.montant, d.montant_ht, d.montant_tva,
+                   d.is_contract, d.fichier, d.id_societe
+            FROM devis d
+            INNER JOIN facture f ON d.devis_id = f.id_devis
+            WHERE d.is_contract = 1 AND f.id_prestataire = :provider_id";
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'provider_id' => $provider_id
+    ]);
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return null;
 }

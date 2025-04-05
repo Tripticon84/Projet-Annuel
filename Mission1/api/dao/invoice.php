@@ -173,7 +173,7 @@ function GetOtherFeesByInvoiceId($id)
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function modifyState($id,$state)
+function modifyInvoiceState($id,$state)
 {
     $db = getDatabaseConnection();
     $sql = "UPDATE facture SET statut = :statut WHERE facture_id = :id";
@@ -252,7 +252,7 @@ function updateInvoice($id,  $date_emission = null,  $date_echeance = null, $mon
     return null;
 }
 
-function isValidStatus($status)
+function isValidInvoiceStatus($status)
 {
     if ($status === null) {
         return false;
@@ -285,7 +285,7 @@ function generatePDFForProvider($factureId){
     if ($autresFrais === null) {
         $autresFrais = []; // Aucun autre frais trouvé
     }
-    
+
 
     $html = '<!DOCTYPE html>
     <html>
