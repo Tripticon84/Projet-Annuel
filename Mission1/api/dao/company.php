@@ -160,7 +160,7 @@ function getAllSociety($name = "", $limit = null, $offset = null)
     }
 
     if (!empty($conditions)) {
-        $sql .= " WHERE " . implode(" AND ", $conditions);
+        $sql .= " AND " . implode(" AND ", $conditions);
     }
 
     if ($limit !== null) {
