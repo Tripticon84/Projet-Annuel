@@ -11,9 +11,9 @@ if (!methodIsAllowed('read')) {
 
 acceptedTokens(true, true, false, true);
 
-
 $limit = null;
 $offset = null;
+$provider_id = null;
 
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
@@ -27,8 +27,11 @@ if (isset($_GET['offset'])) {
         returnError(400, 'Offset must be a positive number');
     }
 }
+if (isset($_GET['provider_id'])) {
+    $provider_id = intval($_GET['provider_id']);
+}
 
-$contracts = getAllContract($limit, $offset);
+$contracts = getAllContract($limit, $offset, $provider_id);
 
 if (!$contracts) {
     returnError(404, 'No estimate found');
@@ -50,6 +53,5 @@ foreach ($contracts as $contract) {
         "id_societe" => $contract['id_societe']
     ];
 }
-
 
 echo json_encode($result);

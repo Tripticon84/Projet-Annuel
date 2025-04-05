@@ -31,7 +31,7 @@ if (!$invoice) {
     return;
 }
 
-if (!isValidStatus($data['statut'])) {
+if (!isValidInvoiceStatus($data['statut'])) {
     returnError(400, 'Invalid status provided: ' . $data['statut']);
     return;
 }
@@ -41,7 +41,7 @@ if ($data['statut'] == $invoice['statut']) {
     return;
 }
 
-$modified = modifyState($data['facture_id'], $data['statut']);
+$modified = modifyInvoiceState($data['facture_id'], $data['statut']);
 
 if ($modified) {
     echo json_encode(['message' => 'Invoice State Modified']);

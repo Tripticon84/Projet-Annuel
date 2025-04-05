@@ -55,7 +55,7 @@ if ($date_emission === null && $date_echeance === null && $montant === null && $
 
 
 
-if (isValidStatus($statut)) {
+if (isValidInvoiceStatus($statut)) {
     returnError(400, 'Invalid status provided: '.$statut);
     return;
 }

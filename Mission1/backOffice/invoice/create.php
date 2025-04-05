@@ -70,9 +70,10 @@ include_once "../includes/head.php";
                                 <div class="col-md-6 mb-3">
                                     <label for="statut" class="form-label">Statut <span class="text-danger">*</span></label>
                                     <select class="form-select" id="statut" name="statut" required>
-                                        <option value="Attente">En attente</option>
-                                        <option value="Payee">Payée</option>
-                                        <option value="Annulee">Annulée</option>
+                                        <option value="brouillon">Brouillon</option>
+                                        <option value="envoyé">Envoyé</option>
+                                        <option value="accepté">Accepté</option>
+                                        <option value="refusé">Refusé</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -99,203 +100,207 @@ include_once "../includes/head.php";
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Définir la date d'émission par défaut à aujourd'hui
+            // Initialisation de la date d'émission à aujourd'hui
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('date_emission').value = today;
 
-            // Définir la date d'échéance par défaut à 30 jours à partir d'aujourd'hui
-            const dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 30);
-            document.getElementById('date_echeance').value = dueDate.toISOString().split('T')[0];
+            // Par défaut, la date d'échéance est à today + 30 jours
+            const defaultDueDate = new Date();
+            defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+            document.getElementById('date_echeance').value = defaultDueDate.toISOString().split('T')[0];
 
-            // Charger la liste des prestataires
+            // Chargement des prestataires
             fetchProviders();
 
-            // Ajouter un écouteur d'événements pour charger les devis lorsqu'un prestataire est sélectionné
-            document.getElementById('id_prestataire').addEventListener('change', function() {
-                const providerId = this.value;
-                if (providerId) {
-                    fetchEstimates(providerId);
-                } else {
-                    // Réinitialiser la liste des devis si aucun prestataire n'est sélectionné
-                    const estimateSelect = document.getElementById('id_devis');
-                    estimateSelect.innerHTML = '<option value="">Sélectionner un devis</option>';
-                    // Réinitialiser les montants
-                    document.getElementById('montant_ht').value = '';
-                    document.getElementById('montant_tva').value = '';
-                    document.getElementById('montant').value = '';
-                }
-            });
+            // Ajout d'un événement pour charger les devis lorsqu'un prestataire est sélectionné
+            document.getElementById('id_prestataire').addEventListener('change', fetchEstimates);
 
-            // Ajouter un écouteur d'événements pour charger les détails du devis lorsqu'un devis est sélectionné
-            document.getElementById('id_devis').addEventListener('change', function() {
-                const estimateId = this.value;
-                if (estimateId) {
-                    fetchEstimateDetails(estimateId);
-                } else {
-                    // Réinitialiser les montants
-                    document.getElementById('montant_ht').value = '';
-                    document.getElementById('montant_tva').value = '';
-                    document.getElementById('montant').value = '';
-                }
-            });
+            // Ajout d'un événement pour mettre à jour les montants lorsqu'un devis est sélectionné
+            document.getElementById('id_devis').addEventListener('change', updateAmountsFromEstimate);
 
-            // Soumission du formulaire
-            const form = document.getElementById('createInvoiceForm');
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                if (!validateForm()) {
-                    return;
-                }
-
-                const formData = new FormData(form);
-                const invoiceData = {};
-
-                formData.forEach((value, key) => {
-                    invoiceData[key] = value;
-                });
-
-                fetch('../../api/invoice/create.php', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + getToken()
-                    },
-                    body: JSON.stringify(invoiceData),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.id) {
-                        alert('Facture créée avec succès!');
-                        window.location.href = 'invoice.php';
-                    } else {
-                        alert('Erreur: ' + (data.error || 'Impossible de créer la facture'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors de la création de la facture.');
-                });
-            });
+            // Gestion de la soumission du formulaire
+            document.getElementById('createInvoiceForm').addEventListener('submit', submitForm);
         });
 
+        // Fonction pour récupérer la liste des prestataires
         function fetchProviders() {
-            fetch('../../api/provider/getVerifiedProviders.php', {
+            fetch('/api/provider/getVerifiedProviders.php', {
                 headers: {
                     'Authorization': 'Bearer ' + getToken()
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                const providerSelect = document.getElementById('id_prestataire');
-                providerSelect.innerHTML = '<option value="">Sélectionner un prestataire</option>';
-
-                if (data && data.length > 0) {
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la récupération des prestataires');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const select = document.getElementById('id_prestataire');
                     data.forEach(provider => {
                         const option = document.createElement('option');
                         option.value = provider.id;
-                        option.textContent = `${provider.name} ${provider.surname}`;
-                        providerSelect.appendChild(option);
+                        option.textContent = `${provider.name} ${provider.surname} (${provider.type})`;
+                        select.appendChild(option);
                     });
-                }
-            })
-            .catch(error => {
-                console.error('Erreur lors du chargement des prestataires:', error);
-            });
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showAlert('danger', 'Erreur lors du chargement des prestataires');
+                });
         }
 
-        function fetchEstimates(providerId) {
-            fetch(`../../api/estimate/getByProvider.php?id_prestataire=${providerId}`, {
+        // Fonction pour récupérer la liste des devis/contrats associés au prestataire sélectionné
+        function fetchEstimates() {
+            const providerId = document.getElementById('id_prestataire').value;
+            const estimateSelect = document.getElementById('id_devis');
+
+            // Vider la liste actuelle des devis
+            estimateSelect.innerHTML = '<option value="">Sélectionner un devis</option>';
+
+            // Si aucun prestataire n'est sélectionné, on ne fait rien
+            if (!providerId) {
+                return;
+            }
+
+            // Récupérer les contrats (devis) pour ce prestataire
+            fetch(`/api/estimate/getContractByProvider.php?provider_id=${providerId}`, {
                 headers: {
                     'Authorization': 'Bearer ' + getToken()
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération des devis');
+                }
+                return response.json();
+            })
             .then(data => {
-                const estimateSelect = document.getElementById('id_devis');
-                estimateSelect.innerHTML = '<option value="">Sélectionner un devis</option>';
+                // Filtrer pour ne garder que les contrats acceptés
+                const acceptedContracts = data.filter(contract =>
+                    contract.is_contract === 1 && contract.statut === 'accepté'
+                );
 
-                if (data && data.length > 0) {
-                    // Filtrer uniquement les devis acceptés (contrats)
-                    const acceptedEstimates = data.filter(estimate => estimate.is_contract === 1);
+                // Ajouter chaque contrat accepté à la liste déroulante
+                acceptedContracts.forEach(contract => {
+                    const option = document.createElement('option');
+                    option.value = contract.devis_id;
+                    option.textContent = `Contrat #${contract.devis_id} - ${contract.montant}€`;
 
-                    if (acceptedEstimates.length > 0) {
-                        acceptedEstimates.forEach(estimate => {
-                            const option = document.createElement('option');
-                            option.value = estimate.devis_id;
-                            option.textContent = `Devis #${estimate.devis_id} - ${estimate.montant} €`;
-                            estimateSelect.appendChild(option);
-                        });
-                    } else {
-                        const option = document.createElement('option');
-                        option.value = "";
-                        option.textContent = "Aucun devis accepté disponible";
-                        option.disabled = true;
-                        estimateSelect.appendChild(option);
-                    }
-                } else {
+                    // Stocker les montants comme attributs de données
+                    option.dataset.montantHt = contract.montant_ht;
+                    option.dataset.montantTva = contract.montant_tva;
+                    option.dataset.montant = contract.montant;
+
+                    estimateSelect.appendChild(option);
+                });
+
+                // Si aucun contrat accepté n'a été trouvé
+                if (acceptedContracts.length === 0) {
                     const option = document.createElement('option');
                     option.value = "";
-                    option.textContent = "Aucun devis disponible";
+                    option.textContent = "Aucun contrat disponible pour ce prestataire";
                     option.disabled = true;
                     estimateSelect.appendChild(option);
                 }
             })
             .catch(error => {
-                console.error('Erreur lors du chargement des devis:', error);
+                console.error('Erreur:', error);
+                showAlert('danger', 'Erreur lors du chargement des contrats');
             });
         }
 
-        function fetchEstimateDetails(estimateId) {
-            fetch(`../../api/estimate/getOne.php?id=${estimateId}`, {
+        // Fonction pour mettre à jour les montants en fonction du devis sélectionné
+        function updateAmountsFromEstimate() {
+            const select = document.getElementById('id_devis');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (!select.value) {
+                // Réinitialiser les valeurs si aucun devis n'est sélectionné
+                document.getElementById('montant_ht').value = '';
+                document.getElementById('montant_tva').value = '';
+                document.getElementById('montant').value = '';
+                return;
+            }
+
+            // Récupérer les montants associés au devis sélectionné
+            document.getElementById('montant_ht').value = selectedOption.dataset.montantHt;
+            document.getElementById('montant_tva').value = selectedOption.dataset.montantTva;
+            document.getElementById('montant').value = selectedOption.dataset.montant;
+        }
+
+        // Fonction pour soumettre le formulaire
+        function submitForm(event) {
+            event.preventDefault();
+
+            // Collecte des données du formulaire
+            const formData = {
+                date_emission: document.getElementById('date_emission').value,
+                date_echeance: document.getElementById('date_echeance').value,
+                id_prestataire: document.getElementById('id_prestataire').value,
+                id_devis: document.getElementById('id_devis').value,
+                montant_ht: document.getElementById('montant_ht').value,
+                montant_tva: document.getElementById('montant_tva').value,
+                montant: document.getElementById('montant').value,
+                statut: document.getElementById('statut').value,
+                methode_paiement: document.getElementById('methode_paiement').value
+            };
+
+            // Validation basique côté client
+            if (new Date(formData.date_emission) > new Date(formData.date_echeance)) {
+                showAlert('danger', 'La date d\'émission doit être antérieure à la date d\'échéance');
+                return;
+            }
+
+            // Envoi des données à l'API
+            fetch('/api/invoice/create.php', {
+                method: 'PUT',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + getToken()
-                }
+                },
+                body: JSON.stringify(formData)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data) {
-                    // Remplir automatiquement les champs de montant
-                    document.getElementById('montant_ht').value = data.montant_ht || 0;
-                    document.getElementById('montant_tva').value = data.montant_tva || 0;
-                    document.getElementById('montant').value = data.montant || 0;
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Erreur lors de la création de la facture');
+                    });
                 }
+                return response.json();
+            })
+            .then(data => {
+                showAlert('success', 'Facture créée avec succès');
+                // Redirection vers la page de détail de la facture après 2 secondes
+                setTimeout(() => {
+                    window.location.href = `detail.php?id=${data.id}`;
+                }, 2000);
             })
             .catch(error => {
-                console.error('Erreur lors du chargement des détails du devis:', error);
+                console.error('Erreur:', error);
+                showAlert('danger', error.message);
             });
         }
 
-        function validateForm() {
-            const dateEmission = new Date(document.getElementById('date_emission').value);
-            const dateEcheance = new Date(document.getElementById('date_echeance').value);
+        // Fonction pour afficher une alerte
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
 
-            // Vérifier que la date d'émission est antérieure à la date d'échéance
-            if (dateEmission > dateEcheance) {
-                alert('La date d\'émission doit être antérieure à la date d\'échéance.');
-                return false;
-            }
+            // Insérer l'alerte au début du formulaire
+            const form = document.getElementById('createInvoiceForm');
+            form.parentNode.insertBefore(alertDiv, form);
 
-            // Vérifier qu'un prestataire est sélectionné
-            if (!document.getElementById('id_prestataire').value) {
-                alert('Veuillez sélectionner un prestataire.');
-                return false;
-            }
-
-            // Vérifier qu'un devis est sélectionné
-            if (!document.getElementById('id_devis').value) {
-                alert('Veuillez sélectionner un devis.');
-                return false;
-            }
-
-            // Si le statut est "Payee", vérifier qu'une méthode de paiement est sélectionnée
-            if (document.getElementById('statut').value === 'Payee' && !document.getElementById('methode_paiement').value) {
-                alert('Veuillez sélectionner une méthode de paiement pour une facture payée.');
-                return false;
-            }
-
-            return true;
+            // Faire disparaître l'alerte après 5 secondes
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => alertDiv.remove(), 150);
+            }, 5000);
         }
     </script>
 </body>

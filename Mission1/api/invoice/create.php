@@ -15,27 +15,38 @@ acceptedTokens(true, false, false, false);
 
 $data = getBody();
 
-
 if (validateMandatoryParams($data, ['date_emission', 'date_echeance', 'statut', 'methode_paiement', 'id_devis'])) {
 
-
-    if ($data['statut'] != 'Attente' && $data['statut'] != 'Payee' && $data['statut'] != 'Annulee') {
-        returnError(400, 'statut must be Attente, Payee or Annulee');
+    if ($data['statut'] != 'brouillon' && $data['statut'] != 'envoyé' && $data['statut'] != 'accepté' && $data['statut'] != 'refusé') {
+        returnError(400, 'statut must be brouillon, envoyé, accepté or refusé');
         return;
     }
 
+    // Récupérer l'estimation avant de l'utiliser
+    $estimate = getEstimateById($data['id_devis']);
+    if (empty($estimate)) {
+        returnError(400, 'estimate does not exist');
+        return;
+    }
 
-    if($estimate['is_contract'] != 0){
+    if ($estimate['is_contract'] == 0) {
+        returnError(400, 'estimate is not a contract');
+        return;
+    }
+
+    if ($estimate['statut'] != 'accepté') {
         returnError(400, 'estimate must be accepted');
         return;
     }
 
+    // Convertir les dates pour la comparaison
+    $date_emission = $data['date_emission'];
+    $date_echeance = $data['date_echeance'];
 
     if ($date_emission > $date_echeance) {
         returnError(400, 'date_emission must be before date_echeance');
         return;
     }
-
 
     if (!empty($data['id_prestataire'])) {
         if (!is_numeric($data['id_prestataire'])) {
@@ -51,16 +62,10 @@ if (validateMandatoryParams($data, ['date_emission', 'date_echeance', 'statut', 
         $data['id_prestataire'] = null;
     }
 
-    $estimate = getEstimateById($data['id_devis']);
-    if (empty($estimate)) {
-        returnError(400, 'estimate does not exist');
-        return;
-    }
-
     $montant = $estimate['montant'];
     $montant_tva = $estimate['montant_tva'];
     $montant_ht = $estimate['montant_ht'];
-    
+
     if (!empty($data['montant'])) {
         if (!is_numeric($data['montant'])) {
             returnError(400, 'montant must be a number');
