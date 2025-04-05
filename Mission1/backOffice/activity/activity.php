@@ -54,23 +54,20 @@ $activityStats = [
                     </div>
                 </div>
 
-                <!-- Liste des Activités -->
+                <!-- Liste des Activités Actives -->
                 <div class="card mt-4">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap">
-                        <h5 class="card-title mb-0">Liste des Activités</h5>
+                        <h5 class="card-title mb-0">Activités Actives</h5>
                         <div class="d-flex mt-2 mt-sm-0 align-items-center">
                             <div class="input-group me-2 mb-2 mb-sm-0 p-2" style="max-width: 210px;">
-                                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Rechercher une activité..." aria-label="Search">
-                                <button class="btn btn-sm btn-outline-secondary" type="button" onclick="fetchActivities(document.getElementById('searchInput').value)">
+                                <input type="text" id="searchActiveInput" class="form-control form-control-sm" placeholder="Rechercher..." aria-label="Search">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" onclick="fetchActiveActivities(document.getElementById('searchActiveInput').value)">
                                     <i class="fas fa-search"></i>
                                 </button>
                             </div>
                             <a type="button" class="btn btn-sm btn-primary me-2" href="create.php">
                                 <i class="fas fa-plus"></i> Nouvelle Activité
                             </a>
-                            <button class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-download"></i> Exporter
-                            </button>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -88,18 +85,62 @@ $activityStats = [
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="activityList">
-                                    <!-- Les activités seront insérées ici par JavaScript -->
+                                <tbody id="activeActivityList">
+                                    <!-- Les activités actives seront insérées ici par JavaScript -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     <div class="card-footer bg-white d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-muted small" id="paginationInfo">Chargement...</span>
+                            <span class="text-muted small" id="activePaginationInfo">Chargement...</span>
                         </div>
                         <nav aria-label="Table navigation">
-                            <ul class="pagination pagination-sm mb-0" id="paginationList"></ul>
+                            <ul class="pagination pagination-sm mb-0" id="activePaginationList"></ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Liste des Activités Inactives -->
+                <div class="card mt-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="card-title mb-0">Activités Désactivées</h5>
+                        <div class="d-flex mt-2 mt-sm-0 align-items-center">
+                            <div class="input-group me-2 mb-2 mb-sm-0 p-2" style="max-width: 210px;">
+                                <input type="text" id="searchInactiveInput" class="form-control form-control-sm" placeholder="Rechercher..." aria-label="Search">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" onclick="fetchInactiveActivities(document.getElementById('searchInactiveInput').value)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Nom</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Lieu</th>
+                                        <th scope="col">Prestataire</th>
+                                        <th scope="col">Devis</th>
+                                        <th scope="col" class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inactiveActivityList">
+                                    <!-- Les activités inactives seront insérées ici par JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small" id="inactivePaginationInfo">Chargement...</span>
+                        </div>
+                        <nav aria-label="Table navigation">
+                            <ul class="pagination pagination-sm mb-0" id="inactivePaginationList"></ul>
                         </nav>
                     </div>
                 </div>
@@ -116,24 +157,6 @@ $activityStats = [
                             </div>
                             <h6>Nouvelle Activité</h6>
                             <a href="create.php" class="btn btn-sm btn-outline-primary mt-2">Ajouter</a>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-calendar-alt fa-2x text-success"></i>
-                            </div>
-                            <h6>Planification</h6>
-                            <a href="#" class="btn btn-sm btn-outline-success mt-2" data-bs-toggle="modal" data-bs-target="#planningModal">Voir calendrier</a>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-file-invoice fa-2x text-warning"></i>
-                            </div>
-                            <h6>Devis en attente</h6>
-                            <a href="#" class="btn btn-sm btn-outline-warning mt-2" id="pendingQuotesBtn">Consulter</a>
                         </div>
                     </div>
                 </div>
@@ -160,20 +183,16 @@ $activityStats = [
         </div>
     </div>
 
-    <!-- Modal pour le planning -->
-    <div class="modal fade" id="planningModal" tabindex="-1" aria-labelledby="planningModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+    <!-- Modal pour afficher les détails d'un devis -->
+    <div class="modal fade" id="quoteDetailsModal" tabindex="-1" aria-labelledby="quoteDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="planningModalLabel">Planning des activités</h5>
+                    <h5 class="modal-title" id="quoteDetailsModalLabel">Détails du devis</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <!-- Ici vous pourriez intégrer un calendrier interactif -->
-                    <div id="calendar" class="mt-3" style="min-height:400px;">
-                        <!-- Calendrier à implémenter avec une bibliothèque comme FullCalendar -->
-                        <p class="text-center text-muted">Calendrier en cours de chargement...</p>
-                    </div>
+                <div class="modal-body" id="quoteDetailsContent">
+                    <!-- Les détails du devis seront insérés ici par JavaScript -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -184,34 +203,52 @@ $activityStats = [
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            fetchActivities();
+            fetchActiveActivities();
+            fetchInactiveActivities();
 
-            // Recherche par l'input de recherche, touche Enter
-            document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            // Recherche par l'input de recherche, touche Enter pour activités actives
+            document.getElementById('searchActiveInput').addEventListener('keyup', function(e) {
                 if (e.key === 'Enter') {
-                    fetchActivities(this.value);
+                    fetchActiveActivities(this.value);
                 }
             });
 
-            // Gestion des devis en attente
-            document.getElementById('pendingQuotesBtn').addEventListener('click', function() {
-                fetchPendingQuotes();
+            // Recherche par l'input de recherche, touche Enter pour activités inactives
+            document.getElementById('searchInactiveInput').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    fetchInactiveActivities(this.value);
+                }
             });
         });
 
-        let currentPage = 1;
+        let activeCurrentPage = 1;
+        let inactiveCurrentPage = 1;
+        const LIMIT = 5;
 
-        function fetchActivities(search = '', page = 1) {
-            currentPage = page;
-            const activityList = document.getElementById('activityList');
+        // Fonction pour récupérer les activités actives
+        function fetchActiveActivities(search = '', page = 1) {
+            activeCurrentPage = page;
+            fetchActivities(search, page, 0, 'activeActivityList', 'activePaginationInfo', 'activePaginationList', fetchActiveActivities);
+        }
+
+        // Fonction pour récupérer les activités inactives
+        function fetchInactiveActivities(search = '', page = 1) {
+            inactiveCurrentPage = page;
+            fetchActivities(search, page, 1, 'inactiveActivityList', 'inactivePaginationInfo', 'inactivePaginationList', fetchInactiveActivities);
+        }
+
+        // Fonction générique pour récupérer les activités
+        function fetchActivities(search = '', page = 1, desactivate = 0, listId, paginationInfoId, paginationListId, fetchFunction) {
+            const activityList = document.getElementById(listId);
             activityList.innerHTML = '<tr><td colspan="8" class="text-center">Chargement des activités...</td></tr>';
 
-            let limit = 5;
-            let offset = (page - 1) * limit;
-            let url = '../../api/activity/getAll.php?limit=' + limit + '&offset=' + offset;
+            let offset = (page - 1) * LIMIT;
+            let url = '../../api/activity/getAll.php?limit=' + LIMIT + '&offset=' + offset + '&desactivate=' + desactivate;
 
-            if (search) {
-                url += '&nom=' + encodeURIComponent(search);
+            if (search && search.trim() !== '') {
+                // Assurez-vous que la recherche est correctement encodée
+                url += '&search=' + encodeURIComponent(search.trim());
+                console.log('URL de recherche: ' + url); // Log pour débogage
             }
 
             fetch(url, {
@@ -247,42 +284,92 @@ $activityStats = [
                                             <li><a class="dropdown-item" href="#" onclick="viewActivityDetails(${activity.id}); return false;"><i class="fas fa-eye me-2"></i>Voir détails</a></li>
                                             <li><a class="dropdown-item" href="modify.php?id=${activity.id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#" onclick="toggleActivityStatus(${activity.id}, ${activity.desactivate ? 'false' : 'true'}); return false;"><i class="fas fa-${activity.desactivate ? 'check-circle' : 'ban'} me-2"></i>${activity.desactivate ? 'Activer' : 'Désactiver'}</a></li>
+                                            <li><a class="dropdown-item text-${activity.desactivate ? 'success' : 'danger'}" href="#" onclick="toggleActivityStatus(${activity.id}, ${activity.desactivate ? 'false' : 'true'}); return false;"><i class="fas fa-${activity.desactivate ? 'check-circle' : 'ban'} me-2"></i>${activity.desactivate ? 'Activer' : 'Désactiver'}</a></li>
                                         </ul>
                                     </div>
                                 </td>
                             `;
                             activityList.appendChild(row);
                         });
-                        document.getElementById('paginationInfo').textContent = `Affichage de 1-${data.length} activités`;
-                        updatePagination(data.length === limit, search);
+                        document.getElementById(paginationInfoId).textContent = `Affichage de ${offset + 1}-${offset + data.length} activités`;
+                        updatePagination(data.length === LIMIT, search, page, paginationListId, fetchFunction);
                     } else {
-                        activityList.innerHTML = '<tr><td colspan="8" class="text-center">Aucune activité trouvée</td></tr>';
-                        document.getElementById('paginationInfo').textContent = 'Aucune activité trouvée';
+                        activityList.innerHTML = '<tr><td colspan="8" class="text-center">Liste vide</td></tr>';
+                        document.getElementById(paginationInfoId).textContent = 'Aucun élément à afficher';
+                        document.getElementById(paginationListId).innerHTML = '';
                     }
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
-                    activityList.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Erreur lors du chargement des données</td></tr>';
-                    document.getElementById('paginationInfo').textContent = 'Erreur lors du chargement des données';
+                    activityList.innerHTML = '<tr><td colspan="8" class="text-center">Liste vide</td></tr>';
+                    document.getElementById(paginationInfoId).textContent = '';
                 });
         }
 
-        function updatePagination(hasMore, search = '') {
-            const paginationList = document.getElementById('paginationList');
+        function updatePagination(hasMore, search = '', currentPage, paginationListId, fetchFunction) {
+            const paginationList = document.getElementById(paginationListId);
             paginationList.innerHTML = '';
 
             // Bouton Précédent
             let prevItem = document.createElement('li');
             prevItem.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
-            prevItem.innerHTML = `<a class="page-link" href="#" onclick="fetchActivities('${search}', ${currentPage - 1}); return false;">Précédent</a>`;
+            prevItem.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); ${fetchFunction.name}('${search}', ${currentPage - 1});">Précédent</a>`;
             paginationList.appendChild(prevItem);
 
             // Bouton Suivant
             let nextItem = document.createElement('li');
             nextItem.className = 'page-item ' + (!hasMore ? 'disabled' : '');
-            nextItem.innerHTML = `<a class="page-link" href="#" onclick="fetchActivities('${search}', ${currentPage + 1}); return false;">Suivant</a>`;
+            nextItem.innerHTML = `<a class="page-link" href="#" onclick="event.preventDefault(); ${fetchFunction.name}('${search}', ${currentPage + 1});">Suivant</a>`;
             paginationList.appendChild(nextItem);
+        }
+
+        function toggleActivityStatus(activityId, desactivate) {
+            const action = desactivate ? 'désactiver' : 'activer';
+            if (confirm(`Êtes-vous sûr de vouloir ${action} cette activité?`)) {
+                // Choose the appropriate endpoint and method based on the action
+                const endpoint = desactivate 
+                    ? '../../api/activity/delete.php' 
+                    : '../../api/activity/activate.php';
+                
+                // Use POST instead of PUT for the 'update' operation
+                const method = 'PATCH';
+                
+                fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify({
+                        activite_id: activityId,
+                        // Only include desactivate parameter for deactivation
+                        ...(desactivate ? { desactivate: desactivate } : {})
+                    })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur de réponse du serveur');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert(`Activité ${action}e avec succès.`);
+                        
+                        // Rafraîchir les deux listes pour s'assurer que les données sont à jour
+                        fetchActiveActivities(document.getElementById('searchActiveInput').value, activeCurrentPage);
+                        fetchInactiveActivities(document.getElementById('searchInactiveInput').value, inactiveCurrentPage);
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue lors de la mise à jour du statut: ' + error.message);
+                    });
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR');
         }
 
         function viewActivityDetails(activityId) {
@@ -297,7 +384,12 @@ $activityStats = [
                     'Authorization': 'Bearer ' + getToken()
                 }
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la récupération des détails');
+                    }
+                    return response.json();
+                })
                 .then(activity => {
                     if (activity) {
                         detailsContent.innerHTML = `
@@ -309,7 +401,7 @@ $activityStats = [
                                     <p><strong>Date:</strong> ${formatDate(activity.date)}</p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Lieu:</strong> ${activity.lieu || '-'}</p>
+                                    <p><strong>Lieu:</strong> ${activity.id_lieu || '-'}</p>
                                     <p><strong>Devis:</strong> ${activity.id_devis ? `<a href="#" onclick="viewQuote(${activity.id_devis}); return false;">Voir Devis #${activity.id_devis}</a>` : 'Aucun'}</p>
                                     <p><strong>Prestataire:</strong> ${activity.id_prestataire || 'Non assigné'}</p>
                                     <p><strong>Statut:</strong> ${activity.desactivate ? '<span class="badge bg-danger">Désactivé</span>' : '<span class="badge bg-success">Actif</span>'}</p>
@@ -326,57 +418,87 @@ $activityStats = [
 
                         // Mettre à jour le bouton d'édition avec l'ID de l'activité
                         document.getElementById('editActivityBtn').onclick = function() {
-                            window.location.href = `modify.php?id=${activity.activite_id}`;
+                            window.location.href = `modify.php?id=${activity.id}`;
                         };
                     } else {
-                        detailsContent.innerHTML = '<p class="text-center text-danger">Activité non trouvée</p>';
+                        detailsContent.innerHTML = '<p class="text-center">Aucune information disponible</p>';
                     }
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
-                    detailsContent.innerHTML = '<p class="text-center text-danger">Erreur lors du chargement des détails</p>';
+                    detailsContent.innerHTML = '<p class="text-center">Aucune information disponible</p>';
                 });
         }
 
         function viewQuote(quoteId) {
-            // Rediriger vers la page du devis ou afficher un modal avec les détails du devis
-            window.location.href = `../quote/details.php?id=${quoteId}`;
-        }
+            // Ouvrir un modal avec les détails du devis
+            const detailsContent = document.getElementById('quoteDetailsContent');
+            detailsContent.innerHTML = '<p class="text-center">Chargement des détails du devis...</p>';
 
-        function toggleActivityStatus(activityId, desactivate) {
-            const action = desactivate ? 'désactiver' : 'activer';
-            if (confirm(`Êtes-vous sûr de vouloir ${action} cette activité?`)) {
-                fetch('../../api/activity/delete.php', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + getToken()
-                    },
-                    body: JSON.stringify({
-                        activite_id: activityId,
-                        desactivate: desactivate
-                    })
+            const modal = new bootstrap.Modal(document.getElementById('quoteDetailsModal'));
+            modal.show();
+
+            // Utiliser le bon endpoint pour récupérer les données du devis
+            fetch(`../../api/estimate/getOne.php?devis_id=${quoteId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la récupération du devis');
+                    }
+                    return response.json();
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.empty) {
-                            alert(`Activité ${action}e avec succès.`);
-                            fetchActivities(document.getElementById('searchInput').value, currentPage);
-                        } else {
-                            alert(`Erreur lors de la mise à jour du statut de l'activité.`);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erreur:', error);
-                        alert('Une erreur est survenue lors de la mise à jour du statut.');
-                    });
-            }
+                .then(quote => {
+                    if (quote) {
+                        detailsContent.innerHTML = `
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>ID:</strong> ${quote.devis_id || quote.id}</p>
+                                    <p><strong>Date de début:</strong> ${formatDate(quote.date_debut)}</p>
+                                    <p><strong>Date de fin:</strong> ${formatDate(quote.date_fin)}</p>
+                                    <p><strong>Type:</strong> ${quote.is_contract ? '<span class="badge bg-info">Contrat</span>' : '<span class="badge bg-primary">Devis</span>'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Montant TTC:</strong> ${quote.montant ? quote.montant + ' €' : '-'}</p>
+                                    <p><strong>Montant HT:</strong> ${quote.montant_ht ? quote.montant_ht + ' €' : '-'}</p>
+                                    <p><strong>TVA:</strong> ${quote.montant_tva ? quote.montant_tva + ' €' : '-'}</p>
+                                    <p><strong>Statut:</strong> ${getQuoteStatusBadge(quote.statut)}</p>
+                                </div>
+                            </div>
+                            ${quote.fichier ? `
+                            <hr>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h6>Fichier</h6>
+                                    <p><a href="${quote.fichier}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-file-pdf me-2"></i>Consulter le document</a></p>
+                                </div>
+                            </div>` : ''}
+                        `;
+                    } else {
+                        detailsContent.innerHTML = '<p class="text-center">Aucune information disponible</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    detailsContent.innerHTML = '<p class="text-center">Aucune information disponible</p>';
+                });
         }
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('fr-FR');
+        function getQuoteStatusBadge(status) {
+            if (!status) return '<span class="badge bg-secondary">Inconnu</span>';
+            
+            switch(status.toLowerCase()) {
+                case 'en attente':
+                    return '<span class="badge bg-warning">En attente</span>';
+                case 'accepté':
+                    return '<span class="badge bg-success">Accepté</span>';
+                case 'refusé':
+                    return '<span class="badge bg-danger">Refusé</span>';
+                default:
+                    return `<span class="badge bg-secondary">${status}</span>`;
+            }
         }
     </script>
 

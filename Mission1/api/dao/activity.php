@@ -36,6 +36,20 @@ function deleteActivity(int $id)
     return null;
 }
 
+function activateActivity(int $id)
+{
+    $db = getDatabaseConnection();
+    $sql = "UPDATE activite SET desactivate = 0 WHERE activite_id=:id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        "id" => $id
+    ]);
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
+}
+
 function updateActivity(int $activite_id, string $nom = null, string $type = null, $date = null, $id_prestataire = null, $id_devis = null, $desactivate = null, $id_lieu = null)
 {
 
@@ -106,11 +120,25 @@ function getActivityById($id)
     return null;
 }
 
-function getAllActivity($limit = null, $offset = null)
+function getAllActivity($desactivate = null, $limit = null, $offset = null, $search = null)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT activite_id, nom, type, date, id_devis, id_prestataire, id_lieu FROM activite";
+    $sql = "SELECT activite_id, nom, type, date, id_devis, id_prestataire, id_lieu, desactivate FROM activite";
     $params = [];
+    $whereAdded = false;
+
+    if ($desactivate !== null) {
+        $sql .= " WHERE desactivate = :desactivate";
+        $params['desactivate'] = $desactivate;
+        $whereAdded = true;
+    }
+
+    if ($search !== null) {
+        $sql .= $whereAdded ? " AND" : " WHERE";
+        $sql .= " (nom LIKE :search OR type LIKE :search)";
+        $params['search'] = "%$search%";
+    }
+
     // Gestion des paramètres LIMIT et OFFSET
     if ($limit !== null) {
         $sql .= " LIMIT " . (string) $limit;
@@ -121,14 +149,13 @@ function getAllActivity($limit = null, $offset = null)
     }
 
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
+    $res = $stmt->execute($params);
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return null;
 }
-
 
 function getActivityByType($type, $limit = null, $offset = null)
 {
@@ -204,3 +231,4 @@ function getActivityByPrice($minPrice, $maxPrice, $limit = null, $offset = null)
     }
     return null;
 }
+
