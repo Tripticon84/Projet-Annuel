@@ -7,7 +7,7 @@
 // }
 
 function error($message) {
-    header("location: ../login.php" . "?message=" . $message);
+    header("location: login.php" . "?message=" . $message);
     exit();
 }
 

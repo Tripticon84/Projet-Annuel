@@ -241,6 +241,7 @@ include_once "../includes/head.php";
         let processedReports = [];
         let cancelledReports = [];
         let allCompanies = new Set();
+        let currentReportStatus = ''; // Add this variable to track the current status
 
         // Fonction pour mettre à jour les compteurs statistiques
         function updateStatCounters() {
@@ -410,7 +411,6 @@ include_once "../includes/head.php";
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li><a class="dropdown-item" href="#" onclick="viewReportDetails(${report.signalement_id}); return false;"><i class="fas fa-eye me-2"></i>Voir détails</a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="generatePDF(${report.signalement_id}); return false;"><i class="fas fa-file-pdf me-2"></i>Générer PDF</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="#" onclick="archiveReport(${report.signalement_id}); return false;"><i class="fas fa-archive me-2"></i>Archiver</a></li>
                                     </ul>
@@ -515,6 +515,7 @@ include_once "../includes/head.php";
                         document.getElementById('modal-report-problem').textContent = report.description || 'Aucune description fournie';
 
                         const status = report.statut || 'non_traite';
+                        currentReportStatus = status; // Store current status
                         let statusText = 'En attente';
                         let statusClass = 'text-warning';
 
@@ -553,6 +554,14 @@ include_once "../includes/head.php";
 
         function updateReportStatus(reportId) {
             const status = document.getElementById('reportStatus').value;
+        
+            
+
+            // Check if status has changed
+            if (status === currentReportStatus) {
+                bootstrap.Modal.getInstance(document.getElementById('reportDetailModal')).hide();
+                return;
+            }
 
             fetch('../../api/report/changeState.php', {
                     method: 'PATCH',
@@ -566,7 +575,7 @@ include_once "../includes/head.php";
                     })
                 })
                 .then(response => {
-                    if (!response.ok && response.status !== 200) {
+                    if (!response.ok && response.status !== 200 ) {
                         throw new Error(`Erreur HTTP: ${response.status}`);
                     }
                     return response.json();
@@ -759,10 +768,6 @@ include_once "../includes/head.php";
 
         function exportData() {
             alert('Fonctionnalité d\'exportation de données en cours de développement');
-        }
-
-        function generatePDF(reportId) {
-            alert(`Génération de PDF pour le signalement #${reportId} en cours de développement`);
         }
 
         function truncateText(text, maxLength) {

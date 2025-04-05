@@ -68,10 +68,6 @@ $companyStats = getCompaniesStats();
                             <a type="button" class="btn btn-sm btn-primary me-2" href="create.php">
                                 <i class="fas fa-plus"></i> Nouvelle Société
                             </a>
-                            <!-- Bouton Tri, Export, etc. -->
-                            <button class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-download"></i> Exporter
-                            </button>
                         </div>
                     </div>
                     <div class="card-body p-0">

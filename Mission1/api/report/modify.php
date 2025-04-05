@@ -49,7 +49,7 @@ if ($date_signalement !== null && !isValidDate($date_signalement)) {
 
 // Vérifier si au moins un champ est fourni pour la mise à jour
 if ($description === null && $probleme === null && $date_signalement === null && $id_societe === null && $statut === null) {
-    returnError(400, 'No data provided for update');
+    returnError(400, 'At least one field must be provided for update');
     return;
 }
 
