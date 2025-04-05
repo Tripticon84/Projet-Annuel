@@ -4,7 +4,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 
 function createPlace($adress, $city, $postalCode)
 {
-    
+
         $db = getDatabaseConnection();
         $sql = "INSERT INTO lieu (adresse, ville, code_postal) VALUES (:adress, :city, :postal_code)";
         $stmt = $db->prepare($sql);
@@ -79,7 +79,7 @@ function updatePlace( $id, ?string $adress = null, ?string $city = null, ?int $p
         return 0; // Rien à mettre à jour
     }
 
-    
+
     $sql = "UPDATE lieu SET " . implode(", ", $setFields) . " WHERE lieu_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute($params);

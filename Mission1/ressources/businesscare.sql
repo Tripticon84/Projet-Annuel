@@ -21,7 +21,7 @@ USE `businesscare`;
 -- --------------------------------------------------------
 
 --
--- Structure de la table `activite`
+-- Structure de la table `lieu`
 --
 CREATE TABLE `lieu`(
   `lieu_id` int(11) NOT NULL,
@@ -31,7 +31,11 @@ CREATE TABLE `lieu`(
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
 
+--
+-- Structure de la table `activite`
+--
 CREATE TABLE `activite` (
   `activite_id` int(11) NOT NULL,
   `nom` varchar(255) DEFAULT NULL,
@@ -269,7 +273,8 @@ CREATE TABLE `prestataire` (
   `date_fin_disponibilite` date DEFAULT NULL,
   `est_candidat` boolean  NOT NULL,
   `token` varchar(255) DEFAULT NULL,
-  `expiration` datetime DEFAULT NULL
+  `expiration` datetime DEFAULT NULL,
+  `desactivate` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

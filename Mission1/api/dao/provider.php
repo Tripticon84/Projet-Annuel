@@ -156,7 +156,7 @@ function getProviderByEmail($email){
 function getAllProvider(int $limit = null, int $offset = null, string $search = null)        //tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT prestataire_id, email, nom, prenom, type, tarif, date_debut_disponibilite, date_fin_disponibilite FROM prestataire Where est_candidat = false";
+    $sql = "SELECT prestataire_id, email, nom, prenom, type, tarif, date_debut_disponibilite, date_fin_disponibilite FROM prestataire Where est_candidat = false AND desactivate = 0";
     $params = [];
 
     // Ajout du filtre de recherche
@@ -186,7 +186,7 @@ function getAllProvider(int $limit = null, int $offset = null, string $search = 
 function getAllCandidate(int $limit = null, int $offset = null, string $search = null)        // tout les params sont optionnels:  le premier pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT prestataire_id, email, nom, prenom, type, tarif, date_debut_disponibilite, date_fin_disponibilite FROM prestataire Where est_candidat = true";
+    $sql = "SELECT prestataire_id, email, nom, prenom, type, tarif, date_debut_disponibilite, date_fin_disponibilite FROM prestataire WHERE est_candidat = true AND desactivate = 0";
     $params = [];
 
     // Ajout du filtre de recherche
@@ -231,7 +231,7 @@ function updateCandidateStatus($prestataire_id,$value){
 
 function getAllActivities(int $limit = null, int $offset = null, $providerId)  {
     $db = getDatabaseConnection();
-    $sql = "SELECT activite_id, nom, date, lieu, type, id_devis FROM activite WHERE id_prestataire = :id";
+    $sql = "SELECT activite_id, nom, date, id_lieu, type, id_devis FROM activite WHERE id_prestataire = :id";
     $params = [
         'id'=> $providerId
     ];
@@ -308,6 +308,34 @@ function getProviderByToken($token)
     $res = $query->execute(['token' => $token]);
     if ($res) {
         return $query->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+function deactivateProvider($prestataire_id) {
+    $db = getDatabaseConnection();
+    $sql = "UPDATE prestataire SET desactivate = 1 WHERE prestataire_id = :id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'id' => $prestataire_id
+    ]);
+
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
+}
+
+function activateProvider($prestataire_id) {
+    $db = getDatabaseConnection();
+    $sql = "UPDATE prestataire SET desactivate = 0 WHERE prestataire_id = :id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'id' => $prestataire_id
+    ]);
+
+    if ($res) {
+        return $stmt->rowCount();
     }
     return null;
 }

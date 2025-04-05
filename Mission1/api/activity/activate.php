@@ -24,10 +24,10 @@ if (!$activity) {
     return;
 }
 
-$deleted = deleteActivity($data['activite_id']);
+$activated = activateActivity($data['activite_id']);
 
-if ($deleted) {
-    echo json_encode(['message' => 'Activity deleted']);
+if ($activated) {
+    echo json_encode(['message' => 'Activity activated']);
     return http_response_code(200);
 } else {
     returnError(500, 'Failed to delete activity');

@@ -69,7 +69,12 @@ include_once "../includes/head.php";
                 const placeData = {};
 
                 formData.forEach((value, key) => {
-                    placeData[key] = value;
+                    // Convert code_postal to integer
+                    if (key === 'code_postal') {
+                        placeData[key] = parseInt(value, 10);
+                    } else {
+                        placeData[key] = value;
+                    }
                 });
 
                 fetch('../../api/place/create.php', {
