@@ -9,5 +9,5 @@ if (isset($_COOKIE['admin_token'])) {
     setcookie('admin_token', '', time() - 3600, '/');
 }
 
-header("Location: ../index.php");
+header("Location: /backOffice/index.php");
 exit();

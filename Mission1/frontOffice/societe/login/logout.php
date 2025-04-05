@@ -9,5 +9,5 @@ if (isset($_COOKIE['societe_token'])) {
     setcookie('societe_token', '', time() - 3600, '/');
 }
 
-header("Location: ../index.php");
+header("Location: /frontoffice/societe/login/login.php");
 exit();
