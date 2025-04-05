@@ -661,11 +661,11 @@ include_once "../includes/head.php";
                     })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
+                        // Improved success detection matching other function conditions
+                        if (data && (data.success || data.signalement_id || !data.empty)) {
                             alert('Signalement archivé avec succès');
                             fetchProcessedReports();
                             fetchCancelledReports();
-
                         } else {
                             alert('Erreur lors de l\'archivage du signalement');
                         }

@@ -109,22 +109,6 @@ if (!$employeeStats) {
                             <a type="button" class="btn btn-sm btn-primary me-2" href="create.php">
                                 <i class="fas fa-plus"></i> Nouvel Employé
                             </a>
-                            <div class="dropdown me-2">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-sort"></i> Tri
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
-                                    <li><a class="dropdown-item" href="#">Nom (A-Z)</a></li>
-                                    <li><a class="dropdown-item" href="#">Nom (Z-A)</a></li>
-                                    <li><a class="dropdown-item" href="#">Date d'inscription (récent)</a></li>
-                                    <li><a class="dropdown-item" href="#">Date d'inscription (ancien)</a></li>
-                                    <li><a class="dropdown-item" href="#">Participation (élevée-basse)</a></li>
-                                    <li><a class="dropdown-item" href="#">Participation (basse-élevée)</a></li>
-                                </ul>
-                            </div>
-                            <button class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-download"></i> Exporter
-                            </button>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -173,15 +157,6 @@ if (!$employeeStats) {
                             </div>
                             <h6>Nouvel employé</h6>
                             <a href="create.php" class="btn btn-sm btn-outline-primary mt-2">Ajouter</a>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card text-center p-3 mb-3">
-                            <div class="mb-3">
-                                <i class="fas fa-file-export fa-2x text-success"></i>
-                            </div>
-                            <h6>Exporter données</h6>
-                            <a href="#" class="btn btn-sm btn-outline-success mt-2">Exporter</a>
                         </div>
                     </div>
                     <div class="col-md-4">
