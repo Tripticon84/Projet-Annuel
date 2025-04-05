@@ -3,7 +3,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 
 
-function createActivity(string $nom, string $type, $date, int $id_devis, int $id_prestataire, int $id_lieu)
+function createActivity(string $nom, string $type, $date, $id_devis = null, $id_prestataire = null, $id_lieu = null)
 {
     $db = getDatabaseConnection();
     $sql = "INSERT INTO activite (nom, type, date, id_devis, id_prestataire, id_lieu) VALUES (:nom, :type, :date, :id_devis, :id_prestataire, :id_lieu)";
@@ -97,7 +97,7 @@ function updateActivity(int $activite_id, string $nom = null, string $type = nul
 function getActivityById($id)
 {
     $connection = getDatabaseConnection();
-    $sql = "SELECT activite_id, nom, type, date, id_prestataire, id_devis,id_lieu FROM activite WHERE activite_id = :id";
+    $sql = "SELECT activite_id, nom, type, date, id_prestataire, id_devis, id_lieu FROM activite WHERE activite_id = :id";
     $query = $connection->prepare($sql);
     $res = $query->execute(['id' => $id]);
     if ($res) {
@@ -145,7 +145,7 @@ function getActivityByType($type, $limit = null, $offset = null)
     }
 
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute($params);  
+    $res = $stmt->execute($params);
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -168,7 +168,7 @@ function getActivityByDate($date, $limit = null, $offset = null)
     }
 
     $stmt = $db->prepare($sql);
-    $res = $stmt->execute($params);  
+    $res = $stmt->execute($params);
 
     if ($res) {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -179,7 +179,7 @@ function getActivityByDate($date, $limit = null, $offset = null)
 function getActivityByPrice($minPrice, $maxPrice, $limit = null, $offset = null)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT a.activite_id, a.nom, a.type, a.date, a.id_prestataire, a.id_devis, a.id_lieu 
+    $sql = "SELECT a.activite_id, a.nom, a.type, a.date, a.id_prestataire, a.id_devis, a.id_lieu
             FROM activite a
             INNER JOIN devis d ON a.id_devis = d.devis_id
             WHERE d.montant BETWEEN :minPrice AND :maxPrice";

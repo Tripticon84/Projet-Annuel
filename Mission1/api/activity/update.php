@@ -40,8 +40,7 @@ $id_prestataire = isset($data['id_prestataire']) ? $data['id_prestataire'] : nul
 $desactivate = isset($data['desactivate']) ? $data['desactivate'] : null;
 $id_lieu = isset($data['id_lieu']) ? $data['id_lieu'] : null;
 
-// Mise à jour en utilisant les bons noms de variables
-$updateResult = updateActivity( $nom, $type, $date, $id_prestataire, $id_devis, $activityId, $desactivate, $id_lieu);
+$updateResult = updateActivity($activityId, $nom, $type, $date, $id_prestataire, $id_devis, $desactivate, $id_lieu);
 
 if ($updateResult) {
     echo json_encode([

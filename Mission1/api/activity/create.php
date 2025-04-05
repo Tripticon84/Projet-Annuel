@@ -16,49 +16,68 @@ acceptedTokens(true, false, false, false);
 
 $data = getBody();
 
-if (validateMandatoryParams($data, ['nom', 'type', 'date', 'lieu', 'id_devis','id_prestataire'])) {
+// Seuls nom, type et date sont obligatoires
+if (validateMandatoryParams($data, ['nom', 'type', 'date'])) {
 
-    if (!is_numeric($data['id_devis']) || !is_numeric($data['id_prestataire'])) {
-        returnError(400, 'Invalid parameter type. id_devis and id_prestataire must be integers.');
+    // Vérification des types pour les valeurs fournies
+    if (!is_string($data['nom']) || !is_string($data['type'])) {
+        returnError(400, 'Invalid parameter type. nom, type must be strings.');
         return;
     }
 
-    if (!is_string($data['nom']) || !is_string($data['type']) || !is_string($data['lieu'])) {
-        returnError(400, 'Invalid parameter type. nom, type and lieu must be strings.');
+    // Initialisation des valeurs par défaut pour les champs optionnels
+    $id_devis = isset($data['id_devis']) && $data['id_devis'] ? $data['id_devis'] : null;
+    $id_prestataire = isset($data['id_prestataire']) && $data['id_prestataire'] ? $data['id_prestataire'] : null;
+    $id_lieu = isset($data['id_lieu']) && $data['id_lieu'] ? $data['id_lieu'] : null;
+
+    // Vérification des types pour les champs optionnels fournis
+    if ($id_devis !== null && !is_numeric($id_devis)) {
+        returnError(400, 'Invalid parameter type. id_devis must be an integer.');
         return;
     }
 
-    $estimate = getEstimateById($data['id_devis']);
-    if (!$estimate) {
-        returnError(404, 'Estimate not found');
+    if ($id_prestataire !== null && !is_numeric($id_prestataire)) {
+        returnError(400, 'Invalid parameter type. id_prestataire must be an integer.');
         return;
     }
 
-
-    $provider = getProviderById($data['id_prestataire']);
-    if (!$provider) {
-        returnError(404, 'Provider not found');
+    if ($id_lieu !== null && !is_numeric($id_lieu)) {
+        returnError(400, 'Invalid parameter type. id_lieu must be an integer.');
         return;
     }
 
-    $place = getPlaceById($data['id_lieu']);
-    if (!$place) {
-        returnError(404, 'Place not found');
-        return;
+    // Vérification de l'existence des entités référencées, seulement si les IDs sont fournis
+    if ($id_devis) {
+        $estimate = getEstimateById($id_devis);
+        if (!$estimate) {
+            returnError(404, 'Estimate not found');
+            return;
+        }
+    }
+
+    if ($id_prestataire) {
+        $provider = getProviderById($id_prestataire);
+        if (!$provider) {
+            returnError(404, 'Provider not found');
+            return;
+        }
+    }
+
+    if ($id_lieu) {
+        $place = getPlaceById($id_lieu);
+        if (!$place) {
+            returnError(404, 'Place not found');
+            return;
+        }
     }
 
     $name = $data['nom'];
     $type = $data['type'];
     $date = $data['date'];
-    $place = $data['lieu'];
-    $id_devis = $data['id_devis'];
-    $id_prestataire = $data['id_prestataire'];
-    $place = $data['id_lieu'] ;
 
-    $newActivityId = createActivity($name, $type, $date, $place, $id_devis, $id_prestataire, $place);
+    $newActivityId = createActivity($name, $type, $date, $id_devis, $id_prestataire, $id_lieu);
 
     if (!$newActivityId) {
-        // Log the error for debugging
         error_log("Failed to create activity: " . print_r(error_get_last(), true));
         returnError(500, 'Could not create the activity. Database operation failed.');
         return;
@@ -66,7 +85,7 @@ if (validateMandatoryParams($data, ['nom', 'type', 'date', 'lieu', 'id_devis','i
 
     echo json_encode(['activity_id' => $newActivityId]);
     http_response_code(201);
-}else{
+} else {
     returnError(400, 'Missing required parameters');
     return;
 }

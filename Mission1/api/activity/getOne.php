@@ -36,10 +36,9 @@ $result = [
     "nom" => $activity['nom'],
     "type" => $activity['type'],
     "date" => $activity['date'],
-    "lieu" => $activity['lieu'],
+    "id_lieu" => $activity['id_lieu'],
     "id_devis" => $activity['id_devis'],
-    "id_prestataire" => $activity['id_prestataire'],
-    "id_lieu" => $activity['id_lieu']
+    "id_prestataire" => $activity['id_prestataire']
 ];
 
 echo json_encode($result);
