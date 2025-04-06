@@ -224,4 +224,28 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             updateOtherCostDetails();
         });
     });
+
+    // Ajouter une gestion des erreurs pour le chargement des frais
+    function loadOtherCosts(societyId) {
+        fetch(`/api/other_costs?society_id=${societyId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors du chargement des frais.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // ...existing code to populate the table...
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById('costs-table').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger">
+                            Erreur lors du chargement des frais. Veuillez réessayer plus tard.
+                        </td>
+                    </tr>
+                `;
+            });
+    }
 </script>
