@@ -190,7 +190,7 @@ function getSociety($id)
 function getSocietyEmployees($societe_id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone FROM collaborateur WHERE id_societe = :societe_id";
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, date_creation, date_activite FROM collaborateur WHERE id_societe = :societe_id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['societe_id' => $societe_id]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
