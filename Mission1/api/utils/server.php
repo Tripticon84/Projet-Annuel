@@ -76,7 +76,7 @@ function acceptedTokens($admin = true, $company = false, $employee = false, $pro
     include_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/company.php';
     include_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/provider.php';
 
-    $debug = false;
+    $debug = true;
     if ($debug) {
         return;
     }

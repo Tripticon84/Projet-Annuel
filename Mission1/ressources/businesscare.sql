@@ -80,7 +80,7 @@ CREATE TABLE `association` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `autre_frais`
+-- Structure de la table `frais`
 --
 
 CREATE TABLE `frais` (
@@ -148,7 +148,9 @@ CREATE TABLE `devis` (
   `id_societe` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-
+--
+-- Structure de la table `INCLUT_FRAIS_DEVIS`
+--
 
 CREATE TABLE `INCLUT_FRAIS_DEVIS` (
   `id_devis` int(11) NOT NULL,

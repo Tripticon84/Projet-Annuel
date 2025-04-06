@@ -7,25 +7,34 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/vendor/autoload.php";
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-function createEstimate($date_debut, $date_fin, string $statut, float $montant, $is_contract, int $id_societe, $company_name)
+function createEstimate($date_debut, $date_fin, string $statut, float $montant_ht, $is_contract, int $id_societe, $company_name)
 {
     $db = getDatabaseConnection();
-    $sql = "INSERT INTO devis (date_debut, date_fin, statut, montant, is_contract,fichier, id_societe) VALUES (:date_debut, :date_fin, :statut, :montant, :is_contract, :fichier, :id_societe)";
+    $sql = "INSERT INTO devis (date_debut, date_fin, statut, montant_ht, montant_tva, montant, is_contract, fichier, id_societe) VALUES (:date_debut, :date_fin, :statut, :montant_ht, :montant_tva, :montant, :is_contract, :fichier, :id_societe)";
     $stmt = $db->prepare($sql);
     if ($is_contract == 1) {
         $fichier = '/contract/' . $company_name . '/' . $date_debut . '_' . $date_fin . '/';
     } else {
         $fichier = '/estimate/' . $company_name . '/' . $date_debut . '_' . $date_fin . '/';
     }
+
+    // Calcul du montant TVA sur le montant HT original
+    $montant_tva = $montant_ht * 0.2; // TVA à 20%
+    // Montant TTC sans marge
+    $montant_sans_marge = $montant_ht + $montant_tva;
+    // Application de la marge de 15% sur le montant TTC
+    $montant = $montant_sans_marge * 1.15; // 15% de marge sur le TTC
+
     $res = $stmt->execute([
         'date_debut' => $date_debut,
         'date_fin' => $date_fin,
         'statut' => $statut,
-        'montant' => $montant,
+        'montant_ht' => $montant_ht,
+        'montant_tva' => $montant_tva,
+        'montant' => $montant, // Montant TTC avec marge
         'is_contract' => $is_contract,
         'id_societe' => $id_societe,
         'fichier' => $fichier
-
     ]);
     if ($res) {
         return $db->lastInsertId();
@@ -33,7 +42,7 @@ function createEstimate($date_debut, $date_fin, string $statut, float $montant, 
     return null;
 }
 
-function updateEstimate($date_debut, $date_fin, $statut, $montant, $montant_ht, $montant_tva, $is_contract, $id_societe, $fichier, $devis_id) {
+function updateEstimate($date_debut, $date_fin, $statut, $montant_ht, $is_contract, $id_societe, $fichier, $devis_id) {
     $db = getDatabaseConnection();
 
     $sql = "UPDATE devis SET ";
@@ -54,19 +63,21 @@ function updateEstimate($date_debut, $date_fin, $statut, $montant, $montant_ht, 
         $params[':statut'] = $statut;
     }
 
-    if ($montant !== null) {
-        $sql .= "montant = :montant, ";
-        $params[':montant'] = $montant;
-    }
-
+    // Si montant_ht est fourni, recalculer montant_tva et montant
     if ($montant_ht !== null) {
         $sql .= "montant_ht = :montant_ht, ";
         $params[':montant_ht'] = $montant_ht;
-    }
 
-    if ($montant_tva !== null) {
-        $sql .= "montant_tva = :montant_tva, ";
+        // Calcul de la TVA sur le montant HT original
+        $montant_tva = $montant_ht * 0.2; // TVA à 20%
+        // Montant TTC sans marge
+        $montant_sans_marge = $montant_ht + $montant_tva;
+        // Application de la marge de 15% sur le montant TTC
+        $montant = $montant_sans_marge * 1.15; // 15% de marge sur le TTC
+
+        $sql .= "montant_tva = :montant_tva, montant = :montant, ";
         $params[':montant_tva'] = $montant_tva;
+        $params[':montant'] = $montant;
     }
 
     if ($is_contract !== null) {
@@ -104,7 +115,7 @@ function updateEstimate($date_debut, $date_fin, $statut, $montant, $montant_ht, 
 function deleteEstimate(int $id)
 {
     $db = getDatabaseConnection();
-    $sql = "DELETE FROM devis WHERE devis_id=:devis_id";
+    $sql = "DELETE FROM devis WHERE devis_id = :devis_id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         "devis_id" => $id
@@ -119,17 +130,21 @@ function deleteEstimate(int $id)
 function getEstimateById($id)
 {
     $connection = getDatabaseConnection();
-    $sql = "SELECT devis_id, date_debut, date_fin, statut, montant,montant_ht,montant_tva, is_contract, fichier, id_societe FROM devis WHERE devis_id = :id ";
+    $sql = "SELECT devis_id, date_debut, date_fin, statut, montant, montant_ht, montant_tva, is_contract, fichier, id_societe FROM devis WHERE devis_id = :id ";
     $query = $connection->prepare($sql);
     $res = $query->execute(['id' => $id]);
     if ($res) {
-        return $query->fetch(PDO::FETCH_ASSOC);
+        $estimate = $query->fetch(PDO::FETCH_ASSOC);
+        if ($estimate) {
+            $estimate['frais'] = getFraisByEstimateId($id);
+        }
+        return $estimate;
     }
     return null;
 }
 
 /**
- *tout les params sont optionnels: le premier pour filtrer par username, le deuxième pour définir la limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
+ *tout les params sont optionnels : limite de résultats et le dernier pour définir où on commence (utile pour la pagination)
  */
 function getAllEstimate(int $limit = null, int $offset = null)
 {
@@ -335,6 +350,7 @@ function getContractDetailsById($id) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+// Modifie la fonction generatePDFForCompany pour inclure les frais
 function generatePDFForCompany($devisId)
 {
     $options = new Options();
@@ -431,6 +447,38 @@ function generatePDFForCompany($devisId)
 
     $html .= '<div class="page-break"></div>';
 
+    // Ajout des frais associés au devis
+    $frais = getFraisByEstimateId($devisId);
+    if (!empty($frais)) {
+        $html .= '<h2>Frais associés</h2>
+        <table>
+            <tr>
+                <th>Nom</th>
+                <th>Description</th>
+                <th>Montant</th>
+                <th>Type</th>
+            </tr>';
+
+        $totalFrais = 0;
+        foreach ($frais as $f) {
+            $totalFrais += $f['montant'];
+            $typeAbonnement = $f['est_abonnement'] ? 'Abonnement' : 'Frais ponctuel';
+            $html .= '<tr>
+                <td>' . htmlspecialchars($f['nom']) . '</td>
+                <td>' . htmlspecialchars($f['description']) . '</td>
+                <td>' . htmlspecialchars($f['montant']) . ' €</td>
+                <td>' . $typeAbonnement . '</td>
+            </tr>';
+        }
+
+        $html .= '<tr>
+                <td colspan="2"><strong>Total des frais</strong></td>
+                <td><strong>' . $totalFrais . ' €</strong></td>
+                <td></td>
+            </tr>';
+        $html .= '</table>';
+    }
+
     // Formater les dates de début et fin
     $dateDebut = $estimate['date_debut'] ? date_create_from_format('Y-m-d', $estimate['date_debut']) : null;
     $dateFin = $estimate['date_fin'] ? date_create_from_format('Y-m-d', $estimate['date_fin']) : null;
@@ -503,4 +551,106 @@ function generatePDFForCompany($devisId)
     $docType = $estimate['is_contract'] == 1 ? 'contrat' : 'devis';
     $dompdf->stream($docType . "_" . $devisId . ".pdf", ["Attachment" => true]);
     exit;
+}
+
+/**
+ * Récupère les frais associés à un devis
+ */
+function getFraisByEstimateId($estimateId) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT f.frais_id, f.nom, f.montant, f.date_creation, f.description, f.est_abonnement
+            FROM frais f
+            JOIN INCLUT_FRAIS_DEVIS ifd ON f.frais_id = ifd.id_frais
+            WHERE ifd.id_devis = :estimate_id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['estimate_id' => $estimateId]);
+
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+/**
+ * Associe des frais à un devis
+ */
+function attachFraisToEstimate($estimateId, $fraisIds) {
+    $db = getDatabaseConnection();
+    $db->beginTransaction();
+
+    try {
+        // Supprime d'abord les associations existantes
+        $sql = "DELETE FROM INCLUT_FRAIS_DEVIS WHERE id_devis = :estimate_id";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(['estimate_id' => $estimateId]);
+
+        // Ajoute les nouvelles associations
+        if (!empty($fraisIds)) {
+            $sql = "INSERT INTO INCLUT_FRAIS_DEVIS (id_devis, id_frais) VALUES (:estimate_id, :frais_id)";
+            $stmt = $db->prepare($sql);
+
+            foreach ($fraisIds as $fraisId) {
+                $stmt->execute([
+                    'estimate_id' => $estimateId,
+                    'frais_id' => $fraisId
+                ]);
+            }
+        }
+
+        // Met à jour le montant total du devis
+        updateEstimateTotalAmount($estimateId);
+
+        $db->commit();
+        return true;
+    } catch (Exception $e) {
+        $db->rollBack();
+        return false;
+    }
+}
+
+/**
+ * Met à jour le montant total d'un devis en fonction des frais associés
+ */
+function updateEstimateTotalAmount($estimateId) {
+    $db = getDatabaseConnection();
+
+    // Récupérer le montant de base du devis (sans les frais)
+    $sql = "SELECT montant_ht FROM devis WHERE devis_id = :estimate_id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['estimate_id' => $estimateId]);
+    $estimate = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Calculer le total des frais
+    $sql = "SELECT SUM(f.montant) as total_frais
+            FROM frais f
+            JOIN INCLUT_FRAIS_DEVIS ifd ON f.frais_id = ifd.id_frais
+            WHERE ifd.id_devis = :estimate_id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['estimate_id' => $estimateId]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $totalFrais = $result['total_frais'] ?? 0;
+
+    // Calculer les nouveaux montants
+    $montantHT = ($estimate['montant_ht'] ?? 0) + $totalFrais;
+    // Calcul de la TVA sur le montant HT
+    $montantTVA = $montantHT * 0.2; // TVA à 20%
+    // Montant TTC sans marge
+    $montantSansMarge = $montantHT + $montantTVA;
+    // Application de la marge de 15% sur le montant TTC
+    $montantTotal = $montantSansMarge * 1.15; // 15% de marge sur le TTC
+
+    // Mettre à jour le devis
+    $sql = "UPDATE devis SET
+            montant_ht = :montant_ht,
+            montant_tva = :montant_tva,
+            montant = :montant_total
+            WHERE devis_id = :estimate_id";
+    $stmt = $db->prepare($sql);
+    return $stmt->execute([
+        'montant_ht' => $montantHT,
+        'montant_tva' => $montantTVA,
+        'montant_total' => $montantTotal,
+        'estimate_id' => $estimateId
+    ]);
 }
