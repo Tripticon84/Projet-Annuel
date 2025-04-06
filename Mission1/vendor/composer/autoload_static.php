@@ -7,48 +7,48 @@ namespace Composer\Autoload;
 class ComposerStaticInit40aa654f2e66c20881ae0572fe987a10
 {
     public static $prefixLengthsPsr4 = array (
-        'S' => 
+        'S' =>
         array (
             'Svg\\' => 4,
             'Stripe\\' => 7,
             'Sabberworm\\CSS\\' => 15,
         ),
-        'M' => 
+        'M' =>
         array (
             'Masterminds\\' => 12,
         ),
-        'F' => 
+        'F' =>
         array (
             'FontLib\\' => 8,
         ),
-        'D' => 
+        'D' =>
         array (
             'Dompdf\\' => 7,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Svg\\' => 
+        'Svg\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/php-svg-lib/src/Svg',
         ),
-        'Stripe\\' => 
+        'Stripe\\' =>
         array (
             0 => __DIR__ . '/..' . '/stripe/stripe-php/lib',
         ),
-        'Sabberworm\\CSS\\' => 
+        'Sabberworm\\CSS\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/src',
         ),
-        'Masterminds\\' => 
+        'Masterminds\\' =>
         array (
             0 => __DIR__ . '/..' . '/masterminds/html5/src',
         ),
-        'FontLib\\' => 
+        'FontLib\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/php-font-lib/src/FontLib',
         ),
-        'Dompdf\\' => 
+        'Dompdf\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/dompdf/src',
         ),

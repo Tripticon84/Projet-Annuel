@@ -126,27 +126,16 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         <div class="col-md-4">
                             <label for="montant_tva" class="form-label">Montant TVA</label>
                             <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" id="montant_tva" name="montant_tva" required>
+                                <input type="number" step="0.01" class="form-control" id="montant_tva" name="montant_tva" readonly>
                                 <span class="input-group-text">€</span>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <label for="montant" class="form-label">Montant TTC</label>
                             <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" id="montant" name="montant" required>
+                                <input type="number" step="0.01" class="form-control" id="montant" name="montant" readonly>
                                 <span class="input-group-text">€</span>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="statut" class="form-label">Statut</label>
-                            <select class="form-select" id="statut" name="statut" required>
-                                <option value="brouillon">Brouillon</option>
-                                <option value="envoyé">Envoyé</option>
-                                <option value="accepté">Accepté</option>
-                                <option value="refusé">Refusé</option>
-                            </select>
                         </div>
                     </div>
                 </form>
@@ -228,15 +217,30 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             convertEstimateToContract(estimateId);
         });
 
-        // Calcul automatique du montant TTC
-        document.getElementById('montant_ht').addEventListener('input', calculateTotal);
-        document.getElementById('montant_tva').addEventListener('input', calculateTotal);
-    });
+        // Calcul automatique du montant TVA et TTC
+        document.getElementById('montant_ht').addEventListener('input', calculateAmounts);
 
-    // Fonction pour calculer le montant total TTC
-    function calculateTotal() {
-        const montantHT = parseFloat(document.getElementById('montant_ht').value) || 0;
-        const montantTVA = parseFloat(document.getElementById('montant_tva').value) || 0;
-        document.getElementById('montant').value = (montantHT + montantTVA).toFixed(2);
-    }
+        function calculateAmounts() {
+            const montantHT = parseFloat(document.getElementById('montant_ht').value) || 0;
+            const montantTVA = montantHT * 0.2; // 20% TVA
+            const montantTTC = (montantHT + montantTVA) * 1.15; // HT + TVA + 15%
+
+            document.getElementById('montant_tva').value = montantTVA.toFixed(2);
+            document.getElementById('montant').value = montantTTC.toFixed(2);
+        }
+
+        // Simuler la création d'un nouveau devis
+        document.getElementById('saveEstimate').addEventListener('click', function() {
+            const formData = {
+                date_debut: document.getElementById('start_date').value,
+                date_fin: document.getElementById('end_date').value,
+                montant_ht: parseFloat(document.getElementById('montant_ht').value),
+                montant_tva: parseFloat(document.getElementById('montant_tva').value),
+                montant: parseFloat(document.getElementById('montant').value),
+            };
+
+            console.log('Simulation de création de devis :', formData);
+            alert('Simulation réussie : Le devis a été simulé avec succès.');
+        });
+    });
 </script>
