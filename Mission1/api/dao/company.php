@@ -187,12 +187,41 @@ function getSociety($id)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-function getSocietyEmployees($societe_id)
+function getSocietyEmployees($societe_id, $desactivate = null, $name = null, $role = null, $date = null)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, date_creation, date_activite FROM collaborateur WHERE id_societe = :societe_id";
+    $params = ['societe_id' => $societe_id];
+
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, date_creation, date_activite, desactivate
+            FROM collaborateur
+            WHERE id_societe = :societe_id";
+
+    // Filtrage par statut de désactivation si spécifié
+    if ($desactivate !== null) {
+        $sql .= " AND desactivate = :desactivate";
+        $params['desactivate'] = $desactivate;
+    }
+
+    // Filtrage par nom ou prénom
+    if ($name !== null) {
+        $sql .= " AND (nom LIKE :name OR prenom LIKE :name)";
+        $params['name'] = "%" . $name . "%";
+    }
+
+    // Filtrage par rôle
+    if ($role !== null) {
+        $sql .= " AND role = :role";
+        $params['role'] = $role;
+    }
+
+    // Filtrage par date de création
+    if ($date !== null) {
+        $sql .= " AND DATE(date_creation) = :date";
+        $params['date'] = $date;
+    }
+
     $stmt = $db->prepare($sql);
-    $stmt->execute(['societe_id' => $societe_id]);
+    $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 

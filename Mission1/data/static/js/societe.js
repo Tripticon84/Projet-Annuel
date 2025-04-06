@@ -263,6 +263,121 @@ function loadEmployees(societyId) {
     });
 }
 
+// Charger uniquement les employés actifs (desactivate=0)
+function loadActiveEmployees(societyId, filters = {}) {
+  // Construire l'URL avec les filtres
+  let url = `/api/company/getAllEmployee.php?societe_id=${societyId}&desactivate=0`;
+
+  if (filters.name) url += `&name=${encodeURIComponent(filters.name)}`;
+  if (filters.role) url += `&role=${encodeURIComponent(filters.role)}`;
+  if (filters.date) url += `&date=${filters.date}`;
+
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer ' + getToken()
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const tableBody = document.getElementById('employees-table');
+
+    if (data.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="9" class="text-center">Aucun collaborateur actif trouvé</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = '';
+    data.forEach(employee => {
+      const dateCreation = employee.date_creation ? new Date(employee.date_creation).toLocaleDateString('fr-FR') : 'N/A';
+      tableBody.innerHTML += `
+        <tr>
+          <td>${employee.collaborateur_id}</td>
+          <td>${employee.nom}</td>
+          <td>${employee.prenom}</td>
+          <td>${employee.username}</td>
+          <td>${employee.role}</td>
+          <td>${employee.email}</td>
+          <td>${employee.telephone}</td>
+          <td>${dateCreation}</td>
+          <td>
+            <button class="btn btn-sm btn-info" onclick="viewEmployeeDetails(${employee.collaborateur_id})">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-warning" onclick="editEmployee(${employee.collaborateur_id}, '${employee.nom}', '${employee.prenom}', '${employee.username}', '${employee.role}', '${employee.email}', '${employee.telephone}')">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="confirmDeactivateEmployee(${employee.collaborateur_id})">
+              <i class="fas fa-user-slash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  })
+  .catch(error => {
+    console.error('Erreur lors du chargement des collaborateurs actifs:', error);
+    document.getElementById('employees-table').innerHTML =
+      `<tr><td colspan="9" class="text-center text-danger">Erreur lors du chargement des collaborateurs actifs</td></tr>`;
+  });
+}
+
+// Charger uniquement les employés désactivés (desactivate=1)
+function loadInactiveEmployees(societyId, filters = {}) {
+  // Construire l'URL avec les filtres
+  let url = `/api/company/getAllEmployee.php?societe_id=${societyId}&desactivate=1`;
+
+  if (filters.name) url += `&name=${encodeURIComponent(filters.name)}`;
+  if (filters.role) url += `&role=${encodeURIComponent(filters.role)}`;
+  if (filters.date) url += `&date=${filters.date}`;
+
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer ' + getToken()
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const tableBody = document.getElementById('employees-table');
+
+    if (data.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="9" class="text-center">Aucun collaborateur désactivé trouvé</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = '';
+    data.forEach(employee => {
+      const dateCreation = employee.date_creation ? new Date(employee.date_creation).toLocaleDateString('fr-FR') : 'N/A';
+      tableBody.innerHTML += `
+        <tr>
+          <td>${employee.collaborateur_id}</td>
+          <td>${employee.nom}</td>
+          <td>${employee.prenom}</td>
+          <td>${employee.username}</td>
+          <td>${employee.role}</td>
+          <td>${employee.email}</td>
+          <td>${employee.telephone}</td>
+          <td>${dateCreation}</td>
+          <td>
+            <button class="btn btn-sm btn-info" onclick="viewEmployeeDetails(${employee.collaborateur_id})">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-success" onclick="reactivateEmployee(${employee.collaborateur_id})">
+              <i class="fas fa-user-check"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  })
+  .catch(error => {
+    console.error('Erreur lors du chargement des collaborateurs désactivés:', error);
+    document.getElementById('employees-table').innerHTML =
+      `<tr><td colspan="9" class="text-center text-danger">Erreur lors du chargement des collaborateurs désactivés</td></tr>`;
+  });
+}
+
 // Fonction pour charger les 5 dernières factures
 function loadRecentInvoices(societyId) {
   fetch(`/api/company/getInvoices.php?societe_id=${societyId}&limit=5`, {
