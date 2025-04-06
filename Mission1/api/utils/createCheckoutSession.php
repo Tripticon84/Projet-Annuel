@@ -14,9 +14,9 @@ try {
             'price_data' => [
                 'currency' => 'eur',
                 'product_data' => [
-                    'name' => 'Abonnement au sourire de Mathieu 😘',
+                    'name' => 'caca',
                 ],
-                'unit_amount' => 500, // 5.00€ en centimes
+                'unit_amount' => 1000000000, // 1 000 000,00 € (en centimes) 
             ],
             'quantity' => 1,
         ]],
