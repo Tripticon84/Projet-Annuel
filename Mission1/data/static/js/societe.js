@@ -1035,13 +1035,24 @@ function downloadInvoicePDF(invoiceId) {
 
           // Désactiver le bouton "Marquer comme payée" si déjà payée
           const markAsPaidBtn = document.getElementById('markAsPaid');
+          const payWithStripeBtn = document.getElementById('payWithStripe');
+
+          // Stocker l'ID de la facture courante pour le traitement du paiement
+          currentInvoiceId = invoice.facture_id;
+
           if (invoice.statut === 'Payee') {
+              // Si la facture est déjà payée, désactiver les boutons de paiement
               markAsPaidBtn.disabled = true;
               markAsPaidBtn.classList.add('disabled');
+              payWithStripeBtn.style.display = 'none';
           } else {
+              // Si la facture n'est pas payée, activer les boutons de paiement
               markAsPaidBtn.disabled = false;
               markAsPaidBtn.classList.remove('disabled');
               markAsPaidBtn.setAttribute('data-id', invoice.facture_id);
+
+              // Afficher le bouton de paiement Stripe
+              payWithStripeBtn.style.display = 'inline-block';
           }
 
           // Afficher le modal

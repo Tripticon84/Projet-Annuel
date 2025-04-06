@@ -206,7 +206,8 @@ CREATE TABLE `facture` (
   `statut` 	ENUM('Attente', 'Payee', 'Annulee') DEFAULT 'Attente',
   `methode_paiement` VARCHAR(50)	DEFAULT NULL,
   `id_devis` int(11) DEFAULT NULL,
-  `id_prestataire` int(11) DEFAULT NULL
+  `id_prestataire` int(11) DEFAULT NULL,
+  `payment_intent_id` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -722,14 +723,13 @@ INSERT INTO facture (date_emission, date_echeance, montant, montant_tva, montant
 ('2025-05-15', '2025-06-15', 2400.00, 480.00, 1920.00, 'Annulee', 'Espèces', 4, 5),
 ('2025-04-10', '2025-05-10', 3000.00, 600.00, 2400.00, 'Attente', 'Virement bancaire', 5, 4);
 
--- Autres frais liés aux factures
-INSERT INTO autre_frais (nom, montant, id_facture) VALUES
-('Matériel pédagogique', 350.00, 1),
-('Frais de déplacement', 120.00, 1),
-('Location de salle', 500.00, 2),
-('Fournitures pour ateliers', 280.00, 3),
-('Catering pour session de groupe', 420.00, 4),
-('Documentation personnalisée', 150.00, 5);
+INSERT INTO autre_frais (nom, montant, id_facture, date_creation) VALUES
+('Matériel pédagogique', 350.00, 1, '2025-05-01'),
+('Frais de déplacement', 120.00, 1, '2025-05-01'),
+('Location de salle', 500.00, 2, '2025-05-02'),
+('Fournitures pour ateliers', 280.00, 3, '2025-05-03'),
+('Catering pour session de groupe', 420.00, 4, '2025-05-04'),
+('Documentation personnalisée', 150.00, 5, '2025-05-05');
 
 -- Questions fréquentes pour le chatbot
 INSERT INTO chatbot (question, reponse,parent_id) VALUES

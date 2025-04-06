@@ -4,27 +4,48 @@ $current_page = basename($_SERVER['SCRIPT_NAME']); ?>
 <style>
     .sidebar {
         min-height: 100vh;
-        background-color: var(--dark-color, #212529);
+        background-color: #1a2942;
         color: white;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.2);
     }
 
     .sidebar .nav-link {
-        color: rgba(255, 255, 255, 0.8);
-        padding: 0.75rem 1rem;
-        margin-bottom: 0.25rem;
-        border-radius: 0.25rem;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0.85rem 1.2rem;
+        margin-bottom: 0.35rem;
+        border-radius: 0.4rem;
+        transition: all 0.3s ease;
+        font-weight: 500;
     }
 
     .sidebar .nav-link:hover,
     .sidebar .nav-link.active {
         color: white;
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(61, 110, 255, 0.2);
+        transform: translateX(5px);
+    }
+
+    .sidebar .nav-link.active {
+        border-left: 4px solid #3d6eff;
     }
 
     .sidebar .nav-link i {
-        margin-right: 0.5rem;
-        width: 1.5rem;
+        margin-right: 0.6rem;
+        width: 1.6rem;
         text-align: center;
+        color: #3d6eff;
+    }
+
+    .sidebar .text-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .sidebar .text-danger:hover {
+        background-color: rgba(220, 53, 69, 0.2);
+    }
+
+    .sidebar .text-danger i {
+        color: #dc3545;
     }
 </style>
 

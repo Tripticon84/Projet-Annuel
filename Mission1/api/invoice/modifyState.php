@@ -44,7 +44,7 @@ if ($data['statut'] == $invoice['statut']) {
 $modified = modifyInvoiceState($data['facture_id'], $data['statut']);
 
 if ($modified) {
-    echo json_encode(['message' => 'Invoice State Modified']);
+    echo json_encode(['success' => true, 'message' => 'Invoice State Modified']);
     return http_response_code(200);
 } else {
     returnError(500, 'Failed to modified Invoice State');

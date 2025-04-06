@@ -2,7 +2,13 @@
 $title = "Gestion des Factures";
 
 include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php';
+
+// Configuration Stripe - À placer dans un fichier de configuration sécurisé en production
+$stripePublishableKey = "pk_test_51PAXnVP0arAN6IC0UPtpOnaMS4O1Qp153mO28fvjMR3Qzq486KDOiScwYdv3svHGcARvLi2MuE9dh7shZtRnd5cW00Vx0swc4q";
 ?>
+
+<!-- Ajouter la bibliothèque Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
 
 <div class="container-fluid">
     <div class="row">
@@ -165,6 +171,12 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                 <button type="button" class="btn btn-success" id="markAsPaid">Marquer comme payée</button>
+                <!-- Bouton de paiement Stripe -->
+                <button type="button" class="btn btn-primary" id="payWithStripe" style="display: none;">
+                    <i class="fab fa-stripe"></i> Payer maintenant
+                </button>
+                <!-- Élément pour contenir le formulaire de paiement Stripe -->
+                <div id="stripe-payment-element" style="display: none;" class="mt-3 w-100"></div>
             </div>
         </div>
     </div>
@@ -173,6 +185,9 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 <script>
     // Variables globales
     let societyId = <?php echo $_SESSION['societe_id']; ?>;
+    let stripe = Stripe('<?php echo $stripePublishableKey; ?>');
+    let currentInvoiceId = null;
+    let elements = null;
 
     // Fonction d'initialisation
     document.addEventListener('DOMContentLoaded', function() {
@@ -197,7 +212,93 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             addNewInvoice();
         });
 
+        // Ajouter l'événement pour le paiement Stripe
+        document.getElementById('payWithStripe').addEventListener('click', function() {
+            setupStripePayment(currentInvoiceId);
+        });
     });
 
 
+
+    // Fonction pour initialiser le paiement Stripe
+    function setupStripePayment(invoiceId) {
+        const stripeContainer = document.getElementById('stripe-payment-element');
+        stripeContainer.style.display = 'block';
+        stripeContainer.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement du formulaire de paiement...</span></div>';
+
+        // Créer une session de paiement côté serveur
+        fetch('/api/invoice/create-payment-intent.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                invoiceId: invoiceId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const {clientSecret} = data;
+
+            // Configuration des éléments Stripe
+            const options = {
+                clientSecret: clientSecret,
+                appearance: {
+                    theme: 'stripe',
+                    labels: 'floating',
+                    variables: {
+                        colorPrimary: '#0d6efd',
+                    },
+                },
+            };
+
+            // Créer les éléments de paiement
+            elements = stripe.elements(options);
+            const paymentElement = elements.create('payment');
+            paymentElement.mount('#stripe-payment-element');
+
+            // Ajouter un formulaire de paiement
+            stripeContainer.innerHTML = `
+                <form id="payment-form" class="mt-3">
+                    <div id="payment-element"></div>
+                    <button class="btn btn-primary w-100 mt-3" id="submit-payment">Payer maintenant</button>
+                </form>
+            `;
+
+            paymentElement.mount('#payment-element');
+
+            // Gérer la soumission du paiement
+            document.getElementById('submit-payment').addEventListener('click', function(e) {
+                e.preventDefault();
+                processPayment(clientSecret, invoiceId);
+            });
+        })
+        .catch(error => {
+            console.error('Erreur lors de l\'initialisation du paiement:', error);
+            stripeContainer.innerHTML = '<div class="alert alert-danger">Une erreur est survenue lors de l\'initialisation du paiement.</div>';
+        });
+    }
+
+    // Fonction pour traiter le paiement
+    function processPayment(clientSecret, invoiceId) {
+        const submitButton = document.getElementById('submit-payment');
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement en cours...';
+
+        stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: window.location.origin + '/frontoffice/societe/invoices/payment-status.php?invoice_id=' + invoiceId,
+            },
+        })
+        .then(function(result) {
+            if (result.error) {
+                // Afficher l'erreur à l'utilisateur
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Payer maintenant';
+                alert(result.error.message);
+            }
+            // Le client sera redirigé vers return_url en cas de succès
+        });
+    }
 </script>

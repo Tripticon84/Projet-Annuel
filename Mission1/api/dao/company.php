@@ -412,3 +412,27 @@ function getCompanyInvoices($societe_id, $limit = null, $offset = null, $statut 
     }
     return null;
 }
+
+function getCompanyInvoiceByID($societe_id, $facture_id)
+{
+    $db = getDatabaseConnection();
+    $params = [
+        'societe_id' => $societe_id,
+        'facture_id' => $facture_id
+    ];
+
+    $sql = "SELECT f.facture_id, f.date_emission, f.date_echeance, f.montant, f.montant_tva,
+            f.montant_ht, f.statut, f.methode_paiement, f.id_devis, f.id_prestataire
+            FROM facture f
+            JOIN devis d ON f.id_devis = d.devis_id
+            WHERE d.id_societe = :societe_id
+            AND f.facture_id = :facture_id";
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);
+
+    if ($res) {
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
