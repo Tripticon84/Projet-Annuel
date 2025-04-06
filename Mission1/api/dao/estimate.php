@@ -2,7 +2,7 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/api/ressources/dompdf/autoload.inc.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/vendor/autoload.php";
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
