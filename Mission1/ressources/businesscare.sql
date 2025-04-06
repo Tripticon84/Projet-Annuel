@@ -83,12 +83,14 @@ CREATE TABLE `association` (
 -- Structure de la table `autre_frais`
 --
 
-CREATE TABLE `autre_frais` (
-  `autre_frais_id` int(11) NOT NULL,
+CREATE TABLE `frais` (
+  `frais_id` int(11) NOT NULL,
   `nom` varchar(255) DEFAULT NULL,
   `montant` decimal(10,2) DEFAULT NULL,
   `date_creation` datetime DEFAULT NULL,
-  `id_facture` int(11) DEFAULT NULL
+  `description` text DEFAULT NULL,
+  `est_abonnement` boolean DEFAULT 0
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -144,6 +146,13 @@ CREATE TABLE `devis` (
   `fichier` varchar(255) DEFAULT NULL,
   `is_contract` tinyint(1) DEFAULT NULL,
   `id_societe` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
+CREATE TABLE `INCLUT_FRAIS_DEVIS` (
+  `id_devis` int(11) NOT NULL,
+  `id_frais` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -358,9 +367,8 @@ ALTER TABLE `association`
 --
 -- Index pour la table `autre_frais`
 --
-ALTER TABLE `autre_frais`
-  ADD PRIMARY KEY (`autre_frais_id`),
-  ADD KEY `id_facture` (`id_facture`);
+ALTER TABLE `frais`
+  ADD PRIMARY KEY (`frais_id`);
 
 --
 -- Index pour la table `chatbot`
@@ -381,6 +389,13 @@ ALTER TABLE `collaborateur`
 ALTER TABLE `devis`
   ADD PRIMARY KEY (`devis_id`),
   ADD KEY `id_societe` (`id_societe`);
+
+--
+-- Index pour la table `INCLUT_FRAIS_DEVIS`
+--
+ALTER TABLE `INCLUT_FRAIS_DEVIS`
+  ADD PRIMARY KEY (`id_devis`,`id_frais`),
+  ADD KEY `id_frais` (`id_frais`);
 
 --
 -- Index pour la table `discute_dans`
@@ -489,10 +504,10 @@ ALTER TABLE `association`
   MODIFY `association_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `autre_frais`
+-- AUTO_INCREMENT pour la table `frais`
 --
-ALTER TABLE `autre_frais`
-  MODIFY `autre_frais_id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `frais`
+  MODIFY `frais_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `chatbot`
@@ -578,11 +593,13 @@ ALTER TABLE `activite`
 ALTER TABLE `chatbot`
   ADD CONSTRAINT `chatbot_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `chatbot` (`question_id`) ON DELETE CASCADE;  -- on reference la question parente pour les sous-questions, on delete cascade pour supprimer les sous-questions si la question parente est supprimée
 
+
 --
--- Contraintes pour la table `autre_frais`
+-- Contraintes pour la table `INCLUT_FRAIS_DEVIS`
 --
-ALTER TABLE `autre_frais`
-  ADD CONSTRAINT `autre_frais_ibfk_1` FOREIGN KEY (`id_facture`) REFERENCES `facture` (`facture_id`);
+ALTER TABLE `INCLUT_FRAIS_DEVIS`
+  ADD CONSTRAINT `INCLUT_FRAIS_DEVIS_ibfk_1` FOREIGN KEY (`id_devis`) REFERENCES `devis` (`devis_id`),
+  ADD CONSTRAINT `INCLUT_FRAIS_DEVIS_ibfk_2` FOREIGN KEY (`id_frais`) REFERENCES `frais` (`frais_id`);
 
 --
 -- Contraintes pour la table `evenements`
@@ -723,13 +740,22 @@ INSERT INTO facture (date_emission, date_echeance, montant, montant_tva, montant
 ('2025-05-15', '2025-06-15', 2400.00, 480.00, 1920.00, 'Annulee', 'Espèces', 4, 5),
 ('2025-04-10', '2025-05-10', 3000.00, 600.00, 2400.00, 'Attente', 'Virement bancaire', 5, 4);
 
-INSERT INTO autre_frais (nom, montant, id_facture, date_creation) VALUES
-('Matériel pédagogique', 350.00, 1, '2025-05-01'),
-('Frais de déplacement', 120.00, 1, '2025-05-01'),
-('Location de salle', 500.00, 2, '2025-05-02'),
-('Fournitures pour ateliers', 280.00, 3, '2025-05-03'),
-('Catering pour session de groupe', 420.00, 4, '2025-05-04'),
-('Documentation personnalisée', 150.00, 5, '2025-05-05');
+INSERT INTO frais (nom, montant, description, date_creation, est_abonnement) VALUES
+('Abonnement Starter', 180.00, 'Abonnement Starter par employé par an', '2025-01-01', 1),
+('Abonnement Basic', 150.00, 'Abonnement Basic par employé par an', '2025-01-01', 1),
+('Abonnement Premium', 100.00, 'Abonnement Premium par salarié par an', '2025-01-01', 1),
+('Frais de déplacement', 50.00, 'Frais standard pour les déplacements professionnels', '2025-01-01', 0),
+('Frais de repas', 30.00, 'Frais standard pour les repas professionnels', '2025-01-01', 0),
+('Frais de matériel', 100.00, 'Frais standard pour l\'achat de matériel', '2025-01-01', 0);
+
+-- Lien entre les frais et les devis
+INSERT INTO INCLUT_FRAIS_DEVIS (id_devis, id_frais) VALUES
+(1, 1),
+(1, 2),
+(2, 3),
+(3, 4),
+(4, 5),
+(5, 6);
 
 -- Questions fréquentes pour le chatbot
 INSERT INTO chatbot (question, reponse,parent_id) VALUES
