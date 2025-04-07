@@ -130,9 +130,13 @@ function formatActivities(activities, registrations) {
     
     return activities.map(activity => {
         console.log('Formatting activity:', activity);
-        // Vérifie à la fois "activity" et "activite" pour le type
+        // Debug les inscriptions pour cette activité
+        console.log('Checking registrations for activity:', activity.id, registrations.filter(r => 
+            r.type === 'activite' && parseInt(r.service_id) === parseInt(activity.id)
+        ));
+        
         const isRegistered = registrations.some(r => 
-            (r.type === 'activity' || r.type === 'activite') && 
+            r.type === 'activite' && 
             parseInt(r.service_id) === parseInt(activity.id)
         );
         
@@ -211,11 +215,17 @@ function displayServices(services) {
                         <br>
                         <small class="text-muted">Date: ${service.formattedDate}</small>
                     </p>
-                    <button class="btn ${service.isRegistered ? 'btn-success disabled' : 'btn-primary'}" 
-                            onclick="registerFor('${service.serviceType}', ${service.id})"
-                            ${service.isRegistered ? 'disabled' : ''}>
-                        ${service.isRegistered ? 'Inscrit(e)' : 'S\'inscrire'}
-                    </button>
+                    ${service.isRegistered ? `
+                        <button class="btn btn-danger" 
+                                onclick="unregisterFrom('${service.serviceType}', ${service.id})">
+                            Se désinscrire
+                        </button>
+                    ` : `
+                        <button class="btn btn-primary" 
+                                onclick="registerFor('${service.serviceType}', ${service.id})">
+                            S'inscrire
+                        </button>
+                    `}
                 </div>
             </div>
         </div>
@@ -245,18 +255,21 @@ async function registerFor(type, id) {
             return;
         }
 
-        const apiType = type === 'activity' ? 'activite' : type;
-
+        // Construct request data with the correct field names
         const requestData = {
-            type: apiType,
+            type: type,
             collaborateur_id: collaborateurId
         };
 
-        if (apiType === 'event') {
+        // Add the appropriate ID field based on type
+        if (type === 'event') {
             requestData.id_evenement = id;
-        } else if (apiType === 'activite') {
+        } else if (type === 'activite') {
             requestData.id_activite = id;
         }
+
+        // Log pour déboguer
+        console.log('Sending request with data:', requestData);
 
         const response = await fetch('/api/employee/register.php', {
             method: 'POST',
@@ -264,13 +277,80 @@ async function registerFor(type, id) {
             body: JSON.stringify(requestData)
         });
 
-        const data = await response.json();
+        // Log la réponse pour le débogage
+        const responseText = await response.clone().text();
+        console.log('Register Response:', responseText);
+
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            throw new Error('Réponse invalide du serveur');
+        }
         
         if (!response.ok) {
             throw new Error(data.error || data.message || 'Erreur lors de l\'inscription');
         }
 
         showSuccessMessage('Inscription réussie !');
+        await loadAvailableServices();
+    } catch (error) {
+        showErrorMessage('Erreur : ' + error.message);
+        console.error('Erreur détaillée:', error);
+    }
+}
+
+// Désinscription des services
+async function unregisterFrom(type, id) {
+    try {
+        if (!confirm('Voulez-vous vraiment vous désinscrire de cet événement ?')) {
+            return;
+        }
+
+        const collaborateurId = document.querySelector('[data-collaborateur-id]')?.dataset?.collaborateurId;
+        if (!collaborateurId) {
+            alert('Veuillez vous connecter pour vous désinscrire.');
+            return;
+        }
+
+        // Construct request data with the correct field names
+        const requestData = {
+            type: type,
+            collaborateur_id: collaborateurId
+        };
+
+        // Add the appropriate ID field based on type
+        if (type === 'event') {
+            requestData.id_evenement = id;
+        } else if (type === 'activite') {
+            requestData.id_activite = id;
+        }
+
+        // Log pour déboguer
+        console.log('Sending request with data:', requestData);
+
+        const response = await fetch('/api/employee/unregister.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+
+        // Log la réponse pour le débogage
+        const responseText = await response.clone().text();
+        console.log('Unregister Response:', responseText);
+
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            throw new Error('Réponse invalide du serveur');
+        }
+        
+        if (!response.ok) {
+            throw new Error(data.error || data.message || 'Erreur lors de la désinscription');
+        }
+
+        showSuccessMessage('Désinscription réussie !');
         await loadAvailableServices();
     } catch (error) {
         showErrorMessage('Erreur : ' + error.message);

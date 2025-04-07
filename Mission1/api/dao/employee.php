@@ -554,12 +554,18 @@ function createInscription(array $data) {
     try {
         $db->beginTransaction();
         
-        if (!in_array($data['type'], ['activity', 'event'])) {
-            throw new Exception('Invalid service type');
+        // Normaliser le type
+        $type = strtolower($data['type']);
+        if ($type === 'activite') {
+            $type = 'activity';
+        }
+        
+        if (!in_array($type, ['activity', 'event'])) {
+            throw new Exception('Invalid service type: ' . $data['type']);
         }
 
         // Check if already registered
-        $checkSql = ($data['type'] === 'activity') 
+        $checkSql = ($type === 'activity') 
             ? "SELECT COUNT(*) FROM participe_activite WHERE id_collaborateur = :collaborateur_id AND id_activite = :service_id"
             : "SELECT COUNT(*) FROM participe_evenement WHERE id_collaborateur = :collaborateur_id AND id_evenement = :service_id";
             
@@ -573,8 +579,8 @@ function createInscription(array $data) {
             throw new Exception('Already registered for this service');
         }
 
-        // Insert registration - removed date_inscription from INSERT
-        $sql = ($data['type'] === 'activity')
+        // Insert registration
+        $sql = ($type === 'activity')
             ? "INSERT INTO participe_activite (id_collaborateur, id_activite) VALUES (:collaborateur_id, :service_id)"
             : "INSERT INTO participe_evenement (id_collaborateur, id_evenement) VALUES (:collaborateur_id, :service_id)";
 
@@ -607,6 +613,41 @@ function createInscription(array $data) {
     }
 }
 
+function deleteInscription(array $data) {
+    $db = getDatabaseConnection();
+    
+    try {
+        $db->beginTransaction();
+        
+        if (!in_array($data['type'], ['activite', 'event'])) {
+            throw new Exception('Invalid service type');
+        }
+
+        // Delete registration
+        $sql = ($data['type'] === 'activite')
+            ? "DELETE FROM participe_activite WHERE id_collaborateur = :collaborateur_id AND id_activite = :service_id"
+            : "DELETE FROM participe_evenement WHERE id_collaborateur = :collaborateur_id AND id_evenement = :service_id";
+
+        $stmt = $db->prepare($sql);
+        $success = $stmt->execute([
+            'collaborateur_id' => $data['id_collaborateur'],
+            'service_id' => $data['id_service']
+        ]);
+
+        if (!$success) {
+            throw new Exception('Failed to delete registration');
+        }
+
+        $db->commit();
+        return true;
+
+    } catch (Exception $e) {
+        $db->rollBack();
+        error_log('Unregistration error: ' . $e->getMessage());
+        throw $e;
+    }
+}
+
 function getEmployeeRegistrations(int $collaborateurId) {
     $db = getDatabaseConnection();
     
@@ -615,8 +656,8 @@ function getEmployeeRegistrations(int $collaborateurId) {
                   FROM participe_evenement 
                   WHERE id_collaborateur = :collaborateur_id";
     
-    // Récupérer les inscriptions aux activités
-    $activityQuery = "SELECT 'activity' as type, id_activite as service_id 
+    // Récupérer les inscriptions aux activités (changé 'activity' en 'activite')
+    $activityQuery = "SELECT 'activite' as type, id_activite as service_id 
                      FROM participe_activite 
                      WHERE id_collaborateur = :collaborateur_id";
     

@@ -26,9 +26,11 @@ include_once 'includes/header.php';
                     <h5 class="card-title mb-0"><i class="fas fa-calendar"></i> Événements à venir</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">Aucun événement à venir pour le moment.</p>
+                    <div id="upcoming-events">
+                        <p class="text-muted">Chargement des événements...</p>
+                    </div>
                     <div class="mt-3">
-                        <a href="evenements.php" class="btn btn-outline-primary">Voir tous les événements</a>
+                        <a href="catalogue.php" class="btn btn-outline-primary">Voir tous les événements</a>
                     </div>
                 </div>
             </div>
@@ -39,7 +41,9 @@ include_once 'includes/header.php';
                     <h5 class="card-title mb-0"><i class="fas fa-bookmark"></i> Mes réservations</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">Vous n'avez pas de réservations en cours.</p>
+                    <div id="my-activities">
+                        <p class="text-muted">Chargement des réservations...</p>
+                    </div>
                     <div class="mt-3">
                         <a href="planning.php" class="btn btn-outline-primary">Voir mon planning</a>
                     </div>
@@ -108,6 +112,12 @@ include_once 'includes/header.php';
         </div>
     </div>
 </div>
+
+<!-- Ajout du script pour l'ID du collaborateur -->
+<script>
+    const collaborateurId = <?php echo isset($_SESSION['collaborateur_id']) ? $_SESSION['collaborateur_id'] : 'null'; ?>;
+</script>
+<script src="/data/static/js/employee.js"></script>
 
 <?php
 // Inclusion du pied de page

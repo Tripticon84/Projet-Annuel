@@ -6,9 +6,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-    await initializeCalendar();
-    await loadActivities();
-    initializeFilters();
+    // Ajout du chargement des données pour la page d'accueil
+    const upcomingEventsElement = document.getElementById('upcoming-events');
+    const myActivitiesElement = document.getElementById('my-activities');
+    
+    if (upcomingEventsElement || myActivitiesElement) {
+        await loadDashboardData();
+    } else {
+        await initializeCalendar();
+        await loadActivities();
+        initializeFilters();
+    }
 });
 
 async function initializeCalendar() {
@@ -185,5 +193,111 @@ async function registerForService(type, id) {
     } catch (error) {
         console.error('Erreur d\'inscription:', error);
         throw error;
+    }
+}
+
+async function unregisterFrom(type, id) {
+    try {
+        if (!confirm('Voulez-vous vraiment vous désinscrire de cet événement ?')) {
+            return;
+        }
+
+        const collaborateurId = getCollaborateurId();
+        
+        const requestData = {
+            type,
+            collaborateur_id: collaborateurId
+        };
+        
+        if (type === 'event') {
+            requestData.id_evenement = id;
+        } else if (type === 'activite') {
+            requestData.id_activite = id;
+        }
+
+        const response = await fetch('/api/employee/unregister.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        
+        // Rafraîchir la liste des services
+        await loadAvailableServices();
+        
+        return data;
+    } catch (error) {
+        console.error('Erreur de désinscription:', error);
+        throw error;
+    }
+}
+
+async function loadDashboardData() {
+    try {
+        const allActivities = await getEmployeeActivities();
+        
+        if (!Array.isArray(allActivities)) {
+            throw new Error('Les données reçues ne sont pas au bon format');
+        }
+
+        // Trier les éléments par date
+        const sortedActivities = allActivities.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // Séparer les événements des activités
+        const now = new Date();
+        const events = sortedActivities.filter(item => 
+            item.type === 'event' && new Date(item.date) >= now
+        ).slice(0, 3);
+        
+        const activities = sortedActivities.filter(item => 
+            item.type !== 'event' && new Date(item.date) >= now
+        ).slice(0, 3);
+
+        // Mise à jour des événements à venir
+        const upcomingEventsElement = document.getElementById('upcoming-events');
+        if (upcomingEventsElement) {
+            upcomingEventsElement.innerHTML = events.length > 0 
+                ? events.map(event => `
+                    <div class="mb-2 p-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>${event.title || 'Sans titre'}</strong>
+                            <small class="text-muted">${new Date(event.date).toLocaleDateString('fr-FR')}</small>
+                        </div>
+                        ${event.lieu ? `<div class="text-muted small"><i class="fas fa-map-marker-alt"></i> ${event.lieu}</div>` : ''}
+                    </div>
+                `).join('')
+                : '<p class="text-muted">Aucun événement à venir pour le moment.</p>';
+        }
+
+        // Mise à jour des activités
+        const myActivitiesElement = document.getElementById('my-activities');
+        if (myActivitiesElement) {
+            myActivitiesElement.innerHTML = activities.length > 0
+                ? activities.map(activity => `
+                    <div class="mb-2 p-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>${activity.title || 'Sans titre'}</strong>
+                            <small class="text-muted">${new Date(activity.date).toLocaleDateString('fr-FR')}</small>
+                        </div>
+                        <div class="text-muted small">
+                            <i class="fas fa-tag"></i> ${activity.type || 'Activité'}
+                        </div>
+                    </div>
+                `).join('')
+                : '<p class="text-muted">Vous n\'avez pas de réservations en cours.</p>';
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+        
+        // Afficher un message d'erreur dans l'interface
+        const elements = ['upcoming-events', 'my-activities'];
+        elements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.innerHTML = '<p class="text-danger"><i class="fas fa-exclamation-circle"></i> Erreur lors du chargement des données</p>';
+            }
+        });
     }
 }
