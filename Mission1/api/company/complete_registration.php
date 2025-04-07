@@ -3,16 +3,25 @@ $title = 'Inscription - Finalisation de l\'inscription';
 session_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/hashPassword.php';
 
+//verifier la methode de la requete
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405); // Méthode non autorisée
+    echo json_encode(['error' => 'Méthode non autorisée.']);
+    exit();
+}
+
 // Vérifier si les étapes précédentes ont été complétées
 if (!isset($_SESSION['company_data']) || !isset($_POST['plan'])) {
     $_SESSION['register_errors'] = ['Une erreur est survenue : données manquantes. Veuillez recommencer l\'inscription.'];
-    header('Location: register.php');
+    header('Location: /frontOffice/societe/register/register1.php');
     exit();
 }
 
 // Récupérer les données
 $company = $_SESSION['company_data'];
 $plan = $_POST['plan'];
+
+
 
 // Validation supplémentaire des données
 $requiredFields = ['nom', 'siret', 'adresse', 'email', 'contact_person', 'telephone', 'password'];
@@ -30,7 +39,7 @@ if (!in_array($plan, ['starter', 'basic', 'premium'])) {
 
 if (!empty($errors)) {
     $_SESSION['register_errors'] = $errors;
-    header('Location: register.php');
+    header('Location: /frontOffice/societe/register/register2.php');
     exit();
 }
 
@@ -50,7 +59,7 @@ $data = [
 $ch = curl_init($apiUrl);
 if ($ch === false) {
     $_SESSION['register_errors'] = ['Erreur d\'initialisation cURL. Veuillez réessayer ultérieurement.'];
-    header('Location: register.php');
+    header('Location: /frontOffice/societe/register/register3.php');
     exit();
 }
 
@@ -130,7 +139,8 @@ if ($httpCode == 201) {
         'telephone' => $company['telephone']
     ];
 
-    header('Location: register.php');
+    echo $errorMsg; // Pour le débogage, à retirer en production
+    //header('Location: /frontOffice/societe/register/register.php');
     exit();
 }
 ?>
