@@ -68,7 +68,7 @@ if (validateMandatoryParams($data, ['montant_ht', 'id_societe'])) {
     // Si des frais sont fournis, les associer au devis
     if (isset($data['frais_ids']) && is_array($data['frais_ids'])) {
         $res = attachFraisToEstimate($newEstimateId, $data['frais_ids']);
-        if (!$res) {
+        if ($res === false) {
             // Supprimer le devis créé si l'association des frais échoue
             deleteEstimate($newEstimateId);
             returnError(500, 'Could not attach frais to the estimate');

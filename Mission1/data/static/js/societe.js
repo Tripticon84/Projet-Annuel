@@ -185,6 +185,8 @@ function loadSubscriptions(societyId) {
       // Filtrer les abonnements (est_abonnement = 1)
       const subscriptions = data.filter(item => item.est_abonnement == 1);
 
+      console.log(subscriptions);
+
       if (subscriptions.length === 0) {
         tableBody.innerHTML = `
           <tr>
@@ -316,6 +318,7 @@ function loadOtherCosts(societyId) {
       return response.json();
     })
     .then(data => {
+      data.filter(cost => cost.est_abonnement === 0).forEach(cost => console.log(cost));
       const tableBody = document.getElementById('costs-table');
 
       if (data.length === 0) {

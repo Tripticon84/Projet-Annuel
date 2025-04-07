@@ -86,10 +86,9 @@ if (!$contractStats) {
                             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                                 <h5 class="card-title mb-0">Liste des devis</h5>
                                 <div class="d-flex">
-                                    <button class="btn btn-sm btn-primary me-2">
+                                    <a class="btn btn-sm btn-primary me-2" href="create.php">
                                         <i class="fas fa-plus"></i> Nouveau devis
-                                    </button>
-                                    <!-- Bouton Exporter supprimé -->
+                                    </a>
                                 </div>
                             </div>
                             <div class="card-body p-0">

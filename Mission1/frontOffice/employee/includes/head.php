@@ -21,8 +21,6 @@ if (!isset($_SESSION["collaborateur_id"]) && $title != "Connexion - Espace Salar
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/data/static/css/employee.css">
     <!-- Custom JS -->
     <script src="/data/static/js/employee.js"></script>
 
