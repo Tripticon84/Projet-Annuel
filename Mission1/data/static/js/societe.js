@@ -433,6 +433,17 @@ function loadEmployees(societyId) {
 
 // Charger uniquement les employés actifs (desactivate=0)
 function loadActiveEmployees(societyId, filters = {}) {
+  // Afficher indicateur de chargement
+  const tableBody = document.getElementById('employees-table');
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="9" class="text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement des collaborateurs...</span>
+        </div>
+      </td>
+    </tr>`;
+
   // Construire l'URL avec les filtres
   let url = `/api/company/getAllEmployee.php?societe_id=${societyId}&desactivate=0`;
 
@@ -446,16 +457,34 @@ function loadActiveEmployees(societyId, filters = {}) {
       'Authorization': 'Bearer ' + getToken()
     }
   })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Erreur réseau lors du chargement des collaborateurs');
+    }
+    return response.json();
+  })
   .then(data => {
-    const tableBody = document.getElementById('employees-table');
-
-    if (data.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="9" class="text-center">Aucun collaborateur actif trouvé</td></tr>';
+    // Vider l'indicateur de chargement
+    tableBody.innerHTML = '';
+    
+    // Vérifier si data est défini et n'est pas vide ou null
+    if (!data || data.length === 0 || (Array.isArray(data) && data.length === 0)) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center">
+            <div class="alert alert-info mb-0">
+              <i class="fas fa-user-plus me-2"></i>
+              Pas de collaborateur actif : ajoutez-en ! 
+              <button class="btn btn-sm btn-primary ms-3" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                <i class="fas fa-plus"></i> Ajouter un collaborateur
+              </button>
+            </div>
+          </td>
+        </tr>`;
       return;
     }
 
-    tableBody.innerHTML = '';
+    // Parcourir les données et les afficher
     data.forEach(employee => {
       const dateCreation = employee.date_creation ? new Date(employee.date_creation).toLocaleDateString('fr-FR') : 'N/A';
       tableBody.innerHTML += `
@@ -470,13 +499,13 @@ function loadActiveEmployees(societyId, filters = {}) {
           <td>${dateCreation}</td>
           <td>
             <button class="btn btn-sm btn-info" onclick="viewEmployeeDetails(${employee.collaborateur_id})">
-              <i class="fas fa-eye"></i>
+              <i class="fas fa-eye"></i> Voir
             </button>
             <button class="btn btn-sm btn-warning" onclick="editEmployee(${employee.collaborateur_id}, '${employee.nom}', '${employee.prenom}', '${employee.username}', '${employee.role}', '${employee.email}', '${employee.telephone}')">
-              <i class="fas fa-edit"></i>
+              <i class="fas fa-edit"></i> Modifier
             </button>
             <button class="btn btn-sm btn-danger" onclick="confirmDeactivateEmployee(${employee.collaborateur_id})">
-              <i class="fas fa-user-slash"></i>
+              <i class="fas fa-user-slash"></i> Désactiver
             </button>
           </td>
         </tr>
@@ -485,13 +514,28 @@ function loadActiveEmployees(societyId, filters = {}) {
   })
   .catch(error => {
     console.error('Erreur lors du chargement des collaborateurs actifs:', error);
-    document.getElementById('employees-table').innerHTML =
-      `<tr><td colspan="9" class="text-center text-danger">Erreur lors du chargement des collaborateurs actifs</td></tr>`;
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center text-danger">
+          Erreur lors du chargement des collaborateurs actifs: ${error.message}
+        </td>
+      </tr>`;
   });
 }
 
 // Charger uniquement les employés désactivés (desactivate=1)
 function loadInactiveEmployees(societyId, filters = {}) {
+  // Afficher indicateur de chargement
+  const tableBody = document.getElementById('employees-table');
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="9" class="text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement des collaborateurs...</span>
+        </div>
+      </td>
+    </tr>`;
+
   // Construire l'URL avec les filtres
   let url = `/api/company/getAllEmployee.php?societe_id=${societyId}&desactivate=1`;
 
@@ -505,16 +549,31 @@ function loadInactiveEmployees(societyId, filters = {}) {
       'Authorization': 'Bearer ' + getToken()
     }
   })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Erreur réseau lors du chargement des collaborateurs');
+    }
+    return response.json();
+  })
   .then(data => {
-    const tableBody = document.getElementById('employees-table');
-
-    if (data.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="9" class="text-center">Aucun collaborateur désactivé trouvé</td></tr>';
+    // Vider l'indicateur de chargement
+    tableBody.innerHTML = '';
+    
+    // Vérifier si data est défini et n'est pas vide ou null
+    if (!data || data.length === 0 || (Array.isArray(data) && data.length === 0)) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center">
+            <div class="alert alert-info mb-0">
+              <i class="fas fa-info-circle me-2"></i>
+              Aucun collaborateur désactivé disponible
+            </div>
+          </td>
+        </tr>`;
       return;
     }
 
-    tableBody.innerHTML = '';
+    // Parcourir les données et les afficher
     data.forEach(employee => {
       const dateCreation = employee.date_creation ? new Date(employee.date_creation).toLocaleDateString('fr-FR') : 'N/A';
       tableBody.innerHTML += `
@@ -529,10 +588,10 @@ function loadInactiveEmployees(societyId, filters = {}) {
           <td>${dateCreation}</td>
           <td>
             <button class="btn btn-sm btn-info" onclick="viewEmployeeDetails(${employee.collaborateur_id})">
-              <i class="fas fa-eye"></i>
+              <i class="fas fa-eye"></i> Voir
             </button>
             <button class="btn btn-sm btn-success" onclick="reactivateEmployee(${employee.collaborateur_id})">
-              <i class="fas fa-user-check"></i>
+              <i class="fas fa-user-check"></i> Réactiver
             </button>
           </td>
         </tr>
@@ -541,8 +600,12 @@ function loadInactiveEmployees(societyId, filters = {}) {
   })
   .catch(error => {
     console.error('Erreur lors du chargement des collaborateurs désactivés:', error);
-    document.getElementById('employees-table').innerHTML =
-      `<tr><td colspan="9" class="text-center text-danger">Erreur lors du chargement des collaborateurs désactivés</td></tr>`;
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center text-danger">
+          Erreur lors du chargement des collaborateurs désactivés: ${error.message}
+        </td>
+      </tr>`;
   });
 }
 
@@ -1674,4 +1737,287 @@ function updateCounters(societyId) {
   .catch(error => {
     console.error('Erreur lors de la mise à jour des compteurs:', error);
   });
+}
+
+// Fonction pour rafraîchir la liste des employés selon l'onglet actif
+function refreshEmployeeList() {
+  if (currentEmployeeStatus === 'active') {
+    loadActiveEmployees(societyId);
+  } else {
+    loadInactiveEmployees(societyId);
+  }
+}
+
+// Générer un nom d'utilisateur à partir du prénom et du nom
+function generateUsername(prenom, nom) {
+  if (!prenom || !nom) return '';
+
+  // Prendre la première lettre du prénom et la concaténer avec le nom
+  const firstLetter = prenom.charAt(0).toLowerCase();
+  const lastName = nom.toLowerCase();
+
+  // Nettoyer les caractères spéciaux et les espaces
+  const cleanLastName = lastName.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Supprimer les accents
+    .replace(/[^a-z0-9]/g, "");      // Supprimer les caractères spéciaux et espaces
+
+  return firstLetter + cleanLastName;
+}
+
+// Mettre à jour le champ username lorsque le nom ou le prénom change
+function updateUsername() {
+  const prenom = document.getElementById('prenom').value;
+  const nom = document.getElementById('nom').value;
+
+  if (prenom && nom) {
+    const username = generateUsername(prenom, nom);
+    document.getElementById('username').value = username;
+  }
+}
+
+// Appliquer les filtres selon l'onglet actif
+function applyEmployeeFilters() {
+  const filters = {
+    name: document.getElementById('nameFilter').value,
+    role: document.getElementById('roleFilter').value,
+    date: document.getElementById('dateFilter').value
+  };
+
+  if (currentEmployeeStatus === 'active') {
+    loadActiveEmployees(societyId, filters);
+  } else {
+    loadInactiveEmployees(societyId, filters);
+  }
+}
+
+// Afficher les détails d'un collaborateur
+function viewEmployeeDetails(id) {
+  fetch(`/api/employee/getOne.php?id=${id}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer ' + getToken()
+    }
+  })
+  .then(response => response.json())
+  .then(employee => {
+    const detailsContainer = document.getElementById('employee-details');
+    const dateCreation = employee.date_creation ? new Date(employee.date_creation).toLocaleDateString('fr-FR') : 'N/A';
+    const dateActivite = employee.date_activite ? new Date(employee.date_activite).toLocaleDateString('fr-FR') : 'N/A';
+    const statusText = employee.desactivate == 1 ? '<span class="badge bg-danger">Désactivé</span>' : '<span class="badge bg-success">Actif</span>';
+
+    detailsContainer.innerHTML = `
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p><strong>ID:</strong> ${employee.collaborateur_id}</p>
+          <p><strong>Nom:</strong> ${employee.nom}</p>
+          <p><strong>Prénom:</strong> ${employee.prenom}</p>
+          <p><strong>Nom d'utilisateur:</strong> ${employee.username}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Rôle:</strong> ${employee.role}</p>
+          <p><strong>Email:</strong> ${employee.email}</p>
+          <p><strong>Téléphone:</strong> ${employee.telephone}</p>
+          <p><strong>Date d'ajout:</strong> ${dateCreation}</p>
+          <p><strong>Dernière activité:</strong> ${dateActivite}</p>
+          <p><strong>Statut:</strong> ${statusText}</p>
+        </div>
+      </div>
+    `;
+
+    // Stocker l'ID pour les actions
+    document.getElementById('editEmployee').setAttribute('data-id', employee.collaborateur_id);
+    document.getElementById('deactivateEmployee').setAttribute('data-id', employee.collaborateur_id);
+    document.getElementById('reactivateEmployee').setAttribute('data-id', employee.collaborateur_id);
+
+    // Stocker les données de l'employé pour l'édition rapide
+    document.getElementById('editEmployee').setAttribute('data-employee', JSON.stringify(employee));
+
+    // Afficher/masquer les boutons en fonction du statut
+    if (employee.desactivate == 1) {
+      document.getElementById('deactivateEmployee').style.display = 'none';
+      document.getElementById('reactivateEmployee').style.display = 'inline-block';
+      document.getElementById('editEmployee').style.display = 'none';
+    } else {
+      document.getElementById('deactivateEmployee').style.display = 'inline-block';
+      document.getElementById('reactivateEmployee').style.display = 'none';
+      document.getElementById('editEmployee').style.display = 'inline-block';
+    }
+
+    // Afficher le modal
+    const modal = new bootstrap.Modal(document.getElementById('viewEmployeeModal'));
+    modal.show();
+  })
+  .catch(error => {
+    console.error('Erreur lors du chargement des détails du collaborateur:', error);
+    alert('Erreur lors du chargement des détails du collaborateur');
+  });
+}
+
+// Fonction pour ouvrir le modal d'édition à partir des données JSON
+function openEditModal(employeeData) {
+  document.getElementById('edit_employee_id').value = employeeData.collaborateur_id;
+  document.getElementById('edit_nom').value = employeeData.nom;
+  document.getElementById('edit_prenom').value = employeeData.prenom;
+  document.getElementById('edit_username').value = employeeData.username;
+  document.getElementById('edit_role').value = employeeData.role;
+  document.getElementById('edit_email').value = employeeData.email;
+  document.getElementById('edit_telephone').value = employeeData.telephone;
+  document.getElementById('edit_password').value = '';
+
+  // Fermer le modal de détails
+  const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewEmployeeModal'));
+  if (viewModal) {
+    viewModal.hide();
+  }
+
+  // Ouvrir le modal d'édition
+  const editModal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
+  editModal.show();
+}
+
+// Fonction pour charger les détails d'un employé via l'API
+function fetchEmployeeDetails(id) {
+  fetch(`/api/employee/getOne.php?id=${id}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer ' + getToken()
+    }
+  })
+  .then(response => response.json())
+  .then(employee => {
+    openEditModal(employee);
+  })
+  .catch(error => {
+    console.error('Erreur lors du chargement des détails du collaborateur:', error);
+    alert('Erreur lors du chargement des détails du collaborateur');
+  });
+}
+
+// Demande de confirmation avant de désactiver un collaborateur
+function confirmDeactivateEmployee(id) {
+  if (confirm('Êtes-vous sûr de vouloir désactiver ce collaborateur?')) {
+    deactivateEmployee(id);
+  }
+}
+
+// Désactiver un collaborateur
+function deactivateEmployee(id) {
+  // Afficher un message de chargement
+  const loadingMessage = document.createElement('div');
+  loadingMessage.className = 'position-fixed top-50 start-50 translate-middle bg-white p-3 rounded shadow';
+  loadingMessage.innerHTML = '<div class="spinner-border text-primary me-2" role="status"></div> Désactivation en cours...';
+  document.body.appendChild(loadingMessage);
+
+  fetch('/api/employee/delete.php', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    },
+    body: JSON.stringify({ id: id })
+  })
+  .then(response => {
+    // Supprimer le message de chargement
+    document.body.removeChild(loadingMessage);
+    return response.json();
+  })
+  .then(data => {
+    // Considérer comme un succès si soit data.success est true, soit si le message contient "desactivated" ou est un message positif
+    if (data.success || 
+      (data.message && (
+        data.message.toLowerCase().includes("desactivated") || 
+        data.message.toLowerCase().includes("désactivé") ||
+        data.message.toLowerCase().includes("employee") ||
+        data.message.toLowerCase().includes("collaborateur")
+      ))
+    ) {
+      // Fermer le modal de détails s'il est ouvert
+      const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewEmployeeModal'));
+      if (viewModal) {
+        viewModal.hide();
+      }
+
+      // Recharger la liste des employés après un court délai pour laisser le temps à la BD de se mettre à jour
+      setTimeout(() => {
+        refreshEmployeeList();
+      }, 500);
+
+      // Afficher un message de succès
+      alert('Collaborateur désactivé avec succès!');
+    } else {
+      // Erreur véritable
+      alert(`Erreur: ${data.message || 'Une erreur est survenue'}`);
+    }
+  })
+  .catch(error => {
+    // Supprimer le message de chargement en cas d'erreur
+    if (document.body.contains(loadingMessage)) {
+      document.body.removeChild(loadingMessage);
+    }
+    
+    console.error('Erreur lors de la désactivation du collaborateur:', error);
+    alert('Une erreur est survenue lors de la désactivation du collaborateur');
+  });
+}
+
+// Réactiver un collaborateur
+function reactivateEmployee(id) {
+  if (confirm('Êtes-vous sûr de vouloir réactiver ce collaborateur?')) {
+    // Afficher un message de chargement
+    const loadingMessage = document.createElement('div');
+    loadingMessage.className = 'position-fixed top-50 start-50 translate-middle bg-white p-3 rounded shadow';
+    loadingMessage.innerHTML = '<div class="spinner-border text-primary me-2" role="status"></div> Réactivation en cours...';
+    document.body.appendChild(loadingMessage);
+
+    fetch('/api/employee/reactivate.php', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ id: id })
+    })
+    .then(response => {
+      // Supprimer le message de chargement
+      document.body.removeChild(loadingMessage);
+      return response.json();
+    })
+    .then(data => {
+      // Considérer comme un succès si soit data.success est true, soit si le message est positif
+      if (data.success || 
+        (data.message && (
+          data.message.toLowerCase().includes("reactivated") || 
+          data.message.toLowerCase().includes("réactivé") ||
+          data.message.toLowerCase().includes("employee") ||
+          data.message.toLowerCase().includes("collaborateur")
+        ))
+      ) {
+        // Fermer le modal de détails s'il est ouvert
+        const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewEmployeeModal'));
+        if (viewModal) {
+          viewModal.hide();
+        }
+
+        // Recharger la liste des employés après un court délai
+        setTimeout(() => {
+          refreshEmployeeList();
+        }, 500);
+
+        // Afficher un message de succès
+        alert('Collaborateur réactivé avec succès!');
+      } else {
+        // Erreur véritable
+        alert(`Erreur: ${data.message || 'Une erreur est survenue'}`);
+      }
+    })
+    .catch(error => {
+      // Supprimer le message de chargement en cas d'erreur
+      if (document.body.contains(loadingMessage)) {
+        document.body.removeChild(loadingMessage);
+      }
+      
+      console.error('Erreur lors de la réactivation du collaborateur:', error);
+      alert('Une erreur est survenue lors de la réactivation du collaborateur');
+    });
+  }
 }
