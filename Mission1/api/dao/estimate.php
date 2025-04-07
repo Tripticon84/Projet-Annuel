@@ -665,3 +665,234 @@ function getEstimateBySocietyId($societyId)
     $stmt->execute(['societyId' => $societyId]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
+/**
+ * Génère et sauvegarde le PDF d'un devis/contrat dans un fichier
+ * @param int $devisId ID du devis
+ * @return string|bool Chemin du fichier généré ou false en cas d'erreur
+ */
+function generateAndSavePDF($devisId) {
+    $options = new Options();
+    $options->set('defaultFont', 'Arial');
+    $options->set('isHtml5ParserEnabled', true);
+    $dompdf = new Dompdf($options);
+
+    $estimate = getEstimateById($devisId);
+    if ($estimate === null) {
+        return false;
+    }
+
+    $company = getCompanyByEstimate($devisId);
+    if ($company === null) {
+        return false;
+    }
+
+    $documentType = $estimate['is_contract'] == 1 ? 'Contrat' : 'Devis';
+    $documentTitle = $estimate['is_contract'] == 1 ? 'Contrat #' . $devisId : 'Devis #' . $devisId;
+
+    // Générer le HTML du PDF (même code que dans generatePDFForCompany)
+    $html = '<!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                color: #333;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+            table, th, td {
+                border: 1px solid #ccc;
+            }
+            th, td {
+                padding: 10px;
+                text-align: left;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            h1, h2, h3 {
+                text-align: center;
+                color: #444;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .footer {
+                text-align: center;
+                font-size: 12px;
+                margin-top: 30px;
+                color: #666;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>' . $documentTitle . '</h1>
+            <p>Généré le : ' . date('d/m/Y H:i:s') . '</p>
+        </div>
+
+        <h2>Informations Société</h2>
+        <table>
+            <tr>
+                <th>Champ</th>
+                <th>Valeur</th>
+            </tr>';
+
+    foreach ($company as $key => $value) {
+        if ($value !== null) {
+            // Formater les dates si la clé contient "date"
+            if (strpos($key, 'date') !== false && $value != '') {
+                $date = date_create_from_format('Y-m-d H:i:s', $value);
+                if ($date) {
+                    $value = date_format($date, 'd/m/Y');
+                }
+            }
+            $html .= '<tr>
+                <td>' . htmlspecialchars($key) . '</td>
+                <td>' . htmlspecialchars($value) . '</td>
+            </tr>';
+        }
+    }
+    $html .= '</table>';
+
+    $html .= '<div class="page-break"></div>';
+
+    // Ajout des frais associés au devis
+    $frais = getFraisByEstimateId($devisId);
+    if (!empty($frais)) {
+        $html .= '<h2>Frais associés</h2>
+        <table>
+            <tr>
+                <th>Nom</th>
+                <th>Description</th>
+                <th>Montant</th>
+                <th>Type</th>
+            </tr>';
+
+        $totalFrais = 0;
+        foreach ($frais as $f) {
+            $totalFrais += $f['montant'];
+            $typeAbonnement = $f['est_abonnement'] ? 'Abonnement' : 'Frais ponctuel';
+            $html .= '<tr>
+                <td>' . htmlspecialchars($f['nom']) . '</td>
+                <td>' . htmlspecialchars($f['description']) . '</td>
+                <td>' . htmlspecialchars($f['montant']) . ' €</td>
+                <td>' . $typeAbonnement . '</td>
+            </tr>';
+        }
+
+        $html .= '<tr>
+                <td colspan="2"><strong>Total des frais</strong></td>
+                <td><strong>' . $totalFrais . ' €</strong></td>
+                <td></td>
+            </tr>';
+        $html .= '</table>';
+    }
+
+    // Formater les dates de début et fin
+    $dateDebut = $estimate['date_debut'] ? date_create_from_format('Y-m-d', $estimate['date_debut']) : null;
+    $dateFin = $estimate['date_fin'] ? date_create_from_format('Y-m-d', $estimate['date_fin']) : null;
+
+    $html .= '
+        <h2>Détails du ' . $documentType . '</h2>
+        <table>
+            <tr>
+                <th>Champ</th>
+                <th>Valeur</th>
+            </tr>
+            <tr>
+                <td>ID</td>
+                <td>' . htmlspecialchars($estimate['devis_id']) . '</td>
+            </tr>
+            <tr>
+                <td>Date de début</td>
+                <td>' . ($dateDebut ? date_format($dateDebut, 'd/m/Y') : '') . '</td>
+            </tr>
+            <tr>
+                <td>Date de fin</td>
+                <td>' . ($dateFin ? date_format($dateFin, 'd/m/Y') : '') . '</td>
+            </tr>
+            <tr>
+                <td>Montant TTC</td>
+                <td>' . htmlspecialchars($estimate['montant']) . ' €</td>
+            </tr>';
+
+    if ($estimate['montant_tva'] !== null) {
+        $html .= '<tr>
+                <td>Montant TVA</td>
+                <td>' . htmlspecialchars($estimate['montant_tva']) . ' €</td>
+            </tr>';
+    }
+
+    if ($estimate['montant_ht'] !== null) {
+        $html .= '<tr>
+                <td>Montant HT</td>
+                <td>' . htmlspecialchars($estimate['montant_ht']) . ' €</td>
+            </tr>';
+    }
+
+    $html .= '<tr>
+                <td>Statut</td>
+                <td>' . htmlspecialchars($estimate['statut']) . '</td>
+            </tr>
+            <tr>
+                <td>Type de document</td>
+                <td>' . $documentType . '</td>
+            </tr>
+        </table>
+
+        <div class="footer">';
+
+    if ($estimate['is_contract'] == 1) {
+        $html .= '<p>Ce document fait office de contrat. Merci pour votre confiance.</p>';
+    } else {
+        $html .= '<p>Ce document fait office de devis. Valable pendant 30 jours à compter de la date d\'émission.</p>';
+    }
+
+    $html .= '</div>
+    </body>
+    </html>';
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    // Création du dossier de destination
+    $companyName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $company['nom']); // Nettoyer le nom de l'entreprise
+    $currentDate = date('d-m-Y');
+    $directory = $_SERVER['DOCUMENT_ROOT'] . '/data/estimate/' . $companyName;
+
+    // Créer le répertoire s'il n'existe pas
+    if (!file_exists($directory)) {
+        mkdir($directory, 0777, true);
+    }
+
+    // Définir le nom du fichier
+    $filename = $currentDate . '_' . $devisId . '.pdf';
+    $filePath = $directory . '/' . $filename;
+    $relativePath = '/data/estimate/' . $companyName . '/' . $filename;
+
+    // Enregistrer le PDF
+    file_put_contents($filePath, $dompdf->output());
+
+    // Mettre à jour le chemin du fichier dans la base de données
+    $db = getDatabaseConnection();
+    $sql = "UPDATE devis SET fichier = :fichier WHERE devis_id = :devis_id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute([
+        'fichier' => $relativePath,
+        'devis_id' => $devisId
+    ]);
+
+    return $relativePath;
+}

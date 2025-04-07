@@ -216,6 +216,7 @@ CREATE TABLE `facture` (
   `montant_ht` decimal(10,2) DEFAULT NULL,
   `statut` 	ENUM('Attente', 'Payee', 'Annulee') DEFAULT 'Attente',
   `methode_paiement` VARCHAR(50)	DEFAULT NULL,
+  `fichier` varchar(255) DEFAULT NULL,
   `id_devis` int(11) DEFAULT NULL,
   `id_prestataire` int(11) DEFAULT NULL,
   `payment_intent_id` varchar(100) DEFAULT NULL
