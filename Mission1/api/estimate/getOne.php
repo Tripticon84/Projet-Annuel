@@ -35,7 +35,8 @@ $result = [
     "montant_tva" => $estimate['montant_tva'],
     "is_contract" => $estimate['is_contract'],
     "fichier" => $estimate['fichier'],
-    "id_societe" => $estimate['id_societe']
+    "id_societe" => $estimate['id_societe'],
+    "frais" => $estimate['frais'] ?? []
 ];
 
 echo json_encode($result);
