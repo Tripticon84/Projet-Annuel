@@ -57,16 +57,16 @@ if ($password !== $confirm_password) {
 
 // Si des erreurs sont présentes, retourner au formulaire avec les erreurs
 if (!empty($errors)) {
-    $_SESSION['register_errors'] = $errors;
-    $_SESSION['register_data'] = [
+    $errors_json = urlencode(json_encode($errors));
+    $form_data = urlencode(json_encode([
         'nom' => $nom,
         'siret' => $siret,
         'adresse' => $adresse,
         'email' => $email,
         'contact_person' => $contact_person,
         'telephone' => $telephone
-    ];
-    header('Location: /frontOffice/societe/register/register.php');
+    ]));
+    header('Location: /frontOffice/societe/register/register.php?errors=' . $errors_json . '&form_data=' . $form_data);
     exit();
 }
 
@@ -74,16 +74,17 @@ if (!empty($errors)) {
 $siretInfo = getInseeCompanyInfoBySiret($siret);
 
 if (empty($siretInfo) || isset($siretInfo['error'])) {
-    $_SESSION['register_errors'] = ["Le numéro SIRET n'est pas valide ou n'existe pas"];
-    $_SESSION['register_data'] = [
+    $errors = ["Le numéro SIRET n'est pas valide ou n'existe pas"];
+    $errors_json = urlencode(json_encode($errors));
+    $form_data = urlencode(json_encode([
         'nom' => $nom,
         'siret' => $siret,
         'adresse' => $adresse,
         'email' => $email,
         'contact_person' => $contact_person,
         'telephone' => $telephone
-    ];
-    header('Location: register.php');
+    ]));
+    header('Location: /frontOffice/societe/register/register.php?errors=' . $errors_json . '&form_data=' . $form_data);
     exit();
 }
 

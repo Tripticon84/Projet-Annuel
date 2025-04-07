@@ -2,10 +2,10 @@
 
 
 // Vérifier si les données de l'entreprise sont présentes
-if (!isset($_SESSION['company_data'])) {
-    header('Location: register.php');
-    exit();
-}
+// if (!isset($_SESSION['company_data'])) {
+//     header('Location: register.php');
+//     exit();
+// }
 
 echo (json_encode($_SESSION['company_data']));
 
@@ -287,7 +287,3 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         });
     });
 </script>
-
-<?php
-// You can add a footer include here if needed
-?>
