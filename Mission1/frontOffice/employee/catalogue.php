@@ -3,9 +3,14 @@
 // Inclure l'en-tête
 require_once 'includes/head.php';
 require_once 'includes/header.php';
+
+if (!isset($_SESSION['collaborateur_id'])) {
+    header('Location: /login.php');
+    exit;
+}
 ?>
 
-<div class="container mt-4">
+<div class="container mt-4" data-collaborateur-id="<?php echo $_SESSION['collaborateur_id']; ?>">
     <div class="row mb-4">
         <div class="col-12">
             <div class="card bg-primary text-white">
@@ -18,56 +23,280 @@ require_once 'includes/header.php';
     </div>
 
     <div class="row">
-        <!-- Filtres de gauche -->
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">Filtres</h5>
-                </div>
-                <div class="card-body">
-                    <h6>Catégories</h6>
-                    <div class="list-group">
-                        <a href="catalogue.php" class="list-group-item list-group-item-action">
-                            Toutes les catégories
-                        </a>
-                    </div>
-
-                    <h6 class="mt-4">Type d'événement</h6>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="checkWebinar">
-                        <label class="form-check-label" for="checkWebinar">Webinars</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="checkConference">
-                        <label class="form-check-label" for="checkConference">Conférences</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="checkWorkshop">
-                        <label class="form-check-label" for="checkWorkshop">Ateliers</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="checkMedical">
-                        <label class="form-check-label" for="checkMedical">Rendez-vous médicaux</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="checkSport">
-                        <label class="form-check-label" for="checkSport">Activités sportives</label>
-                    </div>
+        <!-- Liste des services -->
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher une activité ou un événement...">
                 </div>
             </div>
-        </div>
-
-        <!-- Liste des services -->
-        <div class="col-md-9">
-            <div class="row row-cols-1 row-cols-md-3 g-4">
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        Aucun service disponible dans cette catégorie pour le moment.
+            <div class="row row-cols-1 row-cols-md-3 g-4" id="services-grid">
+                <div id="loading" class="col-12">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+// Ajouter avant le reste du code JavaScript
+const collaborateurId = document.querySelector('[data-collaborateur-id]')?.dataset?.collaborateurId;
+if (!collaborateurId) {
+    window.location.href = '/login.php';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadAvailableServices();
+
+    // Ajout de l'event listener pour la recherche
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', filterServices);
+});
+
+// Chargement des services
+async function loadAvailableServices() {
+    try {
+        const loadingElement = document.getElementById('loading');
+        if (loadingElement) loadingElement.style.display = 'block';
+
+        const [activitiesResponse, eventsResponse, registrationsResponse] = await Promise.all([
+            fetch('/api/activity/getAll.php'),
+            fetch('/api/event/getAll.php'),
+            fetch(`/api/employee/registrations.php?collaborateur_id=${collaborateurId}`)
+        ]);
+
+        // Log les réponses brutes
+        console.log('Activities Response:', await activitiesResponse.clone().text());
+        console.log('Events Response:', await eventsResponse.clone().text());
+        console.log('Registrations Response:', await registrationsResponse.clone().text());
+
+        // Vérifier chaque réponse
+        if (!activitiesResponse.ok) throw new Error('Erreur lors du chargement des activités');
+        if (!eventsResponse.ok) throw new Error('Erreur lors du chargement des événements');
+        if (!registrationsResponse.ok) throw new Error('Erreur lors du chargement des inscriptions');
+
+        const [activities, events, registrations] = await Promise.all([
+            activitiesResponse.json(),
+            eventsResponse.json(),
+            registrationsResponse.json()
+        ]);
+
+        // Log les données formatées
+        console.log('Activities:', activities);
+        console.log('Events:', events);
+        console.log('Registrations:', registrations);
+
+        // Vérifier si les données sont des tableaux
+        if (!Array.isArray(activities)) throw new Error('Les activités ne sont pas dans le bon format');
+        if (!Array.isArray(events)) throw new Error('Les événements ne sont pas dans le bon format');
+        if (!Array.isArray(registrations)) throw new Error('Les inscriptions ne sont pas dans le bon format');
+
+        window.allServices = [
+            ...formatActivities(activities, registrations),
+            ...formatEvents(events, registrations)
+        ];
+
+        // Log les services formatés
+        console.log('Formatted Services:', window.allServices);
+
+        if (loadingElement) loadingElement.style.display = 'none';
+        
+        // Vérifier si des services sont disponibles
+        if (window.allServices.length === 0) {
+            console.warn('Aucun service n\'a été chargé');
+        }
+        
+        displayServices(window.allServices);
+    } catch (error) {
+        console.error('Erreur détaillée:', error);
+        showErrorMessage(error.message);
+        if (document.getElementById('loading')) {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+}
+
+// Formatage des données
+function formatActivities(activities, registrations) {
+    if (!Array.isArray(activities) || !Array.isArray(registrations)) {
+        console.error('Format invalide:', { activities, registrations });
+        return [];
+    }
+    
+    return activities.map(activity => {
+        console.log('Formatting activity:', activity);
+        // Vérifie à la fois "activity" et "activite" pour le type
+        const isRegistered = registrations.some(r => 
+            (r.type === 'activity' || r.type === 'activite') && 
+            parseInt(r.service_id) === parseInt(activity.id)
+        );
+        
+        console.log(`Activity ${activity.id} isRegistered:`, isRegistered); // Debug
+        
+        return {
+            ...activity,
+            id: parseInt(activity.id),
+            serviceType: 'activite',
+            displayType: getDisplayType(activity.type),
+            formattedDate: new Date(activity.date).toLocaleDateString('fr-FR'),
+            isRegistered: isRegistered
+        };
+    });
+}
+
+function formatEvents(events, registrations) {
+    if (!Array.isArray(events) || !Array.isArray(registrations)) {
+        console.error('Format invalide:', { events, registrations });
+        return [];
+    }
+    
+    return events.map(event => {
+        console.log('Formatting event:', event);
+        const isRegistered = registrations.some(r => 
+            r.type === 'event' && 
+            parseInt(r.service_id) === parseInt(event.evenement_id)
+        );
+        
+        console.log(`Event ${event.evenement_id} isRegistered:`, isRegistered); // Debug
+        
+        return {
+            id: parseInt(event.evenement_id),
+            nom: event.nom,
+            type: event.type,
+            date: event.date,
+            lieu: event.lieu,
+            serviceType: 'event',
+            displayType: getDisplayType(event.type),
+            formattedDate: new Date(event.date).toLocaleDateString('fr-FR'),
+            isRegistered: isRegistered
+        };
+    });
+}
+
+function getDisplayType(type) {
+    const typeMapping = {
+        'webinar': 'Webinar',
+        'conference': 'Conference',
+        'workshop': 'Workshop',
+        'medical': 'Medical',
+        'sport': 'Sport'
+    };
+    return typeMapping[type.toLowerCase()] || type;
+}
+
+// Affichage des services modifié
+function displayServices(services) {
+    const servicesGrid = document.getElementById('services-grid');
+    document.getElementById('loading')?.remove();
+
+    if (services.length === 0) {
+        servicesGrid.innerHTML = '<div class="col-12"><div class="alert alert-info">Aucun service disponible</div></div>';
+        return;
+    }
+
+    servicesGrid.innerHTML = services.map(service => `
+        <div class="col">
+            <div class="card h-100 ${service.isRegistered ? 'border-success' : ''}">
+                <div class="card-body">
+                    <h5 class="card-title">${service.nom}</h5>
+                    <p class="card-text">
+                        <span class="badge bg-${service.serviceType === 'event' ? 'success' : 'primary'}">
+                            ${service.displayType}
+                        </span>
+                        <br>
+                        <small class="text-muted">Date: ${service.formattedDate}</small>
+                    </p>
+                    <button class="btn ${service.isRegistered ? 'btn-success disabled' : 'btn-primary'}" 
+                            onclick="registerFor('${service.serviceType}', ${service.id})"
+                            ${service.isRegistered ? 'disabled' : ''}>
+                        ${service.isRegistered ? 'Inscrit(e)' : 'S\'inscrire'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Fonction de filtrage des services simplifiée
+function filterServices(event) {
+    const searchTerm = event.target.value.toLowerCase();
+    let filteredServices = window.allServices.filter(service => 
+        service.nom.toLowerCase().includes(searchTerm) || 
+        service.displayType.toLowerCase().includes(searchTerm)
+    );
+    displayServices(filteredServices);
+}
+
+// Inscription aux services
+async function registerFor(type, id) {
+    try {
+        if (!confirm('Voulez-vous vraiment vous inscrire à cet événement ?')) {
+            return;
+        }
+
+        const collaborateurId = document.querySelector('[data-collaborateur-id]')?.dataset?.collaborateurId;
+        if (!collaborateurId) {
+            alert('Veuillez vous connecter pour vous inscrire.');
+            return;
+        }
+
+        const apiType = type === 'activity' ? 'activite' : type;
+
+        const requestData = {
+            type: apiType,
+            collaborateur_id: collaborateurId
+        };
+
+        if (apiType === 'event') {
+            requestData.id_evenement = id;
+        } else if (apiType === 'activite') {
+            requestData.id_activite = id;
+        }
+
+        const response = await fetch('/api/employee/register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || data.message || 'Erreur lors de l\'inscription');
+        }
+
+        showSuccessMessage('Inscription réussie !');
+        await loadAvailableServices();
+    } catch (error) {
+        showErrorMessage('Erreur : ' + error.message);
+        console.error('Erreur détaillée:', error);
+    }
+}
+
+function showSuccessMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.container').insertAdjacentElement('afterbegin', alertDiv);
+}
+
+function showErrorMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.container').insertAdjacentElement('afterbegin', alertDiv);
+}
+</script>
 
 <?php include 'includes/footer.php'; ?>

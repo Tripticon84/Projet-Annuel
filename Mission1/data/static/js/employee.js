@@ -30,20 +30,26 @@ async function initializeCalendar() {
 }
 
 function getCollaborateurId() {
+    // Check first for the global variable set in the page
+    if (typeof collaborateurId !== 'undefined' && collaborateurId) {
+        return collaborateurId;
+    }
+
     // Try multiple sources for the ID
     const sources = {
         bodyData: document.body.dataset.collaborateurId,
-        elementData: document.querySelector('[data-collaborateur-id]')?.dataset.collaborateurId,
+        containerData: document.querySelector('.container')?.dataset?.collaborateurId,
+        elementData: document.querySelector('[data-collaborateur-id]')?.dataset?.collaborateurId,
         urlParam: new URLSearchParams(window.location.search).get('collaborateur_id'),
         hiddenInput: document.querySelector('input[name="collaborateur_id"]')?.value
     };
 
-    console.log('Available ID sources:', sources);
-
-    const id = sources.bodyData || sources.elementData || sources.urlParam || sources.hiddenInput;
+    const id = sources.bodyData || sources.containerData || sources.elementData || sources.urlParam || sources.hiddenInput;
     
     if (!id) {
-        console.error('Collaborateur ID not found in any source:', sources);
+        console.error('Collaborateur ID not found. Redirecting to login...');
+        window.location.href = '/login.php';
+        return null;
     }
     
     return id;
@@ -141,4 +147,43 @@ function updateActivityVisibility() {
         
         item.style.display = selectedTypes.includes(type) ? 'block' : 'none';
     });
+}
+
+async function registerForService(type, id) {
+    try {
+        const collaborateurId = getCollaborateurId();
+        
+        // Use the correct field name based on type
+        const requestData = {
+            type,
+            collaborateur_id: collaborateurId
+        };
+        
+        // Add the correct ID field based on type
+        if (type === 'event') {
+            requestData.id_evenement = id;
+        } else if (type === 'activity') {
+            requestData.id_activite = id;
+        }
+
+        const response = await fetch('/api/employee/register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        
+        // Rafraîchir le calendrier si on est sur la page calendrier
+        const calendar = document.querySelector('#calendar');
+        if (calendar) {
+            await initializeCalendar();
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('Erreur d\'inscription:', error);
+        throw error;
+    }
 }

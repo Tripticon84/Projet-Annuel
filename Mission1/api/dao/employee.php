@@ -547,3 +547,83 @@ function getEmployeeEvaluations(int $collaborateur_id) {
     }
     return null;
 }
+
+function createInscription(array $data) {
+    $db = getDatabaseConnection();
+    
+    try {
+        $db->beginTransaction();
+        
+        if (!in_array($data['type'], ['activity', 'event'])) {
+            throw new Exception('Invalid service type');
+        }
+
+        // Check if already registered
+        $checkSql = ($data['type'] === 'activity') 
+            ? "SELECT COUNT(*) FROM participe_activite WHERE id_collaborateur = :collaborateur_id AND id_activite = :service_id"
+            : "SELECT COUNT(*) FROM participe_evenement WHERE id_collaborateur = :collaborateur_id AND id_evenement = :service_id";
+            
+        $checkStmt = $db->prepare($checkSql);
+        $checkStmt->execute([
+            'collaborateur_id' => $data['id_collaborateur'],
+            'service_id' => $data['id_service']
+        ]);
+        
+        if ($checkStmt->fetchColumn() > 0) {
+            throw new Exception('Already registered for this service');
+        }
+
+        // Insert registration - removed date_inscription from INSERT
+        $sql = ($data['type'] === 'activity')
+            ? "INSERT INTO participe_activite (id_collaborateur, id_activite) VALUES (:collaborateur_id, :service_id)"
+            : "INSERT INTO participe_evenement (id_collaborateur, id_evenement) VALUES (:collaborateur_id, :service_id)";
+
+        $stmt = $db->prepare($sql);
+        $success = $stmt->execute([
+            'collaborateur_id' => $data['id_collaborateur'],
+            'service_id' => $data['id_service']
+        ]);
+
+        if (!$success) {
+            throw new Exception('Failed to insert registration');
+        }
+
+        // Update last activity date
+        $updateSql = "UPDATE collaborateur SET date_activite = NOW() WHERE collaborateur_id = :collaborateur_id";
+        $updateStmt = $db->prepare($updateSql);
+        $updateSuccess = $updateStmt->execute(['collaborateur_id' => $data['id_collaborateur']]);
+
+        if (!$updateSuccess) {
+            throw new Exception('Failed to update activity date');
+        }
+
+        $db->commit();
+        return true;
+
+    } catch (Exception $e) {
+        $db->rollBack();
+        error_log('Registration error: ' . $e->getMessage());
+        throw $e;
+    }
+}
+
+function getEmployeeRegistrations(int $collaborateurId) {
+    $db = getDatabaseConnection();
+    
+    // Récupérer les inscriptions aux événements
+    $eventQuery = "SELECT 'event' as type, id_evenement as service_id 
+                  FROM participe_evenement 
+                  WHERE id_collaborateur = :collaborateur_id";
+    
+    // Récupérer les inscriptions aux activités
+    $activityQuery = "SELECT 'activity' as type, id_activite as service_id 
+                     FROM participe_activite 
+                     WHERE id_collaborateur = :collaborateur_id";
+    
+    // Combiner les deux requêtes avec UNION
+    $query = $db->prepare($eventQuery . " UNION " . $activityQuery);
+    $query->execute(['collaborateur_id' => $collaborateurId]);
+    
+    return $query->fetchAll(PDO::FETCH_ASSOC);
+}
+
