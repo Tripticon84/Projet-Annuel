@@ -1,11 +1,13 @@
 <?php
-session_start();
+
 
 // Vérifier si les données de l'entreprise sont présentes
 if (!isset($_SESSION['company_data'])) {
     header('Location: register.php');
     exit();
 }
+
+echo (json_encode($_SESSION['company_data']));
 
 $title = "Inscription - Choisir votre abonnement";
 require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php';
@@ -164,7 +166,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         </div>
                     </div>
 
-                    <form method="post" action="complete_registration.php" id="subscription-form">
+                    <form method="post" action="/api/company/complete_registration.php" id="subscription-form">
                         <input type="hidden" name="plan" id="selected-plan" value="">
 
                         <div class="row g-4">

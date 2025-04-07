@@ -2,10 +2,11 @@
 session_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/siret.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/hashPassword.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 // Vérifier si le formulaire a été soumis
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: register.php');
+    header('Location: /frontOffice/societe/register/register.php');
     exit();
 }
 
@@ -65,11 +66,11 @@ if (!empty($errors)) {
         'contact_person' => $contact_person,
         'telephone' => $telephone
     ];
-    header('Location: register.php');
+    header('Location: /frontOffice/societe/register/register.php');
     exit();
 }
 
-// Vérification du SIRET via l'API INSEE
+//Vérification du SIRET via l'API INSEE
 $siretInfo = getInseeCompanyInfoBySiret($siret);
 
 if (empty($siretInfo) || isset($siretInfo['error'])) {
@@ -98,6 +99,6 @@ $_SESSION['company_data'] = [
 ];
 
 // Redirection vers la page de choix d'abonnement
-header('Location: subscription.php');
+header('Location: /frontOffice/societe/register/subscription.php');
 exit();
 ?>
