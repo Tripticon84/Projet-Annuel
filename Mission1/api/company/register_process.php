@@ -70,22 +70,22 @@ if (!empty($errors)) {
     exit();
 }
 
-// Vérification du SIRET via l'API INSEE
-// $siretInfo = getInseeCompanyInfoBySiret($siret);
+//Vérification du SIRET via l'API INSEE
+$siretInfo = getInseeCompanyInfoBySiret($siret);
 
-// if (empty($siretInfo) || isset($siretInfo['error'])) {
-//     $_SESSION['register_errors'] = ["Le numéro SIRET n'est pas valide ou n'existe pas"];
-//     $_SESSION['register_data'] = [
-//         'nom' => $nom,
-//         'siret' => $siret,
-//         'adresse' => $adresse,
-//         'email' => $email,
-//         'contact_person' => $contact_person,
-//         'telephone' => $telephone
-//     ];
-//     header('Location: register.php');
-//     exit();
-// }
+if (empty($siretInfo) || isset($siretInfo['error'])) {
+    $_SESSION['register_errors'] = ["Le numéro SIRET n'est pas valide ou n'existe pas"];
+    $_SESSION['register_data'] = [
+        'nom' => $nom,
+        'siret' => $siret,
+        'adresse' => $adresse,
+        'email' => $email,
+        'contact_person' => $contact_person,
+        'telephone' => $telephone
+    ];
+    header('Location: register.php');
+    exit();
+}
 
 // Les données sont valides, on les stocke en session pour l'étape suivante
 $_SESSION['company_data'] = [

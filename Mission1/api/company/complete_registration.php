@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Vérifier si les étapes précédentes ont été complétées
 if (!isset($_SESSION['company_data']) || !isset($_POST['plan'])) {
     $_SESSION['register_errors'] = ['Une erreur est survenue : données manquantes. Veuillez recommencer l\'inscription.'];
-    header('Location: /frontOffice/societe/register/register1.php');
+    header('Location: /frontOffice/societe/register/register.php');
     exit();
 }
 
@@ -39,7 +39,7 @@ if (!in_array($plan, ['starter', 'basic', 'premium'])) {
 
 if (!empty($errors)) {
     $_SESSION['register_errors'] = $errors;
-    header('Location: /frontOffice/societe/register/register2.php');
+    header('Location: /frontOffice/societe/register/register.php');
     exit();
 }
 
@@ -59,7 +59,7 @@ $data = [
 $ch = curl_init($apiUrl);
 if ($ch === false) {
     $_SESSION['register_errors'] = ['Erreur d\'initialisation cURL. Veuillez réessayer ultérieurement.'];
-    header('Location: /frontOffice/societe/register/register3.php');
+    header('Location: /frontOffice/societe/register/register.php');
     exit();
 }
 
@@ -80,7 +80,7 @@ if ($response === false) {
     error_log($errorMessage); // Journalisation de l'erreur
     $_SESSION['register_errors'] = ['Erreur de communication avec le serveur. Veuillez réessayer ultérieurement.'];
     curl_close($ch);
-    header('Location: register.php');
+    header('Location:  /frontOffice/societe/register/register.php');
     exit();
 }
 
@@ -140,7 +140,7 @@ if ($httpCode == 201) {
     ];
 
     echo $errorMsg; // Pour le débogage, à retirer en production
-    //header('Location: /frontOffice/societe/register/register.php');
+    header('Location: /frontOffice/societe/register/register.php');
     exit();
 }
 ?>

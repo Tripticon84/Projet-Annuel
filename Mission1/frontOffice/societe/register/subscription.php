@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 
 // Vérifier si les données de l'entreprise sont présentes
 if (!isset($_SESSION['company_data'])) {
