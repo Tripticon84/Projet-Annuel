@@ -2,10 +2,10 @@
 
 
 // Vérifier si les données de l'entreprise sont présentes
-if (!isset($_SESSION['company_data'])) {
-    header('Location: register.php');
-    exit();
-}
+// if (!isset($_SESSION['company_data'])) {
+//     header('Location: register.php');
+//     exit();
+// }
 
 echo (json_encode($_SESSION['company_data']));
 
