@@ -85,6 +85,25 @@
         background-color: #0056b3;
         color: white;
     }
+
+    /* Styles pour la modal */
+    .event-modal .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 3px solid;
+    }
+    
+    .event-modal.activity .modal-header {
+        border-color: #007bff;
+    }
+    
+    .event-modal.event .modal-header {
+        border-color: #28a745;
+    }
+    
+    .event-details dt {
+        font-weight: 600;
+        color: #495057;
+    }
 </style>
 
 <!-- Script spécifique à cette page -->
@@ -211,7 +230,10 @@ function initializeCalendar() {
                                 extendedProps: {
                                     type: activity.type,
                                     itemType: activity.itemType,
-                                    lieu: activity.lieu
+                                    lieu: activity.lieu,
+                                    devis: activity.devis,
+                                    prestataire: activity.prestataire,
+                                    statut: activity.statut
                                 }
                             }));
                         successCallback(formattedEvents);
@@ -224,10 +246,38 @@ function initializeCalendar() {
         }],
         eventClick: function(info) {
             const event = info.event;
-            const type = event.extendedProps.itemType === 'activity' ? 'Activité' : 'Événement';
-            const lieu = event.extendedProps.lieu || 'Non spécifié';
+            const modal = document.getElementById('eventDetailsModal');
+            const modalInstance = new bootstrap.Modal(modal);
             
-            alert(`${type}: ${event.title}\nLieu: ${lieu}\nDate: ${event.start.toLocaleDateString()}`);
+            // Reset modal classes
+            modal.classList.remove('activity', 'event');
+            // Add appropriate class based on item type
+            modal.classList.add(event.extendedProps.itemType);
+            
+            // Update modal content
+            modal.querySelector('.modal-title').textContent = event.title;
+            modal.querySelector('.event-date').textContent = event.start.toLocaleString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            modal.querySelector('.event-type').textContent = event.extendedProps.type;
+            modal.querySelector('.event-location').textContent = event.extendedProps.lieu || 'Non spécifié';
+            
+            // Additional details based on type
+            let additionalDetails = '';
+            if (event.extendedProps.itemType === 'activity') {
+                if (event.extendedProps.devis) additionalDetails += 'Devis requis\n';
+                if (event.extendedProps.prestataire) additionalDetails += 'Prestataire assigné\n';
+            } else {
+                if (event.extendedProps.statut) additionalDetails += `Statut: ${event.extendedProps.statut}\n`;
+            }
+            modal.querySelector('.event-additional').textContent = additionalDetails || 'Aucun détail supplémentaire';
+            
+            modalInstance.show();
         },
         locale: 'fr'
     });
@@ -345,6 +395,33 @@ document.addEventListener('DOMContentLoaded', function() {
                         <!-- Les activités seront chargées dynamiquement -->
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ajout de la modal pour les détails -->
+<div class="modal fade event-modal" id="eventDetailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="event-details">
+                    <dt>Date</dt>
+                    <dd class="event-date"></dd>
+                    <dt>Type</dt>
+                    <dd class="event-type"></dd>
+                    <dt>Lieu</dt>
+                    <dd class="event-location"></dd>
+                    <dt>Détails additionnels</dt>
+                    <dd class="event-additional"></dd>
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             </div>
         </div>
     </div>
