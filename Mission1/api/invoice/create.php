@@ -109,7 +109,21 @@ if (validateMandatoryParams($data, ['date_emission', 'date_echeance', 'statut', 
         return;
     }
 
-    echo json_encode(['id' => $newInvoiceId]);
+    // Générer automatiquement le PDF de la facture
+    $pdfPath = null;
+    if ($data['id_prestataire']) {
+        // Si c'est une facture pour un prestataire
+        $pdfPath = generateAndSaveProviderInvoicePDF($newInvoiceId);
+    } else {
+        // Si c'est une facture pour une société
+        $pdfPath = generateAndSaveCompanyInvoicePDF($newInvoiceId);
+    }
+
+    if (!$pdfPath) {
+        error_log("Erreur lors de la génération du PDF pour la facture ID: " . $newInvoiceId);
+    }
+
+    echo json_encode(['id' => $newInvoiceId, 'pdf_path' => $pdfPath]);
     http_response_code(201);
     exit;
 

@@ -31,10 +31,17 @@ if (getEstimateById($devisId) == null) {
 }
 
 if ($devisId) {
+    // Générer et sauvegarder le PDF
+    $pdfPath = generateAndSavePDF($devisId);
+
     $pdf = generatePDFForCompany($devisId);
 
-    http_response_code(200);
-    echo json_encode($pdf);
+    if ($pdfPath) {
+        http_response_code(200);
+        echo json_encode(['success' => true, 'file_path' => $pdfPath]);
+    } else {
+        returnError(500, 'Failed to generate PDF');
+    }
 } else {
     returnError(500, 'No estimate or contract found');
 }

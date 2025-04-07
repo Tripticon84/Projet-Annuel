@@ -126,5 +126,14 @@ if (isset($data['frais_ids']) && is_array($data['frais_ids'])) {
     }
 }
 
-echo json_encode(['success' => "Le devis id : " . $devis_id . " a été mis à jour avec succès"]);
+// Générer automatiquement un nouveau PDF du devis mis à jour
+$pdfPath = generateAndSavePDF($devis_id);
+if (!$pdfPath) {
+    error_log("Erreur lors de la génération du PDF pour le devis ID: " . $devis_id);
+}
+
+echo json_encode([
+    'success' => "Le devis id : " . $devis_id . " a été mis à jour avec succès",
+    'pdf_path' => $pdfPath
+]);
 http_response_code(200);

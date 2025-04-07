@@ -83,8 +83,24 @@ if (!$updatedInvoice) {
     returnError(500, 'Could not update the Invoice. Database operation failed.');
     return;
 }
-else{
-    echo json_encode(['facture_id' => $invoice_id]);
+else {
+    // Générer un nouveau PDF après la mise à jour
+    $pdfPath = null;
+    $invoiceDetails = getInvoiceById($invoice_id);
+
+    if ($invoiceDetails['id_prestataire']) {
+        // Si c'est une facture pour un prestataire
+        $pdfPath = generateAndSaveProviderInvoicePDF($invoice_id);
+    } else {
+        // Si c'est une facture pour une société
+        $pdfPath = generateAndSaveCompanyInvoicePDF($invoice_id);
+    }
+
+    if (!$pdfPath) {
+        error_log("Erreur lors de la génération du PDF pour la facture ID: " . $invoice_id);
+    }
+
+    echo json_encode(['facture_id' => $invoice_id, 'pdf_path' => $pdfPath]);
     http_response_code(200);
 }
 ?>

@@ -76,7 +76,14 @@ if (validateMandatoryParams($data, ['montant_ht', 'id_societe'])) {
         }
     }
 
-    echo json_encode(['id' => $newEstimateId]);
+    // Générer automatiquement le PDF du devis
+    $pdfPath = generateAndSavePDF($newEstimateId);
+    if (!$pdfPath) {
+        error_log("Erreur lors de la génération du PDF pour le devis ID: " . $newEstimateId);
+    }
+
+    echo json_encode(['id' => $newEstimateId,
+                      'pdf_path' => $pdfPath]);
     http_response_code(201);
     exit;
 
