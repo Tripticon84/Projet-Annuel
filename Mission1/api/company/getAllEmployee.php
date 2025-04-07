@@ -11,12 +11,22 @@ if (!methodIsAllowed('read')) {
 
 acceptedTokens(true, true, false, false);
 
-
+// Récupérer les paramètres
 $idSociete = intval($_GET['societe_id']);
-$Employees = getSocietyEmployees($idSociete);
+
+// Récupérer le paramètre desactivate (0 pour actifs, 1 pour désactivés)
+$desactivate = isset($_GET['desactivate']) ? intval($_GET['desactivate']) : null;
+
+// Récupérer les filtres optionnels
+$name = isset($_GET['name']) ? $_GET['name'] : null;
+$role = isset($_GET['role']) ? $_GET['role'] : null;
+$date = isset($_GET['date']) ? $_GET['date'] : null;
+
+// Récupérer les employés avec le filtre de désactivation
+$Employees = getSocietyEmployees($idSociete, $desactivate, $name, $role, $date);
 
 if (!$Employees) {
-    returnError(404, 'Company not found');
+    returnError(404, 'No employees found');
     return;
 }
 
@@ -33,6 +43,7 @@ foreach ($Employees as $employee) {
         "telephone" => $employee['telephone'],
         "date_creation" => $employee['date_creation'],
         "date_activite" => $employee['date_activite'],
+        "desactivate" => $employee['desactivate']
     ];
 }
 

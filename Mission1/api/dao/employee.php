@@ -41,7 +41,7 @@ function createEmployee(
 function getEmployee(int $id)
 {
     $db = getDatabaseConnection();
-    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur WHERE collaborateur_id = :id";
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite, desactivate FROM collaborateur WHERE collaborateur_id = :id";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute(['id' => $id]);
     if ($res) {
@@ -82,6 +82,54 @@ function getAllEmployees(string $username = "", int $limit = null, int $offset =
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return null;
+}
+
+/**
+ * Récupère les employés désactivés
+ */
+function getDisabledEmployees(string $username = "", int $limit = null, int $offset = null, int $id_societe = null)
+{
+    $db = getDatabaseConnection();
+    $params = [];
+    $sql = "SELECT collaborateur_id, nom, prenom, username, role, email, telephone, id_societe, date_creation, date_activite FROM collaborateur WHERE desactivate = 1";
+
+    if (!empty($username)) {
+        $sql .= " AND username LIKE :username";
+        $params['username'] = "%" . $username . "%";
+    }
+
+    if (!is_null($id_societe)) {
+        $sql .= " AND id_societe = :id_societe";
+        $params['id_societe'] = $id_societe;
+    }
+
+    // Gestion des paramètres LIMIT et OFFSET
+    if ($limit !== null) {
+        $sql .= " LIMIT " . (string) $limit;
+
+        if ($offset !== null) {
+            $sql .= " OFFSET " . (string) $offset;
+        }
+    }
+
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute($params);
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+
+/**
+ * Réactive un employé désactivé
+ */
+function reactivateEmployee(int $id)
+{
+    $db = getDatabaseConnection();
+    $sql = "UPDATE collaborateur SET desactivate = 0 WHERE collaborateur_id = :id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['id' => $id]);
+    return $res;
 }
 
 // function deleteEmployee(int $id)
