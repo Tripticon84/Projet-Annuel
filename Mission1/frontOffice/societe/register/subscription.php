@@ -7,7 +7,7 @@ if (!isset($_SESSION['company_data'])) {
     exit();
 }
 
-$title = "Choisir votre abonnement";
+$title = "Inscription - Choisir votre abonnement";
 require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php';
 ?>
 
@@ -16,13 +16,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         background: linear-gradient(135deg, #3a7bd5, #6fc2c0);
         background-attachment: fixed;
     }
-    
+
     .subscription-card {
         border-radius: 15px;
-        box-shadow: rgba(58, 123, 213, 0.4) 5px 5px, 
-                    rgba(58, 123, 213, 0.3) 10px 10px, 
-                    rgba(58, 123, 213, 0.2) 15px 15px, 
-                    rgba(58, 123, 213, 0.1) 20px 20px, 
+        box-shadow: rgba(58, 123, 213, 0.4) 5px 5px,
+                    rgba(58, 123, 213, 0.3) 10px 10px,
+                    rgba(58, 123, 213, 0.2) 15px 15px,
+                    rgba(58, 123, 213, 0.1) 20px 20px,
                     rgba(58, 123, 213, 0.05) 25px 25px;
         overflow: hidden;
         backdrop-filter: blur(10px);
@@ -31,27 +31,27 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         z-index: 1;
         transition: all 0.3s ease;
     }
-    
+
     .subscription-card:hover {
         transform: translateY(-5px);
-        box-shadow: rgba(111, 194, 192, 0.4) 5px 5px, 
-                    rgba(111, 194, 192, 0.3) 10px 10px, 
-                    rgba(111, 194, 192, 0.2) 15px 15px, 
-                    rgba(111, 194, 192, 0.1) 20px 20px, 
+        box-shadow: rgba(111, 194, 192, 0.4) 5px 5px,
+                    rgba(111, 194, 192, 0.3) 10px 10px,
+                    rgba(111, 194, 192, 0.2) 15px 15px,
+                    rgba(111, 194, 192, 0.1) 20px 20px,
                     rgba(111, 194, 192, 0.05) 25px 25px;
     }
-    
+
     .card-header {
         border-radius: 15px 15px 0 0 !important;
         padding: 1.5rem !important;
         background: linear-gradient(to right, #3a7bd5, #6fc2c0) !important;
         border: none;
     }
-    
+
     .pricing-features {
         min-height: 300px;
     }
-    
+
     .form-steps {
         display: flex;
         justify-content: space-between;
@@ -106,28 +106,28 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         color: #3a7bd5;
         font-weight: bold;
     }
-    
+
     .plan-card {
         cursor: pointer;
         transition: all 0.3s ease;
     }
-    
+
     .plan-card:hover {
         transform: scale(1.03);
     }
-    
+
     .plan-card.selected {
         border: 3px solid #3a7bd5;
         transform: scale(1.05);
     }
-    
+
     .btn-subscription {
         background: linear-gradient(to right, #3a7bd5, #6fc2c0);
         border: none;
         color: white;
         transition: all 0.3s ease;
     }
-    
+
     .btn-subscription:hover {
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(58, 123, 213, 0.4);
@@ -166,7 +166,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
                     <form method="post" action="complete_registration.php" id="subscription-form">
                         <input type="hidden" name="plan" id="selected-plan" value="">
-                        
+
                         <div class="row g-4">
                             <!-- Starter Plan -->
                             <div class="col-md-4">
@@ -267,18 +267,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         const planCards = document.querySelectorAll('.plan-card');
         const selectedPlanInput = document.getElementById('selected-plan');
         const continueBtn = document.getElementById('continue-btn');
-        
+
         planCards.forEach(card => {
             card.addEventListener('click', function() {
                 // Remove selected class from all cards
                 planCards.forEach(c => c.classList.remove('selected'));
-                
+
                 // Add selected class to clicked card
                 this.classList.add('selected');
-                
+
                 // Update hidden input value
                 selectedPlanInput.value = this.dataset.plan;
-                
+
                 // Enable continue button
                 continueBtn.disabled = false;
             });

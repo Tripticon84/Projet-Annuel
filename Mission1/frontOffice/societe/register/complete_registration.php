@@ -1,4 +1,5 @@
 <?php
+$title = 'Inscription - Finalisation de l\'inscription';
 session_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/hashPassword.php';
 
@@ -88,12 +89,12 @@ if ($httpCode != 201) {
 if ($httpCode == 201) {
     // Succès - rediriger vers une page de confirmation
     $_SESSION['registration_success'] = true;
-    
+
     // Nettoyage des données de session
     unset($_SESSION['company_data']);
     unset($_SESSION['register_errors']);
     unset($_SESSION['register_data']);
-    
+
     header('Location: confirmation.php');
     exit();
 } else {
@@ -118,7 +119,7 @@ if ($httpCode == 201) {
         default:
             $errorMsg = $responseData['error'] ?? 'Une erreur inattendue est survenue lors de la création du compte.';
     }
-    
+
     $_SESSION['register_errors'] = [$errorMsg];
     $_SESSION['register_data'] = [
         'nom' => $company['nom'],
@@ -128,7 +129,7 @@ if ($httpCode == 201) {
         'contact_person' => $company['contact_person'],
         'telephone' => $company['telephone']
     ];
-    
+
     header('Location: register.php');
     exit();
 }

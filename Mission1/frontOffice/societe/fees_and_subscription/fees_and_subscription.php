@@ -107,7 +107,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
     </div>
 </div>
 
-<script src="/data/static/js/societe.js"></script>
 <script>
     // Variables globales
     let societyId = <?php echo $_SESSION['societe_id']; ?>;

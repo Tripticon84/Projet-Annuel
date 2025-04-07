@@ -571,12 +571,14 @@ function getFraisByEstimateId($estimateId) {
     return null;
 }
 
+
 /**
  * Associe des frais à un devis
  */
 function attachFraisToEstimate($estimateId, $fraisIds) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . "/api/dao/fees.php";
+
     $db = getDatabaseConnection();
-    $db->beginTransaction();
 
     try {
         // Supprime d'abord les associations existantes
@@ -584,26 +586,26 @@ function attachFraisToEstimate($estimateId, $fraisIds) {
         $stmt = $db->prepare($sql);
         $stmt->execute(['estimate_id' => $estimateId]);
 
-        // Ajoute les nouvelles associations
+        // Ajoute les nouvelles associations en utilisant la fonction linkFraisToDevis
         if (!empty($fraisIds)) {
-            $sql = "INSERT INTO INCLUT_FRAIS_DEVIS (id_devis, id_frais) VALUES (:estimate_id, :frais_id)";
-            $stmt = $db->prepare($sql);
+            error_log(print_r($fraisIds, true));
 
             foreach ($fraisIds as $fraisId) {
-                $stmt->execute([
-                    'estimate_id' => $estimateId,
-                    'frais_id' => $fraisId
-                ]);
+                $result = linkFraisToDevis($fraisId, $estimateId);
+                if ($result === null) {
+                    // Si une erreur se produit, lancer une exception
+                    throw new Exception("Impossible d'associer le frais ID {$fraisId} au devis ID {$estimateId}");
+                }
+                error_log("Attached frais_id {$fraisId} to estimate_id {$estimateId}");
             }
         }
 
         // Met à jour le montant total du devis
         updateEstimateTotalAmount($estimateId);
 
-        $db->commit();
         return true;
     } catch (Exception $e) {
-        $db->rollBack();
+        error_log("Error attaching frais to estimate: " . $e->getMessage());
         return false;
     }
 }
@@ -644,13 +646,13 @@ function updateEstimateTotalAmount($estimateId) {
     $sql = "UPDATE devis SET
             montant_ht = :montant_ht,
             montant_tva = :montant_tva,
-            montant = :montant_total
+            montant = :montant
             WHERE devis_id = :estimate_id";
     $stmt = $db->prepare($sql);
     return $stmt->execute([
         'montant_ht' => $montantHT,
         'montant_tva' => $montantTVA,
-        'montant_total' => $montantTotal,
+        'montant' => $montantTotal,
         'estimate_id' => $estimateId
     ]);
 }
