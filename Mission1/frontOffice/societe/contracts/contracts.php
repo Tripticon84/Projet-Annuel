@@ -18,9 +18,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshData">
                             <i class="fas fa-sync-alt"></i> Actualiser
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addContractModal">
-                            <i class="fas fa-plus"></i> Nouveau contrat
-                        </button>
                     </div>
                 </div>
             </div>
@@ -36,7 +33,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                             <label for="statusFilter" class="form-label">Statut</label>
                             <select id="statusFilter" class="form-select">
                                 <option value="">Tous</option>
-                                <option value="brouillon">Brouillon</option>
                                 <option value="envoyé">Envoyé</option>
                                 <option value="accepté">Accepté</option>
                                 <option value="refusé">Refusé</option>
@@ -95,58 +91,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
     </div>
 </div>
 
-<!-- Modal pour ajouter un contrat -->
-<div class="modal fade" id="addContractModal" tabindex="-1" aria-labelledby="addContractModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addContractModalLabel">Ajouter un contrat</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addContractForm">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="start_date" class="form-label">Date de début</label>
-                            <input type="date" class="form-control" id="start_date" name="start_date" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="end_date" class="form-label">Date de fin</label>
-                            <input type="date" class="form-control" id="end_date" name="end_date" required>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="montant" class="form-label">Montant</label>
-                            <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" id="montant" name="montant" required>
-                                <span class="input-group-text">€</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="statut" class="form-label">Statut</label>
-                            <select class="form-select" id="statut" name="statut" required>
-                                <option value="brouillon">Brouillon</option>
-                                <option value="envoyé">Envoyé</option>
-                                <option value="accepté">Accepté</option>
-                                <option value="refusé">Refusé</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" id="saveContract">Enregistrer</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Modal pour visualiser/modifier un contrat -->
 <div class="modal fade" id="viewContractModal" tabindex="-1" aria-labelledby="viewContractModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -168,7 +112,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 <script>
     // Variables globales
     let societyId = <?php echo $_SESSION['societe_id']; ?>;
-    const token = <?php echo json_encode($_SESSION["token"]); ?>; // Safely encode the token for JavaScript
 
     // Fonction d'initialisation
     document.addEventListener('DOMContentLoaded', function() {
@@ -187,39 +130,5 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         document.getElementById('resetFilters').addEventListener('click', function() {
             resetContractFilters(societyId);
         });
-
-        document.getElementById('saveContract').addEventListener('click', function() {
-            addNewContract();
-        });
     });
-
-    // Fonction pour charger les contrats
-    function loadContracts(societyId) {
-        fetch(`/api/estimate/getAllContract.php`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`, // Include token in the Authorization header
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur lors du chargement des contrats.');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // ...existing code to populate the contracts table...
-        })
-        .catch(error => {
-            console.error(error);
-            document.getElementById('contracts-table').innerHTML = `
-                <tr>
-                    <td colspan="8" class="text-center text-danger">
-                        Impossible de charger les contrats. Veuillez réessayer plus tard.
-                    </td>
-                </tr>
-            `;
-        });
-    }
 </script>

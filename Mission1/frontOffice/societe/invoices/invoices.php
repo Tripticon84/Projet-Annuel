@@ -24,9 +24,6 @@ $stripePublishableKey = "pk_test_51PAXnVP0arAN6IC0UPtpOnaMS4O1Qp153mO28fvjMR3Qzq
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshData">
                             <i class="fas fa-sync-alt"></i> Actualiser
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addInvoiceModal">
-                            <i class="fas fa-plus"></i> Nouvelle facture
-                        </button>
                     </div>
                 </div>
             </div>
@@ -100,63 +97,6 @@ $stripePublishableKey = "pk_test_51PAXnVP0arAN6IC0UPtpOnaMS4O1Qp153mO28fvjMR3Qzq
     </div>
 </div>
 
-<!-- Modal pour ajouter une facture -->
-<div class="modal fade" id="addInvoiceModal" tabindex="-1" aria-labelledby="addInvoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addInvoiceModalLabel">Ajouter une facture</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addInvoiceForm">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="date_emission" class="form-label">Date d'émission</label>
-                            <input type="date" class="form-control" id="date_emission" name="date_emission" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="date_echeance" class="form-label">Date d'échéance</label>
-                            <input type="date" class="form-control" id="date_echeance" name="date_echeance" required>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="montant_ht" class="form-label">Montant HT</label>
-                            <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" id="montant_ht" name="montant_ht" required>
-                                <span class="input-group-text">€</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="taux_tva" class="form-label">Taux TVA</label>
-                            <div class="input-group">
-                                <input type="number" step="0.1" class="form-control" id="taux_tva" name="taux_tva" value="20.0" required>
-                                <span class="input-group-text">%</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="montant_ttc" class="form-label">Montant TTC (calculé)</label>
-                            <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" id="montant_ttc" name="montant_ttc" readonly>
-                                <span class="input-group-text">€</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" id="saveInvoice">Enregistrer</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Modal pour visualiser/modifier une facture -->
 <div class="modal fade" id="viewInvoiceModal" tabindex="-1" aria-labelledby="viewInvoiceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -170,7 +110,6 @@ $stripePublishableKey = "pk_test_51PAXnVP0arAN6IC0UPtpOnaMS4O1Qp153mO28fvjMR3Qzq
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" class="btn btn-success" id="markAsPaid">Marquer comme payée</button>
                 <!-- Bouton de paiement Stripe -->
                 <button type="button" class="btn btn-primary" id="payWithStripe" style="display: none;">
                     <i class="fab fa-stripe"></i> Payer maintenant
@@ -208,17 +147,11 @@ $stripePublishableKey = "pk_test_51PAXnVP0arAN6IC0UPtpOnaMS4O1Qp153mO28fvjMR3Qzq
             loadAllInvoices(societyId);
         });
 
-        document.getElementById('saveInvoice').addEventListener('click', function() {
-            addNewInvoice();
-        });
-
         // Ajouter l'événement pour le paiement Stripe
         document.getElementById('payWithStripe').addEventListener('click', function() {
             setupStripePayment(currentInvoiceId);
         });
     });
-
-
 
     // Fonction pour initialiser le paiement Stripe
     function setupStripePayment(invoiceId) {

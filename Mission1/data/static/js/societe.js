@@ -149,13 +149,6 @@ function viewContractDetails(id) {
                       <p><strong>Montant TVA:</strong> ${contract.montant_tva} €</p>
                   </div>
               </div>
-              <div class="row">
-                  <div class="col-12">
-                      <p><strong>Description:</strong></p>
-                      <p>${
-                        contract.description || "Aucune description disponible"
-                      }</p>
-                  </div>
               </div>
           `;
 
@@ -1017,33 +1010,30 @@ function downloadInvoicePDF(invoiceId) {
               return;
           }
 
-          tableBody.innerHTML = '';
-          data.forEach(invoice => {
+            tableBody.innerHTML = '';
+            data.forEach(invoice => {
               const statusClass = getStatusBadge(invoice.statut);
               tableBody.innerHTML += `
-                  <tr>
-                      <td>${invoice.facture_id}</td>
-                      <td>${new Date(invoice.date_emission).toLocaleDateString('fr-FR')}</td>
-                      <td>${new Date(invoice.date_echeance).toLocaleDateString('fr-FR')}</td>
-                      <td>${invoice.montant.toLocaleString('fr-FR')} €</td>
-                      <td>${invoice.montant_tva.toLocaleString('fr-FR')} €</td>
-                      <td>${invoice.montant_ht.toLocaleString('fr-FR')} €</td>
-                      <td><span class="badge bg-${statusClass}">${invoice.statut}</span></td>
-                      <td>
-                          <button class="btn btn-sm btn-info" onclick="viewInvoiceDetails(${invoice.facture_id})">
-                              <i class="fas fa-eye"></i>
-                          </button>
-                          ${invoice.statut !== 'Payee' ?
-                              `<button class="btn btn-sm btn-success" onclick="markInvoiceAsPaid(${invoice.facture_id})">
-                                  <i class="fas fa-check"></i>
-                              </button>` : ''}
-                          <button class="btn btn-sm btn-danger" onclick="downloadInvoicePDF(${invoice.facture_id})">
-                              <i class="fas fa-file-pdf"></i>
-                          </button>
-                      </td>
-                  </tr>
+                <tr>
+                  <td>${invoice.facture_id}</td>
+                  <td>${new Date(invoice.date_emission).toLocaleDateString('fr-FR')}</td>
+                  <td>${new Date(invoice.date_echeance).toLocaleDateString('fr-FR')}</td>
+                  <td>${invoice.montant.toLocaleString('fr-FR')} €</td>
+                  <td>${invoice.montant_tva.toLocaleString('fr-FR')} €</td>
+                  <td>${invoice.montant_ht.toLocaleString('fr-FR')} €</td>
+                  <td><span class="badge bg-${statusClass}">${invoice.statut}</span></td>
+                  <td>
+                    <button class="btn btn-sm btn-info" onclick="viewInvoiceDetails(${invoice.facture_id})">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    ${invoice.statut === 'Payee' ?
+                      `<button class="btn btn-sm btn-danger" onclick="downloadInvoicePDF(${invoice.facture_id})">
+                        <i class="fas fa-file-pdf"></i>
+                      </button>` : ''}
+                  </td>
+                </tr>
               `;
-          });
+            });
       })
       .catch(error => {
           console.error('Erreur lors du chargement des factures:', error);
@@ -1140,16 +1130,10 @@ function downloadInvoicePDF(invoiceId) {
                       <p><strong>Statut:</strong> <span class="badge bg-${getStatusBadge(invoice.statut)}">${invoice.statut}</span></p>
                   </div>
               </div>
-              <div class="row">
-                  <div class="col-12">
-                      <p><strong>Description:</strong></p>
-                      <p>${invoice.description || 'Aucune description disponible'}</p>
-                  </div>
               </div>
           `;
 
           // Désactiver le bouton "Marquer comme payée" si déjà payée
-          const markAsPaidBtn = document.getElementById('markAsPaid');
           const payWithStripeBtn = document.getElementById('payWithStripe');
 
           // Stocker l'ID de la facture courante pour le traitement du paiement
@@ -1157,15 +1141,8 @@ function downloadInvoicePDF(invoiceId) {
 
           if (invoice.statut === 'Payee') {
               // Si la facture est déjà payée, désactiver les boutons de paiement
-              markAsPaidBtn.disabled = true;
-              markAsPaidBtn.classList.add('disabled');
               payWithStripeBtn.style.display = 'none';
           } else {
-              // Si la facture n'est pas payée, activer les boutons de paiement
-              markAsPaidBtn.disabled = false;
-              markAsPaidBtn.classList.remove('disabled');
-              markAsPaidBtn.setAttribute('data-id', invoice.facture_id);
-
               // Afficher le bouton de paiement Stripe
               payWithStripeBtn.style.display = 'inline-block';
           }
