@@ -15,9 +15,10 @@ $username = '';
 $limit = null;
 $offset = null;
 $id_societe = null;
+$desactivate = 0; // Default to active employees
 
 if (isset($_GET['username'])) {
-    $username = trim($_GET['username']); // Fix the parameter name
+    $username = trim($_GET['username']);
 }
 if (isset($_GET['limit'])) {
     $limit = intval($_GET['limit']);
@@ -32,13 +33,31 @@ if (isset($_GET['offset'])) {
     }
 }
 if (isset($_GET['id_societe'])) {
-    $offset = intval($_GET['id_societe']);
-    if ($offset < 0) {
+    $id_societe = intval($_GET['id_societe']);
+    if ($id_societe < 0) {
         returnError(400, 'id_societe must be a positive number');
     }
 }
+if (isset($_GET['desactivate'])) {
+    $desactivate = intval($_GET['desactivate']);
+    // Only accept 0 or 1
+    if ($desactivate !== 0 && $desactivate !== 1) {
+        returnError(400, 'desactivate must be 0 or 1');
+    }
+}
 
-$employees = getAllEmployees($username, $limit, $offset, $id_societe);
+// Choose the appropriate function based on the desactivate parameter
+if ($desactivate === 1) {
+    $employees = getDisabledEmployees($username, $limit, $offset, $id_societe);
+} else {
+    $employees = getAllEmployees($username, $limit, $offset, $id_societe);
+}
+
+// Handle case where no employees are found
+if ($employees === null || count($employees) === 0) {
+    echo json_encode([]);
+    exit;
+}
 
 $result = []; // Initialize the result array
 
