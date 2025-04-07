@@ -18,9 +18,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshData">
                             <i class="fas fa-sync-alt"></i> Actualiser
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addContractModal">
-                            <i class="fas fa-plus"></i> Nouveau contrat
-                        </button>
                     </div>
                 </div>
             </div>
@@ -192,34 +189,5 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             addNewContract();
         });
     });
-
-    // Fonction pour charger les contrats
-    function loadContracts(societyId) {
-        fetch(`/api/estimate/getAllContract.php`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`, // Include token in the Authorization header
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Erreur lors du chargement des contrats.');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // ...existing code to populate the contracts table...
-        })
-        .catch(error => {
-            console.error(error);
-            document.getElementById('contracts-table').innerHTML = `
-                <tr>
-                    <td colspan="8" class="text-center text-danger">
-                        Impossible de charger les contrats. Veuillez réessayer plus tard.
-                    </td>
-                </tr>
-            `;
-        });
-    }
+    
 </script>

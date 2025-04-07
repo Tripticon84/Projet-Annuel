@@ -269,9 +269,9 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         });
 
         // Événement pour le bouton de désactivation
-        document.getElementById('deactivateEmployee').addEventListener('click', function() {
+        document.getElementById('desactivateEmployee').addEventListener('click', function() {
             const employeeId = this.getAttribute('data-id');
-            deactivateEmployee(employeeId);
+            desactivateEmployee(employeeId);
         });
 
         // Événement pour le bouton d'édition dans la vue détails
