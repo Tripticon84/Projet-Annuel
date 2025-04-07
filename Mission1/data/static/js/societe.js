@@ -167,7 +167,7 @@ function viewContractDetails(id) {
 
 // Charger les abonnements
 function loadSubscriptions(societyId) {
-  fetch(`/api/cost/getSubscriptions.php?society_id=${societyId}`, {
+  fetch(`/api/company/getOtherCosts.php?societe_id=${societyId}`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + getToken(),
@@ -181,8 +181,11 @@ function loadSubscriptions(societyId) {
     })
     .then(data => {
       const tableBody = document.getElementById('subscriptions-table');
-      
-      if (data.length === 0) {
+
+      // Filtrer les abonnements (est_abonnement = 1)
+      const subscriptions = data.filter(item => item.est_abonnement == 1);
+
+      if (subscriptions.length === 0) {
         tableBody.innerHTML = `
           <tr>
             <td colspan="5" class="text-center">
@@ -197,24 +200,24 @@ function loadSubscriptions(societyId) {
       }
 
       let html = '';
-      data.forEach(subscription => {
+      subscriptions.forEach(subscription => {
         html += `
           <tr>
-            <td>${subscription.name}</td>
-            <td>${parseFloat(subscription.amount).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'})}</td>
+            <td>${subscription.nom}</td>
+            <td>${parseFloat(subscription.montant).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'})}</td>
             <td>${subscription.description || 'N/A'}</td>
-            <td>${new Date(subscription.created_at).toLocaleDateString('fr-FR')}</td>
+            <td>${new Date(subscription.date_creation).toLocaleDateString('fr-FR')}</td>
             <td>
-              <button class="btn btn-sm btn-info view-cost" data-id="${subscription.id}" data-type="subscription">
+              <button class="btn btn-sm btn-info view-cost" data-id="${subscription.frais_id}" data-type="subscription">
                 <i class="fas fa-eye"></i> Voir
               </button>
             </td>
           </tr>
         `;
       });
-      
+
       tableBody.innerHTML = html;
-      
+
       // Ajouter les écouteurs d'événements pour les boutons "Voir"
       setTimeout(() => {
         document.querySelectorAll('.view-cost').forEach(button => {
@@ -240,7 +243,7 @@ function loadSubscriptions(societyId) {
 
 // Fonction pour voir les détails d'un frais ou abonnement
 function viewCostDetails(costId, costType) {
-  fetch(`/api/cost/getCostById.php?cost_id=${costId}`, {
+  fetch(`/api/fees/getOne.php?frais_id=${costId}`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + getToken(),
@@ -255,12 +258,12 @@ function viewCostDetails(costId, costType) {
     .then(data => {
       const costDetails = document.getElementById('cost-details');
       const modalTitle = document.getElementById('viewCostModalLabel');
-      
-      modalTitle.textContent = costType === 'subscription' ? 'Détails de l\'abonnement' : 'Détails du frais';
-      
+
+      modalTitle.textContent = data.est_abonnement == 1 ? 'Détails de l\'abonnement' : 'Détails du frais';
+
       const creationDate = new Date(data.date_creation).toLocaleDateString('fr-FR');
       const amount = parseFloat(data.montant).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'});
-      
+
       costDetails.innerHTML = `
         <div class="mb-3">
           <h6>Nom:</h6>
@@ -282,8 +285,12 @@ function viewCostDetails(costId, costType) {
           <h6>Type:</h6>
           <p>${parseInt(data.est_abonnement) === 1 ? 'Abonnement' : 'Frais ponctuel'}</p>
         </div>
+        <div class="mb-3">
+          <h6>Devis associé:</h6>
+          <p>Devis #${data.devis[0].devis_id} (${data.devis[0].statut})</p>
+        </div>
       `;
-      
+
       // Afficher le modal
       const modal = new bootstrap.Modal(document.getElementById('viewCostModal'));
       modal.show();
@@ -296,7 +303,7 @@ function viewCostDetails(costId, costType) {
 
 // Charger les autres frais
 function loadOtherCosts(societyId) {
-  fetch(`/api/cost/getOtherCosts.php?society_id=${societyId}`, {
+  fetch(`/api/company/getOtherCosts.php?societe_id=${societyId}`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + getToken(),
@@ -310,7 +317,7 @@ function loadOtherCosts(societyId) {
     })
     .then(data => {
       const tableBody = document.getElementById('costs-table');
-      
+
       if (data.length === 0) {
         tableBody.innerHTML = `
           <tr>
@@ -327,23 +334,34 @@ function loadOtherCosts(societyId) {
 
       let html = '';
       data.forEach(cost => {
-        html += `
-          <tr>
-            <td>${cost.name}</td>
-            <td>${parseFloat(cost.amount).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'})}</td>
-            <td>${cost.description || 'N/A'}</td>
-            <td>${new Date(cost.created_at).toLocaleDateString('fr-FR')}</td>
-            <td>
-              <button class="btn btn-sm btn-info view-cost" data-id="${cost.id}" data-type="cost">
-                <i class="fas fa-eye"></i> Voir
-              </button>
-            </td>
-          </tr>
-        `;
+        if (cost.est_abonnement === 0) { // Seulement les frais non-abonnements
+          html += `
+            <tr>
+              <td>${cost.nom}</td>
+              <td>${parseFloat(cost.montant).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'})}</td>
+              <td>${cost.description || 'N/A'}</td>
+              <td>${new Date(cost.date_creation).toLocaleDateString('fr-FR')}</td>
+              <td>
+                <button class="btn btn-sm btn-info view-cost" data-id="${cost.frais_id}" data-type="cost">
+                  <i class="fas fa-eye"></i> Voir
+                </button>
+              </td>
+            </tr>
+          `;
+        }
       });
-      
-      tableBody.innerHTML = html;
-      
+
+      tableBody.innerHTML = html || `
+        <tr>
+          <td colspan="5" class="text-center">
+            <div class="alert alert-info mb-0">
+              <i class="fas fa-info-circle me-2"></i>
+              Aucun frais non-abonnement trouvé.
+            </div>
+          </td>
+        </tr>
+      `;
+
       // Ajouter les écouteurs d'événements pour les boutons "Voir"
       setTimeout(() => {
         document.querySelectorAll('.view-cost').forEach(button => {
@@ -1619,5 +1637,41 @@ function applyOtherCostFilters() {
   .catch(error => {
     console.error('Erreur lors de l\'application des filtres:', error);
     tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des frais</td></tr>';
+  });
+}
+
+// Fonction pour mettre à jour les compteurs de frais et abonnements
+function updateCounters(societyId) {
+  fetch(`/api/company/getOtherCosts.php?societe_id=${societyId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer ' + getToken()
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Erreur lors de la récupération des données');
+    }
+    return response.json();
+  })
+  .then(data => {
+    // Filtrer les abonnements (est_abonnement = 1) et les frais (est_abonnement = 0)
+    const subscriptions = data.filter(item => item.est_abonnement == 1);
+    const costs = data.filter(item => item.est_abonnement == 0);
+
+    // Mettre à jour les compteurs dans l'interface si les éléments existent
+    const subscriptionsCounter = document.getElementById('total-subscriptions');
+    const costsCounter = document.getElementById('total-costs');
+
+    if (subscriptionsCounter) {
+      subscriptionsCounter.textContent = subscriptions.length;
+    }
+
+    if (costsCounter) {
+      costsCounter.textContent = costs.length;
+    }
+  })
+  .catch(error => {
+    console.error('Erreur lors de la mise à jour des compteurs:', error);
   });
 }
