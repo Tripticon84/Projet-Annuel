@@ -287,7 +287,3 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         });
     });
 </script>
-
-<?php
-// You can add a footer include here if needed
-?>
