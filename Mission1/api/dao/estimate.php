@@ -653,4 +653,12 @@ function updateEstimateTotalAmount($estimateId) {
         'montant_total' => $montantTotal,
         'estimate_id' => $estimateId
     ]);
+
+function getEstimateBySocietyId($societyId)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT devis_id, date_debut, date_fin, statut, montant, montant_ht, montant_tva, is_contract, fichier, id_societe FROM devis WHERE id_societe = :societyId";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['societyId' => $societyId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }

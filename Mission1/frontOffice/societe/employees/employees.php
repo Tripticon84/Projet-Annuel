@@ -25,6 +25,20 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                 </div>
             </div>
 
+            <!-- Onglets pour afficher les employés actifs ou désactivés -->
+            <ul class="nav nav-tabs mb-4" id="employeeStatusTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab" aria-controls="active" aria-selected="true">
+                        <i class="fas fa-user-check"></i> Collaborateurs actifs
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="inactive-tab" data-bs-toggle="tab" data-bs-target="#inactive" type="button" role="tab" aria-controls="inactive" aria-selected="false">
+                        <i class="fas fa-user-slash"></i> Collaborateurs désactivés
+                    </button>
+                </li>
+            </ul>
+
             <!-- Filtres de recherche -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -61,7 +75,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             <!-- Liste des collaborateurs -->
             <div class="card">
                 <div class="card-header">
-                    <h5>Liste des collaborateurs</h5>
+                    <h5 id="employeeListTitle">Liste des collaborateurs actifs</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -232,6 +246,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                 <button type="button" class="btn btn-warning" id="editEmployee">Modifier</button>
                 <button type="button" class="btn btn-danger" id="deactivateEmployee">Désactiver</button>
+                <button type="button" class="btn btn-success" id="reactivateEmployee" style="display: none;">Réactiver</button>
             </div>
         </div>
     </div>
@@ -240,15 +255,16 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 <script>
     // Variables globales
     let societyId = <?php echo $_SESSION['societe_id']; ?>;
+    let currentEmployeeStatus = 'active'; // Pour suivre quel type d'employés est affiché
 
     // Fonction d'initialisation
     document.addEventListener('DOMContentLoaded', function() {
-        // Charger tous les collaborateurs
-        loadEmployees(societyId);
+        // Charger les collaborateurs actifs par défaut
+        loadActiveEmployees(societyId);
 
         // Configuration des événements
         document.getElementById('refreshData').addEventListener('click', function() {
-            loadEmployees(societyId);
+            refreshEmployeeList();
         });
 
         document.getElementById('applyFilters').addEventListener('click', function() {
@@ -257,7 +273,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
         document.getElementById('resetFilters').addEventListener('click', function() {
             document.getElementById('employeeFilterForm').reset();
-            loadEmployees(societyId);
+            refreshEmployeeList();
         });
 
         document.getElementById('saveEmployee').addEventListener('click', function() {
@@ -269,9 +285,15 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         });
 
         // Événement pour le bouton de désactivation
-        document.getElementById('deactivateEmployee').addEventListener('click', function() {
+        document.getElementById('desactivateEmployee').addEventListener('click', function() {
             const employeeId = this.getAttribute('data-id');
-            deactivateEmployee(employeeId);
+            desactivateEmployee(employeeId);
+        });
+
+        // Événement pour le bouton de réactivation
+        document.getElementById('reactivateEmployee').addEventListener('click', function() {
+            const employeeId = this.getAttribute('data-id');
+            reactivateEmployee(employeeId);
         });
 
         // Événement pour le bouton d'édition dans la vue détails
@@ -290,7 +312,29 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         // Configurer les événements pour générer automatiquement le nom d'utilisateur
         document.getElementById('nom').addEventListener('input', updateUsername);
         document.getElementById('prenom').addEventListener('input', updateUsername);
+
+        // Événements pour les onglets
+        document.getElementById('active-tab').addEventListener('click', function() {
+            currentEmployeeStatus = 'active';
+            document.getElementById('employeeListTitle').textContent = 'Liste des collaborateurs actifs';
+            loadActiveEmployees(societyId);
+        });
+
+        document.getElementById('inactive-tab').addEventListener('click', function() {
+            currentEmployeeStatus = 'inactive';
+            document.getElementById('employeeListTitle').textContent = 'Liste des collaborateurs désactivés';
+            loadInactiveEmployees(societyId);
+        });
     });
+
+    // Fonction pour rafraîchir la liste des employés selon l'onglet actif
+    function refreshEmployeeList() {
+        if (currentEmployeeStatus === 'active') {
+            loadActiveEmployees(societyId);
+        } else {
+            loadInactiveEmployees(societyId);
+        }
+    }
 
     // Générer un nom d'utilisateur à partir du prénom et du nom
     function generateUsername(prenom, nom) {
@@ -319,66 +363,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         }
     }
 
-    // Charger les collaborateurs avec filtres optionnels
-    function loadEmployees(societyId, filters = {}) {
-        // Construire l'URL avec les filtres
-        let url = `/api/company/getAllEmployee.php?societe_id=${societyId}`;
-
-        if (filters.name) url += `&name=${encodeURIComponent(filters.name)}`;
-        if (filters.role) url += `&role=${encodeURIComponent(filters.role)}`;
-        if (filters.date) url += `&date=${filters.date}`;
-
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + getToken()
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const tableBody = document.getElementById('employees-table');
-
-            if (data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="9" class="text-center">Aucun collaborateur trouvé</td></tr>';
-                return;
-            }
-
-            tableBody.innerHTML = '';
-            data.forEach(employee => {
-                const dateCreation = employee.date_creation ? new Date(employee.date_creation).toLocaleDateString('fr-FR') : 'N/A';
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>${employee.collaborateur_id}</td>
-                        <td>${employee.nom}</td>
-                        <td>${employee.prenom}</td>
-                        <td>${employee.username}</td>
-                        <td>${employee.role}</td>
-                        <td>${employee.email}</td>
-                        <td>${employee.telephone}</td>
-                        <td>${dateCreation}</td>
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="viewEmployeeDetails(${employee.collaborateur_id})">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning" onclick="editEmployee(${employee.collaborateur_id}, '${employee.nom}', '${employee.prenom}', '${employee.username}', '${employee.role}', '${employee.email}', '${employee.telephone}')">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="confirmDeactivateEmployee(${employee.collaborateur_id})">
-                                <i class="fas fa-user-slash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-        })
-        .catch(error => {
-            console.error('Erreur lors du chargement des collaborateurs:', error);
-            document.getElementById('employees-table').innerHTML =
-                `<tr><td colspan="9" class="text-center text-danger">Erreur lors du chargement des collaborateurs</td></tr>`;
-        });
-    }
-
-    // Appliquer les filtres
+    // Appliquer les filtres selon l'onglet actif
     function applyEmployeeFilters() {
         const filters = {
             name: document.getElementById('nameFilter').value,
@@ -386,7 +371,11 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             date: document.getElementById('dateFilter').value
         };
 
-        loadEmployees(societyId, filters);
+        if (currentEmployeeStatus === 'active') {
+            loadActiveEmployees(societyId, filters);
+        } else {
+            loadInactiveEmployees(societyId, filters);
+        }
     }
 
     // Afficher les détails d'un collaborateur
@@ -402,6 +391,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             const detailsContainer = document.getElementById('employee-details');
             const dateCreation = employee.date_creation ? new Date(employee.date_creation).toLocaleDateString('fr-FR') : 'N/A';
             const dateActivite = employee.date_activite ? new Date(employee.date_activite).toLocaleDateString('fr-FR') : 'N/A';
+            const statusText = employee.desactivate == 1 ? '<span class="badge bg-danger">Désactivé</span>' : '<span class="badge bg-success">Actif</span>';
 
             detailsContainer.innerHTML = `
                 <div class="row mb-3">
@@ -417,6 +407,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         <p><strong>Téléphone:</strong> ${employee.telephone}</p>
                         <p><strong>Date d'ajout:</strong> ${dateCreation}</p>
                         <p><strong>Dernière activité:</strong> ${dateActivite}</p>
+                        <p><strong>Statut:</strong> ${statusText}</p>
                     </div>
                 </div>
             `;
@@ -424,9 +415,21 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             // Stocker l'ID pour les actions
             document.getElementById('editEmployee').setAttribute('data-id', employee.collaborateur_id);
             document.getElementById('deactivateEmployee').setAttribute('data-id', employee.collaborateur_id);
+            document.getElementById('reactivateEmployee').setAttribute('data-id', employee.collaborateur_id);
 
             // Stocker les données de l'employé pour l'édition rapide
             document.getElementById('editEmployee').setAttribute('data-employee', JSON.stringify(employee));
+
+            // Afficher/masquer les boutons en fonction du statut
+            if (employee.desactivate == 1) {
+                document.getElementById('deactivateEmployee').style.display = 'none';
+                document.getElementById('reactivateEmployee').style.display = 'inline-block';
+                document.getElementById('editEmployee').style.display = 'none';
+            } else {
+                document.getElementById('deactivateEmployee').style.display = 'inline-block';
+                document.getElementById('reactivateEmployee').style.display = 'none';
+                document.getElementById('editEmployee').style.display = 'inline-block';
+            }
 
             // Afficher le modal
             const modal = new bootstrap.Modal(document.getElementById('viewEmployeeModal'));
@@ -532,7 +535,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                 document.getElementById('addEmployeeForm').reset();
 
                 // Recharger la liste des employés
-                loadEmployees(societyId);
+                refreshEmployeeList();
 
                 // Afficher un message de succès
                 alert('Collaborateur ajouté avec succès!');
@@ -581,7 +584,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                 modal.hide();
 
                 // Recharger la liste des employés
-                loadEmployees(societyId);
+                refreshEmployeeList();
 
                 // Afficher un message de succès
                 alert('Collaborateur modifié avec succès!');
@@ -605,8 +608,8 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
     // Désactiver un collaborateur
     function deactivateEmployee(id) {
-        fetch('/api/employee/deactivate.php', {
-            method: 'PATCH',
+        fetch('/api/employee/delete.php', {
+            method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + getToken()
@@ -623,7 +626,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                 }
 
                 // Recharger la liste des employés
-                loadEmployees(societyId);
+                refreshEmployeeList();
 
                 // Afficher un message de succès
                 alert('Collaborateur désactivé avec succès!');
@@ -637,4 +640,46 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             alert('Une erreur est survenue lors de la désactivation du collaborateur');
         });
     }
+
+    // Réactiver un collaborateur
+    function reactivateEmployee(id) {
+        if (confirm('Êtes-vous sûr de vouloir réactiver ce collaborateur?')) {
+            fetch('/api/employee/reactivate.php', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Fermer le modal de détails s'il est ouvert
+                    const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewEmployeeModal'));
+                    if (viewModal) {
+                        viewModal.hide();
+                    }
+
+                    // Recharger la liste des employés
+                    refreshEmployeeList();
+
+                    // Afficher un message de succès
+                    alert('Collaborateur réactivé avec succès!');
+                } else {
+                    // Erreur
+                    alert(`Erreur: ${data.message || 'Une erreur est survenue'}`);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la réactivation du collaborateur:', error);
+                alert('Une erreur est survenue lors de la réactivation du collaborateur');
+            });
+        }
+    }
 </script>
+
+<!-- Ajouter le script societe.js qui contient les fonctions loadActiveEmployees et loadInactiveEmployees -->
+<script src="/data/static/js/societe.js"></script>
+</body>
+</html>

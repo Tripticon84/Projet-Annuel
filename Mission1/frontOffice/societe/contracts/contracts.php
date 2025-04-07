@@ -18,9 +18,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshData">
                             <i class="fas fa-sync-alt"></i> Actualiser
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addContractModal">
-                            <i class="fas fa-plus"></i> Nouveau contrat
-                        </button>
                     </div>
                 </div>
             </div>
@@ -168,6 +165,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 <script>
     // Variables globales
     let societyId = <?php echo $_SESSION['societe_id']; ?>;
+    const token = <?php echo json_encode($_SESSION["token"]); ?>; // Safely encode the token for JavaScript
 
     // Fonction d'initialisation
     document.addEventListener('DOMContentLoaded', function() {
@@ -190,9 +188,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         document.getElementById('saveContract').addEventListener('click', function() {
             addNewContract();
         });
-
-
     });
-
-
+    
 </script>

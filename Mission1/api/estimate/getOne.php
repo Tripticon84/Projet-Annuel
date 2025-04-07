@@ -11,14 +11,14 @@ if (!methodIsAllowed('read')) {
 
 acceptedTokens(true, true, false, true);
 
-// Vérification de l'ID de la societe
-if (!isset($_GET['devis_id']) || empty($_GET['devis_id'])) {
-    returnError(400, 'devis id  not provided');
+// Vérification de l'ID de la société
+if (!isset($_GET['societe_id']) || empty($_GET['societe_id'])) {
+    returnError(400, 'societe_id not provided');
     return;
 }
 
-$estimateId = intval($_GET['devis_id']);
-$estimate = getEstimateById($estimateId);
+$societyId = intval($_GET['societe_id']);
+$estimate = getEstimateBySocietyId($societyId);
 
 if (!$estimate) {
     returnError(404, 'Estimate or Contract not found');
@@ -38,7 +38,6 @@ $result = [
     "id_societe" => $estimate['id_societe'],
     "frais" => $estimate['frais'] ?? []
 ];
-
 
 echo json_encode($result);
 http_response_code(200);

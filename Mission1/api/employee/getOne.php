@@ -33,8 +33,11 @@ $result = [
     "username" => $employee['username'],
     "role" => $employee['role'],
     "email" => $employee['email'],
+    "date_creation" => $employee['date_creation'],
+    "date_activite" => $employee['date_activite'],
     "telephone" => $employee['telephone'],
     "id_societe" => $employee['id_societe'],
+    "desactivate" => $employee['desactivate'],
 ];
 
 echo json_encode($result);
