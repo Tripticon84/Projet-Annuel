@@ -769,7 +769,7 @@ function loadEstimates(societyId, filters = {}) {
     .then((data) => {
       const tableBody = document.getElementById("estimates-table");
 
-      if (data.length === 0) {
+      if (data.includes("not found")) {
         tableBody.innerHTML =
           '<tr><td colspan="8" class="text-center">Aucun devis trouvé</td></tr>';
         return;

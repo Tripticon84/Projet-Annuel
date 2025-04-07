@@ -1,8 +1,8 @@
 <?php
 
 session_start();
-if (!isset($_SESSION["societe_token"]) && $title != "Connexion") {
-    header("location: " . $_SERVER['DOCUMENT_ROOT'] .  "frontOffice/societe/login/logout.php");
+if (!isset($_SESSION["societe_token"]) && $title != "Connexion" && strpos($title, "Inscription") === false) {
+    header("location: /frontOffice/societe/login/logout.php");
     exit();
 }
 
@@ -32,7 +32,7 @@ if (!isset($_SESSION["societe_token"]) && $title != "Connexion") {
             return tokenCookie ? tokenCookie.split('=')[1] : null;
         };
 
-        if (getToken() === null && !document.title.includes("Connexion")) {
+        if (getToken() === null && !document.title.includes("Connexion") && !document.title.includes("Inscription")) {
             alert("Vous devez vous connecter pour accéder à cette page.");
             window.location.href = "/frontOffice/societe/login/logout.php";
         }

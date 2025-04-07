@@ -707,7 +707,7 @@ INSERT INTO association (name, description, date_creation, banniere, logo, desac
 
 -- Collaborateurs des entreprises
 INSERT INTO collaborateur (nom, prenom, username, role, email, password, telephone, id_societe, date_creation, date_activite) VALUES
-('Leroy', 'Jean', 'jleroy', 'manager', 'j.leroy@renault.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0612345678', 1, NOW(), '2025-01-05'),
+('Cordonnier', 'Yann', 'ycordonnier', 'manager', 'yann@bc.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0612345678', 1, NOW(), '2025-01-05'),
 ('Dupont', 'Marie', 'mdupont', 'responsable_rh', 'm.dupont@renault.com', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0623456789', 1, NOW(), '2025-01-15'),
 ('Bernard', 'Sylvie', 'sbernard', 'employe', 's.bernard@axa.fr','3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0734567890', 2, NOW(), '2025-02-01'),
 ('Petit', 'Thomas', 'tpetit', 'manager', 't.petit@axa.fr', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', '0745678901', 2, NOW(), '2025-02-10'),

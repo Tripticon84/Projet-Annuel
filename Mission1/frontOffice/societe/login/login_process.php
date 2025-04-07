@@ -1,10 +1,10 @@
 <?php
 
-// session_start();
-// if ($_SESSION) {
-//     header("location: ../home.php");
-//     exit();
-// }
+session_start();
+if ($_SESSION['societe_id']) {
+    header("location: ../home.php");
+    exit();
+}
 
 function error($message) {
     header("location: login.php" . "?message=" . $message);
@@ -61,6 +61,7 @@ if (isset($_SESSION)) {
 
 $_SESSION["societe_id"] = $result["societe_id"];
 $_SESSION["email"] = $result["email"];
+
 
 // Login dans l'api pour récupérer le token
 $postData = [

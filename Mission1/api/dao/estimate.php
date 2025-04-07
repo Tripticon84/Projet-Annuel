@@ -653,6 +653,7 @@ function updateEstimateTotalAmount($estimateId) {
         'montant_total' => $montantTotal,
         'estimate_id' => $estimateId
     ]);
+}
 
 function getEstimateBySocietyId($societyId)
 {
