@@ -24,8 +24,9 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
             <!-- Abonnements -->
             <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5>Vos Abonnements</h5>
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Vos Abonnements</h5>
+                    <span class="badge bg-light text-primary" id="total-subscriptions">0</span>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -55,8 +56,9 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
             <!-- Autres frais -->
             <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5>Vos Autres Frais</h5>
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Vos Autres Frais</h5>
+                    <span class="badge bg-light text-info" id="total-costs">0</span>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -110,16 +112,23 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
     // Variables globales
     let societyId = <?php echo $_SESSION['societe_id']; ?>;
 
-    // Fonction d'initialisation
-    document.addEventListener('DOMContentLoaded', function() {
-        // Charger les abonnements et les autres frais
+    // Fonction pour charger toutes les données
+    function loadAllData() {
         loadSubscriptions(societyId);
         loadOtherCosts(societyId);
+        updateCounters(societyId);
+    }
+
+    // Fonction d'initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Charger les données
+        loadAllData();
 
         // Configuration des événements
         document.getElementById('refreshData').addEventListener('click', function() {
-            loadSubscriptions(societyId);
-            loadOtherCosts(societyId);
+            loadAllData();
         });
     });
+
+
 </script>

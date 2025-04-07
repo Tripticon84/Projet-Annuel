@@ -11,17 +11,19 @@ if (!methodIsAllowed('read')) {
 
 acceptedTokens(true, true, true, true);
 
-if (!isset($_GET['id'])) {
+if (!isset($_GET['frais_id'])) {
     returnError(400, 'Missing id parameter');
     return;
 }
 
-$id = intval($_GET['id']);
+$id = intval($_GET['frais_id']);
 $frais = getFraisById($id);
 
 if (!$frais) {
     returnError(404, 'Frais not found');
     return;
 }
+
+$frais['devis'] = getDevisByFraisId($id);
 
 echo json_encode($frais);

@@ -14,7 +14,7 @@ acceptedTokens(true, true, true, true);
 $abonnements = getAbonnements();
 
 if (!$abonnements) {
-    echo json_encode([]);
+    returnError(404, 'No subscriptions found');
     return;
 }
 

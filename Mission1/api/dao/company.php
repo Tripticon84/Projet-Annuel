@@ -256,9 +256,10 @@ function getCompanyOtherCost($societe_id)
 {
     $db = getDatabaseConnection();
 
-    $sql = "SELECT af.autre_frais_id, af.nom, af.montant, af.id_facture, af.date_creation, f.facture_id, f.date_emission, f.montant, f.statut FROM autre_frais af
-            JOIN facture f ON af.id_facture = f.facture_id
-            JOIN devis d ON f.id_devis = d.devis_id
+    $sql = "SELECT f.frais_id, f.nom, f.montant, f.date_creation, f.description, f.est_abonnement, d.devis_id, d.date_debut, d.date_fin, d.statut
+            FROM frais f
+            JOIN INCLUT_FRAIS_DEVIS ifd ON f.frais_id = ifd.id_frais
+            JOIN devis d ON ifd.id_devis = d.devis_id
             WHERE d.id_societe = :societe_id";
 
     $stmt = $db->prepare($sql);

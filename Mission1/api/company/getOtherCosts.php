@@ -9,40 +9,42 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
+// Vérification du token (entreprise connectée uniquement)
 acceptedTokens(true, true, false, false);
 
-
-$idSociete = intval($_GET['societe_id']);
-$company = getSocietyById($idSociete);
-
-if (!$company) {
-    returnError(404, 'Company not found');
+if (!isset($_GET['societe_id'])) {
+    returnError(400, 'Missing mandatory parameters');
     return;
 }
 
-$otherCosts = getCompanyOtherCost($idSociete);
+$societe_id = $_GET['societe_id'];
 
-if (!$otherCosts) {
-    returnError(404, 'otherCost not found');
+// Récupérer les frais associés à l'entreprise
+$costs = getCompanyOtherCost($societe_id);
+
+if (!$costs) {
+    returnError(404, 'No costs found');
     return;
 }
 
 $result = []; // Initialize the result array
 
-foreach ($otherCosts as $otherCost) {
+foreach ($costs as $cost) {
     $result[] = [
-        "other_cost_id" => $otherCost['autre_frais_id'],
-        "name" => $otherCost['nom'],
-        "price" => $otherCost['montant'],
-        "date_creation" => $otherCost['date_creation'],
-        "facture_id" => $otherCost['id_facture']
+        "frais_id" => $cost['frais_id'],
+        "nom" => $cost['nom'],
+        "montant" => $cost['montant'],
+        "date_creation" => $cost['date_creation'],
+        "description" => $cost['description'],
+        "est_abonnement" => $cost['est_abonnement'],
+        "devis" => [
+            "devis_id" => $cost['devis_id'],
+            "date_debut" => $cost['date_debut'],
+            "date_fin" => $cost['date_fin'],
+            "statut" => $cost['statut']
+        ]
     ];
 }
 
-
-if (empty($result)) {
-    returnError(404, 'No estimates found');
-    return;
-}
-
 echo json_encode($result);
+?>

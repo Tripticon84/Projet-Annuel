@@ -1,5 +1,5 @@
-// fees c est les autres frais et les abonnements
 <?php
+// fees c est les autres frais et les abonnements
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
