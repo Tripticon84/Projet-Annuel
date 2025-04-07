@@ -78,8 +78,8 @@ $current_page = basename($_SERVER['SCRIPT_NAME']); ?>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?= ($current_page == 'costs.php') ? 'active' : '' ?>" href="/frontOffice/societe/other_costs/other_cost.php">
-                    <i class="fas fa-receipt"></i> Autres frais
+                <a class="nav-link <?= ($current_page == 'costs.php') ? 'active' : '' ?>" href="/frontOffice/societe/fees_and_subscription/fees_and_subscription.php">
+                    <i class="fas fa-receipt"></i> Frais et abonnements
                 </a>
             </li>
             <li class="nav-item">

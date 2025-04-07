@@ -165,48 +165,205 @@ function viewContractDetails(id) {
     });
 }
 
-// Charger les autres frais
-function loadOtherCosts(societyId) {
-  fetch(`/api/company/getOtherCosts.php?societe_id=${societyId}`, {
+// Charger les abonnements
+function loadSubscriptions(societyId) {
+  fetch(`/api/cost/getSubscriptions.php?society_id=${societyId}`, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + getToken(),
     },
   })
-    .then((response) => response.json())
-    .then((data) => {
-      const tableBody = document.getElementById("costs-table");
-
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement des abonnements.');
+      }
+      return response.json();
+    })
+    .then(data => {
+      const tableBody = document.getElementById('subscriptions-table');
+      
       if (data.length === 0) {
-        tableBody.innerHTML =
-          '<tr><td colspan="6" class="text-center">Aucun frais supplémentaire trouvé</td></tr>';
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="text-center">
+              <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                Vous n'avez aucun abonnement actif pour le moment.
+              </div>
+            </td>
+          </tr>
+        `;
         return;
       }
 
-      tableBody.innerHTML = "";
-      data.forEach((cost) => {
-        const dateCreation = cost.date_creation ? new Date(cost.date_creation).toLocaleDateString('fr-FR') : 'N/A';
-        tableBody.innerHTML += `
+      let html = '';
+      data.forEach(subscription => {
+        html += `
           <tr>
-            <td>${cost.other_cost_id}</td>
-            <td>${cost.name}</td>
-            <td>${parseFloat(cost.price).toLocaleString('fr-FR')} €</td>
-            <td>${cost.facture_id}</td>
-            <td>${cost.date_creation}</td>
+            <td>${subscription.name}</td>
+            <td>${parseFloat(subscription.amount).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'})}</td>
+            <td>${subscription.description || 'N/A'}</td>
+            <td>${new Date(subscription.created_at).toLocaleDateString('fr-FR')}</td>
             <td>
-              <button class="btn btn-sm btn-info" onclick="viewCost(${cost.other_cost_id})">
-                <i class="fas fa-eye"></i>
+              <button class="btn btn-sm btn-info view-cost" data-id="${subscription.id}" data-type="subscription">
+                <i class="fas fa-eye"></i> Voir
               </button>
             </td>
           </tr>
         `;
       });
+      
+      tableBody.innerHTML = html;
+      
+      // Ajouter les écouteurs d'événements pour les boutons "Voir"
+      setTimeout(() => {
+        document.querySelectorAll('.view-cost').forEach(button => {
+          button.addEventListener('click', function() {
+            const costId = this.getAttribute('data-id');
+            const costType = this.getAttribute('data-type');
+            viewCostDetails(costId, costType);
+          });
+        });
+      }, 100);
     })
-    .catch((error) => {
-      console.error("Erreur lors du chargement des frais:", error);
-      document.getElementById(
-        "costs-table"
-      ).innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erreur lors du chargement des frais</td></tr>`;
+    .catch(error => {
+      console.error(error);
+      document.getElementById('subscriptions-table').innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center text-danger">
+            Erreur lors du chargement des abonnements. Veuillez réessayer plus tard.
+          </td>
+        </tr>
+      `;
+    });
+}
+
+// Fonction pour voir les détails d'un frais ou abonnement
+function viewCostDetails(costId, costType) {
+  fetch(`/api/cost/getCostById.php?cost_id=${costId}`, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + getToken(),
+    },
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des détails.');
+      }
+      return response.json();
+    })
+    .then(data => {
+      const costDetails = document.getElementById('cost-details');
+      const modalTitle = document.getElementById('viewCostModalLabel');
+      
+      modalTitle.textContent = costType === 'subscription' ? 'Détails de l\'abonnement' : 'Détails du frais';
+      
+      const creationDate = new Date(data.date_creation).toLocaleDateString('fr-FR');
+      const amount = parseFloat(data.montant).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'});
+      
+      costDetails.innerHTML = `
+        <div class="mb-3">
+          <h6>Nom:</h6>
+          <p>${data.nom}</p>
+        </div>
+        <div class="mb-3">
+          <h6>Montant:</h6>
+          <p>${amount}</p>
+        </div>
+        <div class="mb-3">
+          <h6>Description:</h6>
+          <p>${data.description || 'Aucune description disponible'}</p>
+        </div>
+        <div class="mb-3">
+          <h6>Date de création:</h6>
+          <p>${creationDate}</p>
+        </div>
+        <div class="mb-3">
+          <h6>Type:</h6>
+          <p>${parseInt(data.est_abonnement) === 1 ? 'Abonnement' : 'Frais ponctuel'}</p>
+        </div>
+      `;
+      
+      // Afficher le modal
+      const modal = new bootstrap.Modal(document.getElementById('viewCostModal'));
+      modal.show();
+    })
+    .catch(error => {
+      console.error('Erreur lors de la récupération des détails:', error);
+      alert('Erreur lors de la récupération des détails. Veuillez réessayer.');
+    });
+}
+
+// Charger les autres frais
+function loadOtherCosts(societyId) {
+  fetch(`/api/cost/getOtherCosts.php?society_id=${societyId}`, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + getToken(),
+    },
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement des frais.');
+      }
+      return response.json();
+    })
+    .then(data => {
+      const tableBody = document.getElementById('costs-table');
+      
+      if (data.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="text-center">
+              <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                Vous n'avez aucun frais enregistré pour le moment.
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = '';
+      data.forEach(cost => {
+        html += `
+          <tr>
+            <td>${cost.name}</td>
+            <td>${parseFloat(cost.amount).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'})}</td>
+            <td>${cost.description || 'N/A'}</td>
+            <td>${new Date(cost.created_at).toLocaleDateString('fr-FR')}</td>
+            <td>
+              <button class="btn btn-sm btn-info view-cost" data-id="${cost.id}" data-type="cost">
+                <i class="fas fa-eye"></i> Voir
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableBody.innerHTML = html;
+      
+      // Ajouter les écouteurs d'événements pour les boutons "Voir"
+      setTimeout(() => {
+        document.querySelectorAll('.view-cost').forEach(button => {
+          button.addEventListener('click', function() {
+            const costId = this.getAttribute('data-id');
+            const costType = this.getAttribute('data-type');
+            viewCostDetails(costId, costType);
+          });
+        });
+      }, 100);
+    })
+    .catch(error => {
+      console.error(error);
+      document.getElementById('costs-table').innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center text-danger">
+            Erreur lors du chargement des frais. Veuillez réessayer plus tard.
+          </td>
+        </tr>
+      `;
     });
 }
 
