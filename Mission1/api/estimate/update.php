@@ -19,15 +19,27 @@ $devis_id = $data['devis_id'];
 $date_debut = isset($data['date_debut']) ? $data['date_debut'] : null;
 $date_fin = isset($data['date_fin']) ? $data['date_fin'] : null;
 $statut = isset($data['statut']) ? $data['statut'] : null;
-$montant = isset($data['montant']) ? $data['montant'] : null;
 $montant_ht = isset($data['montant_ht']) ? $data['montant_ht'] : null;
-$montant_tva = isset($data['montant_tva']) ? $data['montant_tva'] : null;
+
+// Si montant_ht est fourni, on ignore complètement montant et montant_tva
+// car ils seront automatiquement recalculés dans updateEstimate
+$montant = null;
+$montant_tva = null;
+
+// On récupère montant et montant_tva seulement si montant_ht n'est PAS fourni
+if ($montant_ht === null) {
+    $montant = isset($data['montant']) ? $data['montant'] : null;
+    $montant_tva = isset($data['montant_tva']) ? $data['montant_tva'] : null;
+}
+
 $is_contract = !empty($data['is_contract']) ? $data['is_contract'] : null;
 $id_societe = isset($data['id_societe']) ? $data['id_societe'] : null;
 $fichier = isset($data['fichier']) ? $data['fichier'] : null;
 
-//verifier qu un champ est fourni pour la mise a jour
-if ($date_debut === null && $date_fin === null && $statut === null && $montant === null && $montant_ht === null && $montant_tva === null && $is_contract === null && $id_societe === null) {
+// Simplifier la vérification: n'avoir aucun champ fourni pour la mise à jour
+if ($date_debut === null && $date_fin === null && $statut === null &&
+    $montant_ht === null && $montant === null && $montant_tva === null &&
+    $is_contract === null && $id_societe === null && $fichier === null) {
     returnError(400, 'No data provided for update');
     return;
 }
@@ -50,19 +62,25 @@ if ($id_societe != null && !is_numeric($id_societe)) {
     return;
 }
 
-if ($montant != null && !is_numeric($montant)) {
-    returnError(400, 'montant must be a number');
-    return;
-}
+// Vérification des montants
+if ($montant_ht !== null) {
+    if (!is_numeric($montant_ht)) {
+        returnError(400, 'montant_ht must be a number');
+        return;
+    }
+    // Quand montant_ht est fourni, on ne vérifie pas montant et montant_tva
+    // car ils seront ignorés et recalculés dans updateEstimate
+} else {
+    // Vérifications de montant et montant_tva seulement si montant_ht n'est pas fourni
+    if ($montant !== null && !is_numeric($montant)) {
+        returnError(400, 'montant must be a number');
+        return;
+    }
 
-if ($montant_ht != null && !is_numeric($montant_ht)) {
-    returnError(400, 'montant_ht must be a number');
-    return;
-}
-
-if ($montant_tva != null && !is_numeric($montant_tva)) {
-    returnError(400, 'montant_tva must be a number');
-    return;
+    if ($montant_tva !== null && !is_numeric($montant_tva)) {
+        returnError(400, 'montant_tva must be a number');
+        return;
+    }
 }
 
 if ($date_debut != null && !DateTime::createFromFormat('Y-m-d', $date_debut)) {
@@ -90,13 +108,23 @@ if ($statut != null && $statut !== 'refusé' && $statut !== 'accepté' && $statu
     return;
 }
 
-$res = updateEstimate($date_debut, $date_fin, $statut, $montant, $montant_ht, $montant_tva, $is_contract, $id_societe, $fichier, $devis_id);
-
+// Toujours passer null pour montant et montant_tva car ils seront
+// recalculés automatiquement si montant_ht est fourni
+$res = updateEstimate($date_debut, $date_fin, $statut, $montant_ht, $is_contract, $id_societe, $fichier, $devis_id);
 
 if (!$res) {
     returnError(500, 'Failed to update estimate');
     return;
-}else{
-    echo json_encode(['success' => "Le devis id : " . $devis_id . " a été mis à jour avec succès"]);
-    http_response_code(200);
 }
+
+// Si des frais sont fournis, mettre à jour les associations
+if (isset($data['frais_ids']) && is_array($data['frais_ids'])) {
+    $res = attachFraisToEstimate($devis_id, $data['frais_ids']);
+    if (!$res) {
+        returnError(500, 'Failed to update frais associations');
+        return;
+    }
+}
+
+echo json_encode(['success' => "Le devis id : " . $devis_id . " a été mis à jour avec succès"]);
+http_response_code(200);
