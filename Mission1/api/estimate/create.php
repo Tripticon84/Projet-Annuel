@@ -32,7 +32,7 @@ if (validateMandatoryParams($data, ['montant_ht', 'id_societe'])) {
         returnError(400, 'company does not exist');
         return;
     }
-    if ($company['nom'] === 'null') {
+    if ($company['nom'] === null) {
         returnError(400, 'company name is null');
         return;
     }
@@ -41,7 +41,7 @@ if (validateMandatoryParams($data, ['montant_ht', 'id_societe'])) {
         $data['date_debut'] = date('Y-m-d');
     }
     if (empty($data['date_fin'])) {
-        $data['date_fin'] = date('Y-m-d', strtotime('+1 year'));
+        $data['date_fin'] = date('Y-m-d', strtotime('+1 month'));
     }
 
     if (!is_numeric($data['is_contract'])) {

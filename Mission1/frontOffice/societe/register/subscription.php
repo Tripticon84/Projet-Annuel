@@ -7,10 +7,26 @@
 //     exit();
 // }
 
-echo (json_encode($_SESSION['company_data']));
 
 $title = "Inscription - Choisir votre abonnement";
 require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php';
+
+// Récupération des erreurs et des données du formulaire depuis GET
+$subscription_errors = [];
+$form_data = [];
+
+if (isset($_GET['errors']) && !empty($_GET['errors'])) {
+    $subscription_errors = json_decode(urldecode($_GET['errors']), true);
+}
+
+if (isset($_GET['form_data']) && !empty($_GET['form_data'])) {
+    $form_data = json_decode(urldecode($_GET['form_data']), true);
+}
+
+echo "<pre>";
+print_r($_SESSION);
+echo "</pre>";
+
 ?>
 
 <style>
@@ -150,6 +166,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         <h4 class="mt-3 fw-bold text-primary">Sélectionnez la formule qui convient à votre entreprise</h4>
                     </div>
 
+                    <?php if (!empty($subscription_errors)): ?>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Erreur!</strong>
+                            <ul class="mb-0">
+                                <?php foreach ($subscription_errors as $error): ?>
+                                    <li><?php echo htmlspecialchars($error); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <?php endif; ?>
+
                     <!-- Progress Steps -->
                     <div class="form-steps">
                         <div class="step">
@@ -166,7 +194,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         </div>
                     </div>
 
-                    <form method="post" action="/api/company/complete_registration.php" id="subscription-form">
+                    <form method="post" action="complete_registration.php" id="subscription-form">
                         <input type="hidden" name="plan" id="selected-plan" value="">
 
                         <div class="row g-4">
@@ -242,6 +270,21 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                                                 <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Événements/communautés</li>
                                             </ul>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 mb-4 text-center">
+                            <div class="col-md-6 mx-auto">
+                                <div class="form-group">
+                                    <label for="employee_count" class="form-label fw-bold mb-3">Nombre de collaborateurs :</label>
+                                    <input type="number" class="form-control form-control-lg text-center"
+                                           id="employee_count" name="employee_count" min="1"
+                                           value="<?php echo htmlspecialchars($form_data['employee_count'] ?? ''); ?>"
+                                           placeholder="Entrez le nombre de collaborateurs" required>
+                                    <div class="form-text mt-2">
+                                        Ce nombre nous permettra de générer votre devis initial.
                                     </div>
                                 </div>
                             </div>

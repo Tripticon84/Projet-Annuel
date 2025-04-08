@@ -3,14 +3,14 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/hashPassword.php";
 
 
-function createSociety($nom, $email, $adresse, $contact_person, $password, $telephone, $siret)
+function createSociety($nom, $email, $adresse, $contact_person, $password, $telephone, $siret, $desactivate )
 {
     $db = getDatabaseConnection();
 
     // Hasher le mot de passe
     $password = hashPassword($password);
 
-    $sql = "INSERT INTO societe (nom, email, adresse, contact_person, password, telephone, date_creation, siret) VALUES (:nom, :email, :adresse, :contact_person, :password, :telephone, :date_creation, :siret)";
+    $sql = "INSERT INTO societe (nom, email, adresse, contact_person, password, telephone, date_creation, siret, desactivate) VALUES (:nom, :email, :adresse, :contact_person, :password, :telephone, :date_creation, :siret, :desactivate)";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         'nom' => $nom,
@@ -20,7 +20,8 @@ function createSociety($nom, $email, $adresse, $contact_person, $password, $tele
         'password' => $password,
         'telephone' => $telephone,
         'date_creation' => date('Y-m-d H:i:s'),
-        'siret' => $siret
+        'siret' => $siret,
+        'desactivate' => $desactivate
     ]);
     if ($res) {
         return $db->lastInsertId("societe_id");
@@ -465,4 +466,13 @@ function getCompanyInvoiceByID($societe_id, $facture_id)
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     return null;
+}
+
+function getCompanyBySiret($siret)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT societe_id, siret FROM societe WHERE siret = :siret";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['siret' => $siret]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }

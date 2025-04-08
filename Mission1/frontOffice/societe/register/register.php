@@ -189,7 +189,7 @@ if (isset($_GET['form_data']) && !empty($_GET['form_data'])) {
                         </div>
                     </div>
 
-                    <form method="post" action="/api/company/register_process.php">
+                    <form method="post" action="register_process.php">
                         <div class="row">
                             <div class="col-md-6 mb-2">
                                 <label for="nom" class="form-label">Nom de l'entreprise</label>
