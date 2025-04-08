@@ -1,8 +1,9 @@
 <?php
-
-// Inclure l'en-tête
 require_once 'includes/head.php';
 require_once 'includes/header.php';
+
+// Récupérer l'id_societe du collaborateur connecté depuis la session
+$id_societe = isset($_SESSION['id_societe']) ? $_SESSION['id_societe'] : null;
 ?>
 
 <div class="container mt-4">
@@ -24,7 +25,7 @@ require_once 'includes/header.php';
                     <h5 class="card-title mb-0">Formulaire de signalement</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="">
+                    <form id="signalementForm" method="POST">
                         <div class="mb-3">
                             <label for="type" class="form-label">Type de signalement <span class="text-danger">*</span></label>
                             <select class="form-select" id="type" name="type" required>
@@ -54,7 +55,9 @@ require_once 'includes/header.php';
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-warning">Envoyer le signalement</button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer le signalement
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -72,6 +75,57 @@ document.getElementById('type').addEventListener('change', function() {
     } else {
         autreTypeDiv.style.display = 'none';
         document.getElementById('autreType').required = false;
+    }
+});
+
+document.getElementById('signalementForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const type = document.getElementById('type').value;
+    const autreType = document.getElementById('autreType').value;
+    const description = document.getElementById('description').value;
+    const id_societe = <?php echo $id_societe ? $id_societe : 'null'; ?>;
+
+    try {
+        const response = await fetch('/api/employee/createSignalement.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                type: type === 'Autre' ? autreType : type,
+                description: description,
+                id_societe: id_societe
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Réinitialiser le formulaire
+            this.reset();
+            
+            // Afficher un message de succès
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success mt-3';
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = 'Votre signalement a été envoyé avec succès. Nous le traiterons dans les plus brefs délais.';
+            this.insertAdjacentElement('afterend', alertDiv);
+
+            // Faire disparaître le message après 5 secondes
+            setTimeout(() => alertDiv.remove(), 5000);
+        } else {
+            throw new Error(data.message || 'Une erreur est survenue');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        
+        // Afficher un message d'erreur
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger mt-3';
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = 'Une erreur est survenue lors de l\'envoi du signalement. Veuillez réessayer.';
+        this.insertAdjacentElement('afterend', alertDiv);
     }
 });
 </script>

@@ -668,3 +668,22 @@ function getEmployeeRegistrations(int $collaborateurId) {
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function createSignalement(string $type, string $description, ?int $id_societe = null) {
+    $db = getDatabaseConnection();
+    
+    $sql = "INSERT INTO signalement (probleme, description, date_signalement, id_societe, statut) 
+            VALUES (:probleme, :description, NOW(), :id_societe, 'non_traite')";
+            
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'probleme' => $type,
+        'description' => $description,
+        'id_societe' => $id_societe
+    ]);
+
+    if ($res) {
+        return $db->lastInsertId();
+    }
+    return null;
+}
+
