@@ -1,9 +1,20 @@
 <?php
-
+define('HEAD_INCLUDED', true);
 session_start();
-if (!isset($_SESSION["collaborateur_id"]) && $title != "Connexion - Espace Salarié") {
-    header("location: /frontOffice/employee/login/logout.php");
-    exit();
+
+// Vérification de base de l'authentification
+if (!isset($_SESSION['collaborateur_id'])) {
+    header('Location: /frontOffice/employee/login/logout.php');
+    exit;
+}
+
+// Ajouter le username dans la session s'il n'existe pas déjà
+if (isset($_SESSION["collaborateur_id"]) && !isset($_SESSION["username"])) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/employee.php';
+    $collaborateur = getEmployeeProfile($_SESSION["collaborateur_id"]);
+    if ($collaborateur) {
+        $_SESSION["username"] = $collaborateur["username"];
+    }
 }
 
 ?>

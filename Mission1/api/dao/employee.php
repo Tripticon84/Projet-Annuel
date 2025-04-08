@@ -687,3 +687,15 @@ function createSignalement(string $type, string $description, ?int $id_societe =
     return null;
 }
 
+function getAllAssociations() {
+    $db = getDatabaseConnection();
+    $sql = "SELECT * FROM association WHERE desactivate = 0";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute();
+    
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return null;
+}
+

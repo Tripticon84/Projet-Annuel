@@ -1,3 +1,10 @@
+<?php
+// Vérifier si head.php n'a pas déjà été inclus
+if (!defined('HEAD_INCLUDED')) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/employee/includes/head.php';
+}
+?>
+
 <header>
     <!-- Barre de navigation principale avec dégradé de couleur -->
     <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top" style="background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);">
@@ -94,18 +101,13 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="historique.php">
-                                    <i class="fas fa-history me-2 text-info"></i> Historique
-                                </a>
-                            </li>
-                            <li>
                                 <a class="dropdown-item" href="settings.php">
                                     <i class="fas fa-cog me-2 text-secondary"></i> Paramètres
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="logout.php">
+                                <a class="dropdown-item text-danger" href="login/logout.php">
                                     <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
                                 </a>
                             </li>

@@ -1,10 +1,5 @@
 // Initialisation du calendrier
 document.addEventListener('DOMContentLoaded', async function() {
-    if (typeof collaborateurId === 'undefined' || collaborateurId === null) {
-        console.error('Collaborateur ID not available');
-        alert('Veuillez vous connecter pour accéder à votre planning.');
-        return;
-    }
 
     // Ajout du chargement des données pour la page d'accueil
     const upcomingEventsElement = document.getElementById('upcoming-events');
@@ -16,6 +11,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         await initializeCalendar();
         await loadActivities();
         initializeFilters();
+    }
+
+    // Ajouter l'écouteur pour le formulaire de mot de passe s'il existe
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordUpdate);
     }
 });
 
@@ -38,12 +39,12 @@ async function initializeCalendar() {
 }
 
 function getCollaborateurId() {
-    // Check first for the global variable set in the page
+    // Vérifier d'abord si la variable globale est définie dans la page
     if (typeof collaborateurId !== 'undefined' && collaborateurId) {
         return collaborateurId;
     }
 
-    // Try multiple sources for the ID
+    // Essayer plusieurs sources pour l'ID
     const sources = {
         bodyData: document.body.dataset.collaborateurId,
         containerData: document.querySelector('.container')?.dataset?.collaborateurId,
@@ -55,7 +56,7 @@ function getCollaborateurId() {
     const id = sources.bodyData || sources.containerData || sources.elementData || sources.urlParam || sources.hiddenInput;
     
     if (!id) {
-        console.error('Collaborateur ID not found. Redirecting to login...');
+        console.error('ID du collaborateur non trouvé. Redirection vers la page de connexion...');
         window.location.href = '/login.php';
         return null;
     }
@@ -76,7 +77,7 @@ async function getEmployeeActivities() {
             fetch(`/api/employee/getEvent.php?collaborateur_id=${collaborateurId}`).then(r => r.json())
         ]);
 
-        // Format the dates properly for FullCalendar
+        // Formater correctement les dates pour FullCalendar
         const formattedActivities = activities.map(activity => ({
             title: activity.nom,
             type: activity.type,
@@ -161,13 +162,13 @@ async function registerForService(type, id) {
     try {
         const collaborateurId = getCollaborateurId();
         
-        // Use the correct field name based on type
+        // Utiliser le bon nom de champ en fonction du type
         const requestData = {
             type,
             collaborateur_id: collaborateurId
         };
         
-        // Add the correct ID field based on type
+        // Ajouter le bon champ ID en fonction du type
         if (type === 'event') {
             requestData.id_evenement = id;
         } else if (type === 'activity') {
@@ -231,6 +232,64 @@ async function unregisterFrom(type, id) {
     } catch (error) {
         console.error('Erreur de désinscription:', error);
         throw error;
+    }
+}
+
+async function unsubscribeFromAssociation(collaborateurId, associationId) {
+    if (!confirm('Êtes-vous sûr de vouloir vous désinscrire de cette association ?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/employee/unsubscribeAssociation.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                collaborateur_id: collaborateurId,
+                association_id: associationId
+            })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Erreur lors de la désinscription');
+        }
+
+        // Recharger la page pour actualiser la liste
+        window.location.reload();
+
+    } catch (error) {
+        alert('Erreur: ' + error.message);
+    }
+}
+
+async function subscribeToAssociation(collaborateurId, associationId) {
+    try {
+        const response = await fetch('/api/employee/subscribeAssociation.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                collaborateur_id: collaborateurId,
+                association_id: associationId
+            })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Erreur lors de l\'inscription');
+        }
+
+        // Recharger la page pour actualiser la liste
+        window.location.reload();
+
+    } catch (error) {
+        alert('Erreur: ' + error.message);
     }
 }
 
@@ -299,5 +358,113 @@ async function loadDashboardData() {
                 element.innerHTML = '<p class="text-danger"><i class="fas fa-exclamation-circle"></i> Erreur lors du chargement des données</p>';
             }
         });
+    }
+}
+
+function toggleEditMode() {
+    const inputs = document.querySelectorAll('#profileForm input:not([type="hidden"])');
+    const editButtons = document.getElementById('editButtons');
+    const isDisabled = inputs[0].disabled;
+
+    inputs.forEach(input => {
+        if (input.id !== 'role') { // Ne pas permettre la modification du rôle
+            input.disabled = !isDisabled;
+        }
+    });
+
+    editButtons.style.display = isDisabled ? 'block' : 'none';
+}
+
+function showMessage(type, message) {
+    let messageDiv = document.getElementById('updateMessage');
+    
+    // Si le div de message n'existe pas, le créer
+    if (!messageDiv) {
+        messageDiv = document.createElement('div');
+        messageDiv.id = 'updateMessage';
+        const form = document.getElementById('profileForm');
+        if (form) {
+            form.insertBefore(messageDiv, form.firstChild);
+        } else {
+            document.querySelector('.container')?.prepend(messageDiv);
+        }
+    }
+    
+    messageDiv.className = `alert alert-${type}`;
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+    
+    setTimeout(() => {
+        messageDiv.style.display = 'none';
+    }, 3000);
+}
+
+async function updateProfile(event) {
+    event.preventDefault();
+    
+    try {
+        const formData = {
+            collaborateur_id: document.getElementById('collaborateur_id').value,
+            nom: document.getElementById('nom').value,
+            prenom: document.getElementById('prenom').value,
+            email: document.getElementById('email').value,
+            telephone: document.getElementById('telephone').value
+        };
+
+        const response = await fetch('/api/employee/updateProfile.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) throw new Error(data.message || 'Erreur lors de la mise à jour');
+
+        showMessage('success', 'Profil mis à jour avec succès');
+        toggleEditMode();
+
+    } catch (error) {
+        showMessage('danger', error.message || 'Une erreur est survenue');
+    }
+}
+
+async function handlePasswordUpdate(event) {
+    event.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        alert('Les nouveaux mots de passe ne correspondent pas');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/employee/updatePassword.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                collaborateur_id: document.querySelector('input[name="collaborateur_id"]').value,
+                currentPassword: currentPassword,
+                newPassword: newPassword
+            })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('Mot de passe modifié avec succès');
+            document.getElementById('passwordForm').reset();
+        } else {
+            throw new Error(data.message || 'Erreur lors de la modification du mot de passe');
+        }
+    } catch (error) {
+        alert(error.message);
     }
 }
