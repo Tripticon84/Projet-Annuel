@@ -11,7 +11,7 @@ if (!methodIsAllowed('create')) {
     return;
 }
 
-acceptedTokens(true, false, false, false);
+// acceptedTokens(true, false, false, false);
 
 
 $data = getBody();
@@ -22,10 +22,11 @@ $contact_person = $data['contact_person'];
 $password = hashPassword($data['password']);
 $telephone = $data['telephone'];
 $siret = $data['siret'];
+$desactivate = $data['desactivate'] ?? 0; // Default to 0 if not provided
 
 
 
-if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person', 'password', 'telephone', 'siret'])) {
+if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person', 'password', 'telephone', 'siret','desactivate'])) {
     try {
 
         if (getCompanyBySiret($siret)) {
@@ -64,7 +65,12 @@ if (validateMandatoryParams($data, ['nom', 'email', 'adresse', 'contact_person',
             return;
         }
 
-        $newSocietyId = createSociety($nom, $email, $adresse, $contact_person, $password, $telephone, $siret);
+        if ($desactivate != 0 && $desactivate != 1) {
+            returnError(400, 'Invalid desactivate value. Must be 0 or 1.');
+            return;
+        }
+
+        $newSocietyId = createSociety($nom, $email, $adresse, $contact_person, $password, $telephone, $siret, $desactivate);
 
         if (!$newSocietyId) {
             // Log the error for debugging

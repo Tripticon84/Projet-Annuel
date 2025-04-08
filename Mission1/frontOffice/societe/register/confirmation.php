@@ -1,14 +1,20 @@
 <?php
-session_start();
+
 
 // Rediriger si l'utilisateur accède directement à cette page sans avoir terminé l'inscription
+
+
+$title = "Inscription réussie";
+require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php';
 if (!isset($_SESSION['registration_success'])) {
     header('Location: register.php');
     exit();
 }
 
-$title = "Inscription réussie";
-require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php';
+echo "<pre>";
+print_r($_SESSION);
+echo "</pre>";
+
 ?>
 
 <style>
@@ -16,13 +22,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         background: linear-gradient(135deg, #3a7bd5, #6fc2c0);
         background-attachment: fixed;
     }
-    
+
     .confirmation-card {
         border-radius: 15px;
-        box-shadow: rgba(58, 123, 213, 0.4) 5px 5px, 
-                    rgba(58, 123, 213, 0.3) 10px 10px, 
-                    rgba(58, 123, 213, 0.2) 15px 15px, 
-                    rgba(58, 123, 213, 0.1) 20px 20px, 
+        box-shadow: rgba(58, 123, 213, 0.4) 5px 5px,
+                    rgba(58, 123, 213, 0.3) 10px 10px,
+                    rgba(58, 123, 213, 0.2) 15px 15px,
+                    rgba(58, 123, 213, 0.1) 20px 20px,
                     rgba(58, 123, 213, 0.05) 25px 25px;
         overflow: hidden;
         backdrop-filter: blur(10px);
@@ -31,36 +37,36 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         z-index: 1;
         transition: all 0.3s ease;
     }
-    
+
     .confirmation-card:hover {
         transform: translateY(-5px);
-        box-shadow: rgba(111, 194, 192, 0.4) 5px 5px, 
-                    rgba(111, 194, 192, 0.3) 10px 10px, 
-                    rgba(111, 194, 192, 0.2) 15px 15px, 
-                    rgba(111, 194, 192, 0.1) 20px 20px, 
+        box-shadow: rgba(111, 194, 192, 0.4) 5px 5px,
+                    rgba(111, 194, 192, 0.3) 10px 10px,
+                    rgba(111, 194, 192, 0.2) 15px 15px,
+                    rgba(111, 194, 192, 0.1) 20px 20px,
                     rgba(111, 194, 192, 0.05) 25px 25px;
     }
-    
+
     .card-header {
         border-radius: 15px 15px 0 0 !important;
         padding: 1.5rem !important;
         background: linear-gradient(to right, #3a7bd5, #6fc2c0) !important;
         border: none;
     }
-    
+
     .btn-login {
         background: linear-gradient(to right, #3a7bd5, #6fc2c0);
         border: none;
         color: white;
         transition: all 0.3s ease;
     }
-    
+
     .btn-login:hover {
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(58, 123, 213, 0.4);
         color: white;
     }
-    
+
     .form-steps {
         display: flex;
         justify-content: space-between;
