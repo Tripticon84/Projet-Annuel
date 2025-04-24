@@ -3,10 +3,10 @@ define('HEAD_INCLUDED', true);
 session_start();
 
 // Vérification de base de l'authentification
-if (!isset($_SESSION['collaborateur_id'])) {
-    header('Location: /frontOffice/employee/login/logout.php');
-    exit;
-}
+// if (!isset($_SESSION['collaborateur_id'])) {
+//     header('Location: /frontOffice/employee/login/logout.php');
+//     exit;
+// }
 
 // Ajouter le username dans la session s'il n'existe pas déjà
 if (isset($_SESSION["collaborateur_id"]) && !isset($_SESSION["username"])) {
@@ -43,10 +43,10 @@ if (isset($_SESSION["collaborateur_id"]) && !isset($_SESSION["username"])) {
             return tokenCookie ? tokenCookie.split('=')[1] : null;
         };
 
-        if (getToken() !== null && !document.title.includes("Connexion")) {
-            alert("Vous devez vous connecter pour accéder à cette page.");
-            window.location.href = "/frontOffice/employee/login/logout.php";
-        }
+        // if (getToken() !== null && !document.title.includes("Connexion")) {
+        //     alert("Vous devez vous connecter pour accéder à cette page.");
+        //     window.location.href = "/frontOffice/employee/login/logout.php";
+        // }
 
         document.addEventListener('hidden.bs.modal', function() {
             // Attendre un court délai pour s'assurer que l'événement de fermeture est terminé
