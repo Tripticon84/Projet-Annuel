@@ -86,19 +86,14 @@ async function loadAvailableServices() {
             registrationsResponse.json()
         ]);
 
-        // Log les données formatées
-        console.log('Activities:', activities);
-        console.log('Events:', events);
-        console.log('Registrations:', registrations);
-
-        // Vérifier si les données sont des tableaux
-        if (!Array.isArray(activities)) throw new Error('Les activités ne sont pas dans le bon format');
-        if (!Array.isArray(events)) throw new Error('Les événements ne sont pas dans le bon format');
-        if (!Array.isArray(registrations)) throw new Error('Les inscriptions ne sont pas dans le bon format');
+        // Filtrer uniquement les services à venir
+        const now = new Date();
+        const upcomingActivities = activities.filter(activity => new Date(activity.date) >= now);
+        const upcomingEvents = events.filter(event => new Date(event.date) >= now);
 
         window.allServices = [
-            ...formatActivities(activities, registrations),
-            ...formatEvents(events, registrations)
+            ...formatActivities(upcomingActivities, registrations),
+            ...formatEvents(upcomingEvents, registrations)
         ];
 
         // Log les services formatés
