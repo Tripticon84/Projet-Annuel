@@ -29,26 +29,38 @@ include_once 'includes/header.php';
                     <?php
                     require_once '../../api/dao/event.php';
                     
-                    $events = getAllEvents(3); // Récupérer les 3 prochains événements
+                    $events = getAllEvents(); // Récupérer tous les événements
                     
                     if ($events && count($events) > 0) {
-                        foreach ($events as $event) {
-                            ?>
-                            <div class="mb-2 p-2 border-bottom">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <strong><?php echo htmlspecialchars($event['nom']); ?></strong>
-                                    <small class="text-muted"><?php echo date('d/m/Y', strtotime($event['date'])); ?></small>
-                                </div>
-                                <?php if (!empty($event['lieu'])) { ?>
-                                    <div class="text-muted small">
-                                        <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($event['lieu']); ?>
+                        $today = date('Y-m-d');
+                        $upcomingEvents = array_filter($events, function($event) use ($today) {
+                            return $event['date'] >= $today;
+                        });
+                        
+                        // Prendre les 3 premiers événements à venir
+                        $upcomingEvents = array_slice($upcomingEvents, 0, 3);
+                        
+                        if (count($upcomingEvents) > 0) {
+                            foreach ($upcomingEvents as $event) {
+                                ?>
+                                <div class="mb-2 p-2 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong><?php echo htmlspecialchars($event['nom']); ?></strong>
+                                        <small class="text-muted"><?php echo date('d/m/Y', strtotime($event['date'])); ?></small>
                                     </div>
-                                <?php } ?>
-                            </div>
-                            <?php
+                                    <?php if (!empty($event['lieu'])) { ?>
+                                        <div class="text-muted small">
+                                            <i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($event['lieu']); ?>
+                                        </div>
+                                    <?php } ?>
+                                </div>
+                                <?php
+                            }
+                        } else {
+                            echo '<p class="text-muted">Aucun événement à venir pour le moment.</p>';
                         }
                     } else {
-                        echo '<p class="text-muted">Aucun événement à venir pour le moment.</p>';
+                        echo '<p class="text-muted">Aucun événement disponible.</p>';
                     }
                     ?>
                     <div class="mt-3">

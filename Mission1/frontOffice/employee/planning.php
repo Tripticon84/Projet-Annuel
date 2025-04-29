@@ -304,9 +304,11 @@ function loadActivities() {
 
             // Créer une Map pour éviter les doublons
             const uniqueActivities = new Map();
+            const now = new Date();
             
-            // Trier les activités par date
+            // Trier et filtrer les activités à venir par date
             activities
+                .filter(activity => new Date(activity.start) >= now) // Filtre uniquement les activités à venir
                 .sort((a, b) => new Date(a.start) - new Date(b.start))
                 .forEach(activity => {
                     const key = `${activity.itemType}-${activity.id}`;
@@ -316,6 +318,11 @@ function loadActivities() {
                         activitiesList.appendChild(activityElement);
                     }
                 });
+
+            // Afficher un message si aucune activité à venir
+            if (uniqueActivities.size === 0) {
+                activitiesList.innerHTML = '<div class="text-center">Aucune activité à venir</div>';
+            }
         })
         .catch(error => {
             console.error('Erreur lors du chargement des activités:', error);
