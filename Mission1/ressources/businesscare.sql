@@ -148,6 +148,20 @@ CREATE TABLE `devis` (
   `id_societe` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `don`
+--
+
+CREATE TABLE `don` (
+  `don_id` int(11) NOT NULL,
+  `montant` decimal(10,2) DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `id_collaborateur` int(11) NOT NULL,
+  `id_association` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Structure de la table `INCLUT_FRAIS_DEVIS`
 --
@@ -394,6 +408,14 @@ ALTER TABLE `devis`
   ADD KEY `id_societe` (`id_societe`);
 
 --
+-- Index pour la table `don`
+--
+ALTER TABLE `don`
+  ADD PRIMARY KEY (`don_id`),
+  ADD KEY `id_collaborateur` (`id_collaborateur`),
+  ADD KEY `id_association` (`id_association`);
+
+--
 -- Index pour la table `INCLUT_FRAIS_DEVIS`
 --
 ALTER TABLE `INCLUT_FRAIS_DEVIS`
@@ -531,6 +553,12 @@ ALTER TABLE `devis`
   MODIFY `devis_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT pour la table `don`
+--
+ALTER TABLE `don`
+  MODIFY `don_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `evaluation`
 --
 ALTER TABLE `evaluation`
@@ -621,6 +649,14 @@ ALTER TABLE `collaborateur`
 --
 ALTER TABLE `devis`
   ADD CONSTRAINT `devis_ibfk_1` FOREIGN KEY (`id_societe`) REFERENCES `societe` (`societe_id`);
+
+
+--
+-- Contraintes pour la table `don`
+--
+ALTER TABLE `don`
+  ADD CONSTRAINT `don_ibfk_1` FOREIGN KEY (`id_collaborateur`) REFERENCES `collaborateur` (`collaborateur_id`),
+  ADD CONSTRAINT `don_ibfk_2` FOREIGN KEY (`id_association`) REFERENCES `association` (`association_id`);
 
 --
 -- Contraintes pour la table `discute_dans`

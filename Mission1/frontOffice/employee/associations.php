@@ -18,6 +18,10 @@ $participatingIds = array_map(function($assoc) {
 
 <div class="container mt-4">
     <h2>Associations</h2>
+    
+    <!-- Ajouter la configuration Stripe -->
+    <?php $stripePublishableKey = "pk_test_51PAXnVP0arAN6IC0UPtpOnaMS4O1Qp153mO28fvjMR3Qzq486KDOiScwYdv3svHGcARvLi2MuE9dh7shZtRnd5cW00Vx0swc4q"; ?>
+    <script src="https://js.stripe.com/v3/"></script>
 
     <div class="row" id="associations-list">
         <?php if (empty($associations)): ?>
@@ -51,18 +55,26 @@ $participatingIds = array_map(function($assoc) {
                         </div>
 
                         <div class="card-footer bg-transparent">
-                            <?php if (in_array($association['association_id'], $participatingIds)): ?>
-                                <button class="btn btn-danger btn-sm float-end"
-                                        onclick="unsubscribeFromAssociation(<?= $collaborateurId ?>, <?= $association['association_id'] ?>)">
-                                    Se désinscrire
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <?php if (in_array($association['association_id'], $participatingIds)): ?>
+                                        <button class="btn btn-danger btn-sm"
+                                                onclick="unsubscribeFromAssociation(<?= $collaborateurId ?>, <?= $association['association_id'] ?>)">
+                                            Se désinscrire
+                                        </button>
+                                        <span class="badge bg-success ms-2">Membre</span>
+                                    <?php else: ?>
+                                        <button class="btn btn-primary btn-sm"
+                                                onclick="subscribeToAssociation(<?= $collaborateurId ?>, <?= $association['association_id'] ?>)">
+                                            Rejoindre
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                                <button class="btn btn-outline-primary btn-sm" 
+                                        onclick="openDonationModal(<?= $association['association_id'] ?>, '<?= htmlspecialchars($association['name']) ?>')">
+                                    Faire un don
                                 </button>
-                                <span class="badge bg-success me-2">Membre</span>
-                            <?php else: ?>
-                                <button class="btn btn-primary btn-sm float-end"
-                                        onclick="subscribeToAssociation(<?= $collaborateurId ?>, <?= $association['association_id'] ?>)">
-                                    Rejoindre
-                                </button>
-                            <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -70,6 +82,113 @@ $participatingIds = array_map(function($assoc) {
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Modal pour les dons -->
+<div class="modal fade" id="donationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Faire un don</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Votre don pour: <span id="associationName"></span></p>
+                <div class="mb-3">
+                    <label for="donationAmount" class="form-label">Montant (€)</label>
+                    <input type="number" class="form-control" id="donationAmount" min="1" step="1" value="10">
+                </div>
+                <div id="stripe-payment-element"></div>
+                <button id="submit-donation" class="btn btn-primary w-100 mt-3" style="display:none;">
+                    Confirmer le don
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let stripe = Stripe('<?php echo $stripePublishableKey; ?>');
+let elements;
+let currentAssociationId;
+
+function openDonationModal(associationId, associationName) {
+    currentAssociationId = associationId;
+    document.getElementById('associationName').textContent = associationName;
+    
+    const modal = new bootstrap.Modal(document.getElementById('donationModal'));
+    modal.show();
+    
+    setupPayment();
+}
+
+async function setupPayment() {
+    const amount = document.getElementById('donationAmount').value;
+    
+    try {
+        const response = await fetch('/api/association/create-donation-intent.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                amount: amount,
+                associationId: currentAssociationId
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        elements = stripe.elements({
+            clientSecret: data.clientSecret,
+            appearance: {
+                theme: 'stripe',
+                variables: {
+                    colorPrimary: '#0d6efd',
+                }
+            }
+        });
+
+        const paymentElement = elements.create('payment');
+        paymentElement.mount('#stripe-payment-element');
+
+        document.getElementById('submit-donation').style.display = 'block';
+        document.getElementById('submit-donation').addEventListener('click', handleDonation);
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue lors de l\'initialisation du paiement.');
+    }
+}
+
+async function handleDonation(e) {
+    e.preventDefault();
+    
+    const button = document.getElementById('submit-donation');
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...';
+
+    try {
+        const result = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: window.location.origin + '/frontOffice/employee/donation-status.php?association_id=' + currentAssociationId,
+            },
+        });
+
+        if (result.error) {
+            throw new Error(result.error.message);
+        }
+    } catch (error) {
+        button.disabled = false;
+        button.innerHTML = 'Confirmer le don';
+        alert(error.message);
+    }
+}
+
+// Mettre à jour le paiement quand le montant change
+document.getElementById('donationAmount').addEventListener('change', setupPayment);
+</script>
 
 <script src="/data/static/js/employee.js"></script>
 <?php require_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/employee/includes/footer.php'; ?>
