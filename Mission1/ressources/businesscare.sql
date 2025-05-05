@@ -129,6 +129,21 @@ CREATE TABLE `collaborateur` (
   `desactivate` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+
+--
+-- Structure de la table `conseil`
+--
+
+CREATE TABLE `conseil` (
+  `conseil_id` int(11) NOT NULL,
+  `question` text DEFAULT NULL,
+  `reponse` text DEFAULT NULL,
+  `id_collaborateur` int(11) DEFAULT NULL,
+  `id_admin` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
 -- --------------------------------------------------------
 
 --
@@ -400,6 +415,15 @@ ALTER TABLE `collaborateur`
   ADD PRIMARY KEY (`collaborateur_id`),
   ADD KEY `id_societe` (`id_societe`);
 
+
+--
+-- Index pour la table `conseil`
+--
+ALTER TABLE `conseil`
+  ADD PRIMARY KEY (`conseil_id`),
+  ADD KEY `id_collaborateur` (`id_collaborateur`),
+  ADD KEY `id_admin` (`id_admin`);
+
 --
 -- Index pour la table `devis`
 --
@@ -546,6 +570,13 @@ ALTER TABLE `chatbot`
 ALTER TABLE `collaborateur`
   MODIFY `collaborateur_id` int(11) NOT NULL AUTO_INCREMENT;
 
+
+--
+-- AUTO_INCREMENT pour la table `conseil`
+--
+ALTER TABLE `conseil`
+  MODIFY `conseil_id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT pour la table `devis`
 --
@@ -643,6 +674,15 @@ ALTER TABLE `evenements`
 --
 ALTER TABLE `collaborateur`
   ADD CONSTRAINT `collaborateur_ibfk_1` FOREIGN KEY (`id_societe`) REFERENCES `societe` (`societe_id`);
+
+
+--
+-- Contraintes pour la table `conseil`
+--
+ALTER TABLE `conseil`
+  ADD CONSTRAINT `conseil_ibfk_1` FOREIGN KEY (`id_collaborateur`) REFERENCES `collaborateur` (`collaborateur_id`),
+  ADD CONSTRAINT `conseil_ibfk_2` FOREIGN KEY (`id_admin`) REFERENCES `admin` (`admin_id`);
+
 
 --
 -- Contraintes pour la table `devis`
@@ -799,12 +839,13 @@ INSERT INTO INCLUT_FRAIS_DEVIS (id_devis, id_frais) VALUES
 -- Questions fréquentes pour le chatbot
 INSERT INTO chatbot (question, reponse,parent_id) VALUES
 ('Comment réserver une activité ?', 'Pour réserver une activité, connectez-vous à votre espace collaborateur, puis naviguez vers la section "Activités". Sélectionnez l\'activité qui vous intéresse et cliquez sur "Réserver".',NULL),
-('Quels types d\'activités sont disponibles ?', 'Nous proposons divers types d\'activités pour le bien-être: coaching personnel, ateliers de gestion du stress, séances de yoga, consultations nutritionnelles, team building, et plus encore.',1),
-('Comment annuler ma participation à une activité ?', 'Pour annuler votre participation, rendez-vous dans "Mes activités", sélectionnez l\'activité concernée et cliquez sur "Annuler ma participation". L\'annulation est possible jusqu\'à 48h avant l\'activité.',2),
-('Comment contacter un prestataire ?', 'Vous pouvez contacter le prestataire via l\'onglet "Prestataires" dans votre espace collaborateur. Sélectionnez le prestataire et utilisez le formulaire de contact.',3),
-('Comment signaler un problème ?', 'Pour signaler un problème, allez dans la section "Assistance" de votre espace collaborateur et remplissez le formulaire de signalement.',4),
-('Comment modifier mes informations personnelles ?', 'Pour modifier vos informations personnelles, connectez-vous à votre espace collaborateur, allez dans "Mon profil" et mettez à jour les informations souhaitées.',5),
-('Comment participer à un événement entreprise ?', 'Pour participer à un événement, consultez la section "Événements" dans votre espace collaborateur et inscrivez-vous à ceux qui vous intéressent.',6);
+('Quels types d\'activités sont disponibles ?', 'Nous proposons divers types d\'activités pour le bien-être: coaching personnel, ateliers de gestion du stress, séances de yoga, consultations nutritionnelles, team building, et plus encore.',NULL),
+('Comment annuler ma participation à une activité ?', 'Pour annuler votre participation, rendez-vous dans "Mes activités", sélectionnez l\'activité concernée et cliquez sur "Annuler ma participation". L\'annulation est possible jusqu\'à 48h avant l\'activité.',NULL),
+('Comment contacter un prestataire ?', 'Vous pouvez contacter le prestataire via l\'onglet "Prestataires" dans votre espace collaborateur. Sélectionnez le prestataire et utilisez le formulaire de contact.',NULL),
+('Comment signaler un problème ?', 'Pour signaler un problème, allez dans la section "Assistance" de votre espace collaborateur et remplissez le formulaire de signalement.',NULL),
+('Comment modifier mes informations personnelles ?', 'Pour modifier vos informations personnelles, connectez-vous à votre espace collaborateur, allez dans "Mon profil" et mettez à jour les informations souhaitées.',NULL),
+('Comment participer à un événement entreprise ?', 'Pour participer à un événement, consultez la section "Événements" dans votre espace collaborateur et inscrivez-vous à ceux qui vous intéressent.',NULL),
+('Mon nom apparaitra dans le signalement ?', 'Non les signalement sont anonyme pour que les employés sois plus en sécurité pour rapporter un problème.',5);
 
 
 -- Salons de discussion
