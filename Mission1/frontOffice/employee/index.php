@@ -140,7 +140,7 @@ include_once 'includes/header.php';
                             <span class="badge bg-primary rounded-pill">3</span>
                         </li>
                     </ul>
-                    <a href="communautes.php" class="btn btn-outline-primary btn-sm mt-3">Rejoindre une communauté</a>
+                    <a href="communaute.php" class="btn btn-outline-primary btn-sm mt-3">Rejoindre une communauté</a>
                 </div>
             </div>
         </div>

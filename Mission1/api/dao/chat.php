@@ -92,13 +92,18 @@ function deleteChat($salon_id){
 
 /**
  * Ajoute un utilisateur à un salon de discussion
+ * @param int $salon_id L'ID du salon
+ * @param int $collaborateur_id L'ID du collaborateur
+ * @param bool $is_admin Indique si l'utilisateur est administrateur du salon (false par défaut)
+ * @return int Nombre de lignes affectées
  */
-function addUserToChat($salon_id, $collaborateur_id){
+function addUserToChat($salon_id, $collaborateur_id, $is_admin = false){
     $db = getDatabaseConnection();
-    $query = $db->prepare('INSERT INTO discute_dans (id_salon, id_collaborateur) VALUES (:salon_id, :collaborateur_id)');
+    $query = $db->prepare('INSERT INTO discute_dans (id_salon, id_collaborateur, is_admin) VALUES (:salon_id, :collaborateur_id, :is_admin)');
     $params = [
         'salon_id' => $salon_id,
-        'collaborateur_id' => $collaborateur_id
+        'collaborateur_id' => $collaborateur_id,
+        'is_admin' => $is_admin ? 1 : 0
     ];
     $query->execute($params);
     return $query->rowCount();
@@ -185,6 +190,47 @@ function isUserInChat($salon_id, $collaborateur_id):bool {
     return $query->fetchColumn() ? true : false;
 }
 
+/**
+ * Vérifie si un utilisateur est administrateur d'un salon
+ * @param int $salon_id L'ID du salon
+ * @param int $collaborateur_id L'ID du collaborateur
+ * @return bool Retourne true si l'utilisateur est administrateur du salon, false sinon
+ */
+function isUserChatAdmin($salon_id, $collaborateur_id) {
+    $db = getDatabaseConnection();
+    $query = $db->prepare('
+        SELECT is_admin FROM discute_dans 
+        WHERE id_salon = :salon_id AND id_collaborateur = :collaborateur_id
+    ');
+    $params = [
+        'salon_id' => $salon_id,
+        'collaborateur_id' => $collaborateur_id
+    ];
+    $query->execute($params);
+    return (bool)$query->fetchColumn();
+}
+
+/**
+ * Définit ou retire les privilèges d'administrateur d'un utilisateur dans un salon
+ * @param int $salon_id L'ID du salon
+ * @param int $collaborateur_id L'ID du collaborateur
+ * @param bool $is_admin Nouvelle valeur pour is_admin
+ * @return bool|null Succès de l'opération
+ */
+function setUserChatAdmin($salon_id, $collaborateur_id, $is_admin = true) {
+    $db = getDatabaseConnection();
+    $query = $db->prepare('
+        UPDATE discute_dans SET is_admin = :is_admin
+        WHERE id_salon = :salon_id AND id_collaborateur = :collaborateur_id
+    ');
+    $params = [
+        'salon_id' => $salon_id,
+        'collaborateur_id' => $collaborateur_id,
+        'is_admin' => $is_admin ? 1 : 0
+    ];
+    return $query->execute($params);
+}
+
 // Fonctions pour la gestion des messages en JSON
 
 /**
@@ -247,6 +293,19 @@ function getMessages($salon_id, $limit = null, $offset = 0){
     usort($messages, function($a, $b) {
         return $a['timestamp'] - $b['timestamp'];
     });
+    
+    // Enrichir les messages avec les informations des collaborateurs
+    $db = getDatabaseConnection();
+    foreach ($messages as &$message) {
+        $query = $db->prepare('
+            SELECT CONCAT(prenom, " ", nom) as username 
+            FROM collaborateur 
+            WHERE collaborateur_id = :collaborateur_id
+        ');
+        $query->execute(['collaborateur_id' => $message['collaborateur_id']]);
+        $user = $query->fetch(PDO::FETCH_ASSOC);
+        $message['username'] = $user ? $user['username'] : 'Utilisateur inconnu';
+    }
 
     // Appliquer limit et offset
     if ($limit !== null) {
@@ -276,6 +335,19 @@ function getLatestMessages($salon_id, $count = 20){
     usort($messages, function($a, $b) {
         return $b['timestamp'] - $a['timestamp'];
     });
+    
+    // Enrichir les messages avec les informations des collaborateurs
+    $db = getDatabaseConnection();
+    foreach ($messages as &$message) {
+        $query = $db->prepare('
+            SELECT CONCAT(prenom, " ", nom) as username 
+            FROM collaborateur 
+            WHERE collaborateur_id = :collaborateur_id
+        ');
+        $query->execute(['collaborateur_id' => $message['collaborateur_id']]);
+        $user = $query->fetch(PDO::FETCH_ASSOC);
+        $message['username'] = $user ? $user['username'] : 'Utilisateur inconnu';
+    }
 
     // Retourner directement les $count messages les plus récents
     return array_slice($messages, 0, $count);
