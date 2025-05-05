@@ -7,7 +7,8 @@ header('Content-Type: application/json');
 // Vérification des tokens d'authentification
 acceptedTokens(true, false, true, false); // Admin et employés autorisés
 
-if (!methodIsAllowed('create')) {
+// Vérifier si la méthode HTTP est POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     returnError(405, "Méthode non autorisée");
 }
 

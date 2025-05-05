@@ -54,7 +54,7 @@ if (!defined('HEAD_INCLUDED')) {
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="communautes.php">
+                                <a class="dropdown-item" href="communaute.php">
                                     <i class="fas fa-comments me-2 text-info"></i> Espace Communautés
                                 </a>
                             </li>
