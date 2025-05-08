@@ -44,7 +44,7 @@ if (!defined('HEAD_INCLUDED')) {
                         </a>
                         <ul class="dropdown-menu dropdown-menu-animated shadow-sm border-0" aria-labelledby="espacesDropdown">
                             <li>
-                                <a class="dropdown-item" href="conseils.php">
+                                <a class="dropdown-item" href="advice.php">
                                     <i class="fas fa-lightbulb me-2 text-warning"></i> Espace Conseils
                                 </a>
                             </li>
