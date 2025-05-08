@@ -17,7 +17,7 @@ if (!validateMandatoryParams($data, ['username', 'password'])) {
 
 $username = trim($data['username']);
 $password = trim($data['password']);
-$passwordHashed = hashPassword($password);
+$passwordHashed = hashPassword($password); 
 
 $employee = findEmployeeByCredentials($username, $passwordHashed);
 if (!$employee) {
