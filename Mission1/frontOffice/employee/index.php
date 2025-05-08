@@ -103,7 +103,7 @@ include_once 'includes/header.php';
                         <a href="signalement.php" class="btn btn-warning">
                             <i class="fas fa-exclamation-triangle"></i> Signalement anonyme
                         </a>
-                        <a href="conseils.php" class="btn btn-success">
+                        <a href="advice.php" class="btn btn-success">
                             <i class="fas fa-lightbulb"></i> Conseils bien-être
                         </a>
                     </div>
@@ -116,7 +116,57 @@ include_once 'includes/header.php';
                     <h5 class="card-title mb-0"><i class="fas fa-lightbulb"></i> Conseils de la semaine</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">Aucun conseil disponible pour le moment.</p>
+                    <?php
+                    require_once '../../api/dao/advice.php';
+                    
+                    $advices = getAllAdvices(); // Récupérer tous les conseils
+                    
+                    // Filtrer les conseils qui ont des réponses
+                    $answeredAdvices = array_filter($advices, function($advice) {
+                        return !empty($advice['reponse']);
+                    });
+                    
+                    // Trier par date de réponse (la plus récente d'abord)
+                    usort($answeredAdvices, function($a, $b) {
+                        // Vérifier si date_reponse existe, sinon utiliser date_creation
+                        $dateA = !empty($a['date_reponse']) ? strtotime($a['date_reponse']) : strtotime($a['date_creation']);
+                        $dateB = !empty($b['date_reponse']) ? strtotime($b['date_reponse']) : strtotime($b['date_creation']);
+                        return $dateB - $dateA;
+                    });
+                    
+                    // Prendre les 3 premiers conseils
+                    $recentAdvices = array_slice($answeredAdvices, 0, 3);
+                    
+                    if (count($recentAdvices) > 0) {
+                        foreach ($recentAdvices as $advice) {
+                            ?>
+                            <div class="mb-3 pb-2 border-bottom">
+                                <h6 class="mb-1 text-primary"><?php echo htmlspecialchars(substr($advice['question'], 0, 50) . (strlen($advice['question']) > 50 ? '...' : '')); ?></h6>
+                                <p class="small mb-2"><?php echo htmlspecialchars(substr($advice['reponse'], 0, 100) . (strlen($advice['reponse']) > 100 ? '...' : '')); ?></p>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">
+                                        <?php 
+                                        if (!empty($advice['date_reponse'])) {
+                                            echo date('d/m/Y', strtotime($advice['date_reponse']));
+                                        } else {
+                                            echo date('d/m/Y', strtotime($advice['date_creation']));
+                                        }
+                                        ?>
+                                    </small>
+                                    <?php if (!empty($advice['admin_username'])) { ?>
+                                        <small class="text-muted">Par: <?php echo htmlspecialchars($advice['admin_username']); ?></small>
+                                    <?php } ?>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                        ?>
+                        <a href="advice.php" class="btn btn-outline-primary btn-sm mt-3">Voir tous les conseils</a>
+                        <?php
+                    } else {
+                        echo '<p class="text-muted">Aucun conseil disponible pour le moment.</p>';
+                    }
+                    ?>
                 </div>
             </div>
 

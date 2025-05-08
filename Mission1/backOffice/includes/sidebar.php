@@ -71,7 +71,7 @@ $current_page = basename($_SERVER['SCRIPT_NAME']); ?>
             </li>
             <li class="nav-item">
                 <a class="nav-link <?= ($current_page == 'advice.php') ? 'active' : '' ?>" href="/backOffice/advice/advice.php">
-                    <i class="fas fa-robot"></i> Conseils
+                    <i class="fas fa-lightbulb"></i> Conseils
                 </a>
             </li>
             <li class="nav-item">

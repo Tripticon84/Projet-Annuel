@@ -139,7 +139,8 @@ CREATE TABLE `conseil` (
   `question` text DEFAULT NULL,
   `reponse` text DEFAULT NULL,
   `id_collaborateur` int(11) DEFAULT NULL,
-  `id_admin` int(11) DEFAULT NULL
+  `id_admin` int(11) DEFAULT NULL,
+  `date_creation` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -883,7 +884,6 @@ INSERT INTO evenements (nom, date, lieu, type, statut, id_association, desactiva
 ('Ateliers détente', '2025-05-05', 'Centre L\'Oréal - Paris', 'Ateliers pratiques', 'a_venir', 1, 0);
 
 
-
 -- Notes des prestataires
 INSERT INTO note_prestataire (id_prestataire, id_evaluation) VALUES
 (1, 1),
@@ -898,6 +898,27 @@ INSERT INTO signalement (probleme, description, date_signalement, id_societe, st
 ('Problème d\'accès à l\'intranet', 'Les collaborateurs ne peuvent pas accéder à l\'intranet depuis l\'extérieur', '2025-05-30', 3, 'non_traite'),
 ('Demande de formation', 'Les collaborateurs demandent une formation sur les nouveaux outils déployés', '2025-06-01', 4, 'non_traite'),
 ('Problème de stationnement', 'Le parking est souvent complet, causant des retards', '2025-06-05', 5, 'non_traite');
+
+-- Conseils liés aux activités, événements et associations
+INSERT INTO conseil (question, reponse, id_collaborateur, id_admin, date_creation) VALUES
+('Comment puis-je améliorer ma posture pendant les séances de yoga ?', 'Concentrez-vous sur l\'alignement de votre colonne vertébrale et gardez vos épaules détendues. Utilisez des accessoires comme des blocs si nécessaire pour maintenir une posture correcte.', 3, 1, '2024-03-15'),
+('Quels exercices de respiration sont les plus efficaces pour gérer le stress au quotidien ?', 'La respiration en carré (4 secondes inspirer, 4 secondes retenir, 4 secondes expirer, 4 secondes retenir) est très efficace pour gérer le stress immédiat. Pratiquez-la 5-10 minutes par jour.', 1, 2, '2024-06-22'),
+('Comment maintenir les bonnes habitudes nutritionnelles apprises en consultation ?', 'Établissez un plan de repas hebdomadaire, préparez vos repas à l\'avance et gardez un journal alimentaire pour suivre vos progrès et identifier les domaines d\'amélioration.', 5, 1, '2024-09-07'),
+('Y a-t-il des exercices spécifiques pour soulager les douleurs du cou liées au travail sur ordinateur ?', NULL, 2, NULL, '2024-11-12'),
+('Comment intégrer la méditation dans ma routine quotidienne chargée ?', NULL, 7, NULL, '2025-01-05'),
+('Quelles sont les meilleures pratiques pour un échauffement avant une séance sportive intensive ?', NULL, 4, NULL, '2024-08-18'),
+('Comment maximiser les bénéfices de la Journée bien-être ?', 'Planifiez votre journée à l\'avance en choisissant les ateliers qui correspondent à vos besoins, venez avec des questions spécifiques pour les experts, et prenez des notes pour vous référer ultérieurement aux informations importantes.', 2, 1, '2024-07-29'),
+('Comment puis-je contribuer activement au Challenge pas quotidiens ?', 'Fixez-vous un objectif personnel de pas quotidiens, formez une équipe pour rester motivé, utilisez l\'application de suivi régulièrement et intégrez plus de marche dans votre routine (comme prendre les escaliers ou garer votre voiture plus loin).', 6, 2, '2024-12-03'),
+('Quels documents devrais-je apporter à la Conférence Équilibre de vie ?', 'Apportez un carnet de notes, des stylos, une bouteille d\'eau, et préparez quelques questions à l\'avance. Un planning personnel peut aussi être utile pour identifier les domaines d\'amélioration de votre équilibre vie pro/perso.', 3, 1, '2025-02-14'),
+('Y aura-t-il des sessions individuelles pendant la Semaine de la santé ?', NULL, 5, NULL, '2024-04-30'),
+('Comment puis-je proposer un atelier pour les prochaines Journées bien-être ?', NULL, 1, NULL, '2025-01-21'),
+('Quelles compétences pourrais-je développer lors des Ateliers détente qui seraient utiles pour mon travail quotidien ?', NULL, 7, NULL, '2024-05-17'),
+('Comment puis-je m\'impliquer davantage avec Les Restos du Cœur en dehors des événements organisés par l\'entreprise ?', 'Vous pouvez contacter directement le centre Restos du Cœur le plus proche pour proposer du bénévolat régulier ou ponctuel, participer aux collectes alimentaires, ou devenir un donateur régulier. Leur site web liste également des projets spécifiques nécessitant des compétences particulières.', 1, 2, '2024-10-25'),
+('Quels types de compétences sont les plus recherchées par Médecins Sans Frontières pour les bénévoles ?', 'MSF recherche principalement des professionnels de santé, mais aussi des profils logistiques, administratifs et techniques. Les compétences en langues étrangères, gestion de projet et communication sont également valorisées. Consultez leur site pour les missions spécifiques.', 4, 1, '2024-02-28'),
+('Comment mon entreprise peut-elle établir un partenariat durable avec la Croix-Rouge française ?', 'La Croix-Rouge propose plusieurs types de partenariats d\'entreprise: mécénat financier, mécénat de compétences, ou projets conjoints. Contactez leur service partenariats entreprises et proposez un projet aligné avec vos valeurs d\'entreprise et leurs besoins.', 6, 2, '2025-03-09'),
+('Peut-on organiser une collecte de fonds interne pour WWF France ?', NULL, 3, NULL, '2024-08-02'),
+('Y a-t-il des formations offertes par ces associations que je pourrais suivre ?', NULL, 5, NULL, '2025-04-18'),
+('Comment valoriser mon engagement associatif sur mon CV et lors des entretiens professionnels ?', NULL, 7, NULL, '2024-11-30');
 
 -- Relations salon-collaborateurs (qui discute dans quel salon)
 INSERT INTO discute_dans (id_salon, id_collaborateur,is_admin) VALUES
@@ -932,3 +953,5 @@ INSERT INTO participe_evenement (id_evenement, id_collaborateur) VALUES
 (4, 6), (4, 7),
 (5, 1), (5, 3),
 (5, 7);
+
+

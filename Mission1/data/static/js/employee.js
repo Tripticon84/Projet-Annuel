@@ -1,12 +1,15 @@
 // Initialisation du calendrier
 document.addEventListener('DOMContentLoaded', async function() {
-
     // Ajout du chargement des données pour la page d'accueil
     const upcomingEventsElement = document.getElementById('upcoming-events');
     const myActivitiesElement = document.getElementById('my-activities');
+    const adviceForm = document.getElementById('adviceForm');
     
     if (upcomingEventsElement || myActivitiesElement) {
         await loadDashboardData();
+    } else if (adviceForm) {
+        // Si nous sommes sur la page de conseils, charger les conseils
+        await loadEmployeeAdvice();
     } else {
         await initializeCalendar();
         await loadActivities();
@@ -17,6 +20,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     const passwordForm = document.getElementById('passwordForm');
     if (passwordForm) {
         passwordForm.addEventListener('submit', handlePasswordUpdate);
+    }
+    
+    // Ajouter l'écouteur pour le formulaire de conseil s'il existe
+    if (adviceForm) {
+        adviceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitAdviceRequest();
+        });
     }
 });
 
@@ -466,5 +477,176 @@ async function handlePasswordUpdate(event) {
         }
     } catch (error) {
         alert(error.message);
+    }
+}
+
+// Fonctions pour l'espace conseils
+async function loadEmployeeAdvice() {
+    try {
+        const collaborateurId = getCollaborateurId();
+        
+        if (!collaborateurId) {
+            throw new Error('Collaborateur ID manquant - Veuillez vous connecter');
+        }
+        
+        const response = await fetch(`/api/advice/getAll.php`);
+        const advices = await response.json();
+        
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des conseils');
+        }
+        
+        const pendingContainer = document.getElementById('pendingAdvice');
+        const answeredContainer = document.getElementById('answeredAdvice');
+        
+        // Filtrer les conseils pour ce collaborateur
+        const myAdvices = advices.filter(advice => Number(advice.id_collaborateur) === Number(collaborateurId));
+        
+        // Séparer les conseils en attente et répondus
+        const pendingAdvices = myAdvices.filter(advice => !advice.reponse);
+        const answeredAdvices = myAdvices.filter(advice => advice.reponse);
+        
+        // Fonction pour formater les dates
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return isNaN(date.getTime()) ? 'Date invalide' : 
+                `${date.toLocaleDateString()} à ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        }
+        
+        // Afficher les conseils en attente
+        if (pendingAdvices.length > 0) {
+            pendingContainer.innerHTML = pendingAdvices.map(advice => `
+                <div class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Question: ${advice.question}</h5>
+                        <small>Envoyé le: ${formatDate(advice.date_creation)}</small>
+                    </div>
+                    <div class="mt-3 d-flex justify-content-end">
+                        <button class="btn btn-sm btn-danger" onclick="deleteAdvice(${advice.conseil_id})">
+                            <i class="fas fa-trash me-1"></i> Supprimer
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            pendingContainer.innerHTML = '<div class="alert alert-info">Vous n\'avez aucune demande de conseil en attente.</div>';
+        }
+        
+        // Afficher les conseils répondus
+        if (answeredAdvices.length > 0) {
+            answeredContainer.innerHTML = answeredAdvices.map(advice => `
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">Question: ${advice.question}</h5>
+                        <small>Posé le: ${formatDate(advice.date_creation)}</small>
+                    </div>
+                    <p class="mt-2 mb-1"><strong>Réponse de ${advice.admin_username || 'l\'administration'} (${formatDate(advice.date_reponse)}):</strong></p>
+                    <p class="mb-1">${advice.reponse}</p>
+                </div>
+            `).join('');
+        } else {
+            answeredContainer.innerHTML = '<div class="alert alert-info">Vous n\'avez aucun conseil répondu pour le moment.</div>';
+        }
+    } catch (error) {
+        console.error('Erreur de chargement des conseils:', error);
+        
+        const containers = ['pendingAdvice', 'answeredAdvice'];
+        containers.forEach(id => {
+            const container = document.getElementById(id);
+            if (container) {
+                container.innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des conseils.</div>';
+            }
+        });
+        
+        showAdviceMessage('danger', `Erreur: ${error.message}`);
+    }
+}
+
+async function submitAdviceRequest() {
+    try {
+        const questionInput = document.getElementById('question');
+        const question = questionInput.value.trim();
+        
+        if (!question) {
+            throw new Error('Veuillez saisir votre question');
+        }
+        
+        const collaborateurId = getCollaborateurId();
+        
+        const response = await fetch('/api/advice/create.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                question: question,
+                id_collaborateur: collaborateurId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Erreur lors de l\'envoi de la demande');
+        }
+        
+        // Réinitialiser le formulaire et afficher un message de succès
+        questionInput.value = '';
+        showAdviceMessage('success', 'Votre demande de conseil a été envoyée avec succès');
+        
+        // Recharger la liste des conseils
+        setTimeout(() => loadEmployeeAdvice(), 1000);
+        
+    } catch (error) {
+        console.error('Erreur d\'envoi de conseil:', error);
+        showAdviceMessage('danger', `Erreur: ${error.message}`);
+    }
+}
+
+async function deleteAdvice(adviceId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette demande de conseil ?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/advice/delete.php', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                conseil_id: adviceId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Erreur lors de la suppression');
+        }
+        
+        showAdviceMessage('success', 'Demande de conseil supprimée avec succès');
+        
+        // Recharger la liste des conseils
+        setTimeout(() => loadEmployeeAdvice(), 1000);
+        
+    } catch (error) {
+        console.error('Erreur de suppression de conseil:', error);
+        showAdviceMessage('danger', `Erreur: ${error.message}`);
+    }
+}
+
+function showAdviceMessage(type, message) {
+    const messageElement = document.getElementById('adviceMessage');
+    if (messageElement) {
+        messageElement.className = `alert alert-${type}`;
+        messageElement.textContent = message;
+        messageElement.classList.remove('d-none');
+        
+        // Masquer le message après quelques secondes
+        setTimeout(() => {
+            messageElement.classList.add('d-none');
+        }, 5000);
     }
 }
