@@ -37,7 +37,7 @@ $result = [
     "date_activite" => $employee['date_activite'],
     "telephone" => $employee['telephone'],
     "id_societe" => $employee['id_societe'],
-    "desactivate" => $employee['desactivate'],
+    "desactivate" => $employee['desactivate']
 ];
 
 echo json_encode($result);

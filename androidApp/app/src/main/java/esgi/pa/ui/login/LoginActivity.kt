@@ -53,9 +53,7 @@ class LoginActivity : AppCompatActivity() {
                     is Resource.Success -> {
                         val response = state.data!!
                         sessionManager.saveSession(
-                            token = response.token,
-                            username = response.username ?: "", // Use empty string if null
-                            userId = response.userId
+                            token = response.token
                         )
 
                         // Navigate to main activity
@@ -64,6 +62,41 @@ class LoginActivity : AppCompatActivity() {
                     }
                     is Resource.Error -> {
                         Toast.makeText(this@LoginActivity, state.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
+        // Observe authentication state
+        // Observe employee data state
+        lifecycleScope.launch {
+            viewModel.employeeState.collect { state ->
+                when (state) {
+                    is Resource.Success -> {
+                        val employeeData = state.data!!
+                        // Update session with user ID and username
+                        sessionManager.saveSession(
+                            token = sessionManager.getToken()!!,
+                            username = employeeData.username,
+                            userId = employeeData.collaborateur_id
+                        )
+
+                        // Show success message with user details
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Connecté en tant que: ${employeeData.username} (ID: ${employeeData.collaborateur_id})",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    is Resource.Error -> {
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Échec récupération données utilisateur: ${state.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is Resource.Loading -> {
+                        // Optional: Show loading state
                     }
                 }
             }

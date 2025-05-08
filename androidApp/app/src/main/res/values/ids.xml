@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="nav_profile" type="id" />
+    <item name="text_username" type="id" />
+    <item name="text_user_id" type="id" />
+</resources>

@@ -1,40 +1,46 @@
-// AuthRepository.kt
 package esgi.pa.data.repository
 
 import esgi.pa.data.api.NetworkModule
+import esgi.pa.data.model.GetEmployeeEventRequest
+import esgi.pa.data.model.GetEmployeeEventResponse
+import esgi.pa.data.model.GetOneByCredentialsRequest
+import esgi.pa.data.model.GetOneByCredentialsResponse
 import esgi.pa.data.model.LoginRequest
 import esgi.pa.data.model.LoginResponse
 import esgi.pa.util.Resource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import retrofit2.HttpException
+import java.io.IOException
 
 class AuthRepository {
     private val apiService = NetworkModule.apiService
 
     suspend fun login(username: String, password: String): Resource<LoginResponse> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.login(LoginRequest(username, password))
-
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    if (body != null) {
-                        Resource.Success(body)
-                    } else {
-                        Resource.Error("Empty response from server")
-                    }
-                } else {
-                    val errorMsg = when (response.code()) {
-                        401 -> "Invalid username or password"
-                        403 -> "This collaborator account is deactivated"
-                        404 -> "Collaborator not found"
-                        else -> "Error ${response.code()}: ${response.message()}"
-                    }
-                    Resource.Error(errorMsg)
-                }
-            } catch (e: Exception) {
-                Resource.Error("Network error: ${e.message ?: "Unknown error"}")
+        return try {
+            val response = apiService.login(LoginRequest(username, password))
+            if (response.isSuccessful && response.body() != null) {
+                Resource.Success(response.body()!!)
+            } else {
+                Resource.Error("Échec de connexion: ${response.message()}")
             }
+        } catch (e: IOException) {
+            Resource.Error("Erreur réseau: ${e.message}")
+        } catch (e: Exception) {
+            Resource.Error("Erreur: ${e.message}")
+        }
+    }
+
+    suspend fun getEmployeeByCredentials(username: String, password: String): Resource<GetOneByCredentialsResponse> {
+        return try {
+            val response = apiService.authentificate(username, password)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Resource.Success(it)
+                } ?: Resource.Error("Response body is empty")
+            } else {
+                Resource.Error("Authentication failed: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Network error: ${e.message}")
         }
     }
 }

@@ -11,15 +11,15 @@ class SessionManager(context: Context) {
         private const val PREFS_NAME = "user_session"
         private const val KEY_TOKEN = "auth_token"
         private const val KEY_USERNAME = "username"
-        private const val KEY_USER_ID = "user_id"
+        private const val KEY_USER_ID = "collaborateur_id"
     }
 
-    // In SessionManager.kt
-    fun saveSession(token: String, username: String?, userId: Int) {
+
+    fun saveSession(token: String, username: String? = null, userId: Int = -1) {
         prefs.edit().apply {
             putString(KEY_TOKEN, token)
-            putString(KEY_USERNAME, username)
-            putInt(KEY_USER_ID, userId)
+            username?.let { putString(KEY_USERNAME, it) }
+            if (userId != -1) putInt(KEY_USER_ID, userId)
             apply()
         }
     }

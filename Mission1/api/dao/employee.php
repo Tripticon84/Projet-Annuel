@@ -256,7 +256,7 @@ function findEmployeeByCredentials($username, $password)
 {
     $connection = getDatabaseConnection();
     $hashedPassword = hashPassword($password);
-    $sql = "SELECT collaborateur_id FROM collaborateur WHERE username = :username AND password = :password";
+    $sql = "SELECT * FROM collaborateur WHERE username = :username AND password = :password";
     $query = $connection->prepare($sql);
     $res = $query->execute([
         'username' => $username,

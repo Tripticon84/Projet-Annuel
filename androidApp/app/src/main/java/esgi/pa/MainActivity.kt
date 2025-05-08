@@ -2,7 +2,10 @@ package esgi.pa
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
+import android.widget.TextView
+import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
@@ -28,14 +31,18 @@ class MainActivity : AppCompatActivity() {
         sessionManager = SessionManager(this)
         val token = sessionManager.getToken()
 
+        Log.d("MainActivity", "Token value: $token")
+
         // Check if user is logged in
         if (token == null) {
-            // Redirect to login if not logged in
+            Log.d("MainActivity", "No token found, redirecting to LoginActivity")
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
             finish()
             return
         }
+
+        Log.d("MainActivity", "Token found, continuing to MainActivity")
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -51,13 +58,47 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_main)
+
+        // Update AppBarConfiguration to include the profile fragment
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
+                R.id.nav_home, R.id.nav_profile
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        try {
+            // Display user information in navigation header
+            val headerView = navView.getHeaderView(0)
+            val usernameTextView = headerView.findViewById<TextView>(R.id.text_username)
+            val userIdTextView = headerView.findViewById<TextView>(R.id.text_user_id)
+
+            // Set user information from session
+            val username = sessionManager.getUsername()
+            val userId = sessionManager.getUserId()
+
+            if (usernameTextView != null && userIdTextView != null) {
+                if (username != null && userId != -1) {
+                    usernameTextView.text = username
+                    userIdTextView.text = "ID: $userId"
+
+                    // Optional Toast message
+                    Toast.makeText(
+                        this,
+                        "Connecté en tant que: $username (ID: $userId)",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    usernameTextView.text = "Utilisateur"
+                    userIdTextView.text = "Données incomplètes"
+                }
+            } else {
+                Log.e("MainActivity", "TextView elements not found in navigation header")
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error setting up navigation header", e)
+        }
 
         // Set up logout functionality
         navView.menu.findItem(R.id.nav_logout)?.setOnMenuItemClickListener {
