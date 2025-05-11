@@ -1,6 +1,7 @@
 package esgi.pa.ui.profile
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,12 +37,17 @@ class ProfileFragment : Fragment() {
 
         profileViewModel = ViewModelProvider(this).get(ProfileViewModel::class.java)
 
+        // Add log before loading data
+        Log.d("ProfileFragment", "Starting to load user data")
+
         // Observe ViewModel data
         profileViewModel.userData.observe(viewLifecycleOwner) { userData ->
+            Log.d("ProfileFragment", "Received user data: $userData")
             updateUI(userData)
         }
 
         profileViewModel.error.observe(viewLifecycleOwner) { errorMsg ->
+            Log.e("ProfileFragment", "Error loading user data: $errorMsg")
             showError(errorMsg)
         }
 
@@ -50,9 +56,9 @@ class ProfileFragment : Fragment() {
     }
 
     private fun updateUI(userData: GetOneByCredentialsResponse) {
+        Log.d("ProfileFragment", "Updating UI with user: ${userData.prenom} ${userData.nom}")
         tvUsername.text = "${userData.prenom} ${userData.nom}"
         tvUserId.text = "ID: ${userData.collaborateur_id} | ${userData.role}"
-
     }
 
     private fun showError(message: String) {

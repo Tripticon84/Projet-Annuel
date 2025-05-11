@@ -1,5 +1,7 @@
 package esgi.pa.data.api
 
+import esgi.pa.data.model.Activity
+import esgi.pa.data.model.Event
 import esgi.pa.data.model.GetEmployeeEventResponse
 import esgi.pa.data.model.GetOneByCredentialsRequest
 import esgi.pa.data.model.GetOneByCredentialsResponse
@@ -21,5 +23,15 @@ interface ApiService {
         @Query("username") username: String,
         @Query("password") password: String
     ): Response<GetOneByCredentialsResponse>
+
+    @GET("employee/getEvent.php")
+    suspend fun getEmployeeEvent(
+        @Query("collaborateur_id") collaborateur_id: Int
+    ): Response<List<Event>>
+
+    @GET("employee/getActivity.php")
+    suspend fun getEmployeeActivity(
+        @Query("collaborateur_id") collaborateur_id: Int
+    ): Response<List<Activity>>
 
 }

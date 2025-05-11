@@ -31,12 +31,14 @@ class LoginActivity : AppCompatActivity() {
         val viewModelFactory = LoginViewModelFactory(authRepository)
         viewModel = ViewModelProvider(this, viewModelFactory)[LoginViewModel::class.java]
 
-        // Set up login button click listener
+        // Check if user is already logged in
         binding.loginButton.setOnClickListener {
             val username = binding.usernameEditText.text.toString().trim()
             val password = binding.passwordEditText.text.toString().trim()
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
+                // Store password for API calls
+                sessionManager.savePassword(password)
                 viewModel.login(username, password)
             } else {
                 Toast.makeText(this, "Veuillez entrer votre nom d'utilisateur et mot de passe", Toast.LENGTH_SHORT).show()
