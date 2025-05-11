@@ -10,9 +10,15 @@
             android:title="@string/menu_home" />
 
         <item
+            android:id="@+id/navigation_planning"
+            android:icon="@drawable/ic_calendar_black_24dp"
+            android:title="Planning" />
+
+        <item
             android:id="@+id/nav_profile"
             android:icon="@drawable/ic_menu_profile"
             android:title="Mon profil" />
+
     </group>
 
     <item android:title="Compte">

@@ -17,4 +17,10 @@
         android:name="esgi.pa.ui.profile.ProfileFragment"
         android:label="Mon profil"
         tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/navigation_planning"
+        android:name="esgi.pa.ui.planning.PlanningFragment"
+        android:label="Planning"
+        tools:layout="@layout/fragment_planning" />
 </navigation>
