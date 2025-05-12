@@ -96,8 +96,19 @@ class HomeFragment : Fragment() {
             viewModel.loadEmployeeEvents(collaborateurId)
             viewModel.loadEmployeeActivities(collaborateurId)
         } else {
-            Log.e(TAG, "Invalid collaborateurId")
-            Toast.makeText(requireContext(), "Erreur: ID utilisateur invalide", Toast.LENGTH_LONG).show()
+            Log.e(TAG, "Invalid collaborateurId, will retry after delay")
+            // Retry after a short delay to allow login process to complete
+            view?.postDelayed({
+                val retryId = sessionManager.getCollaborateurId()
+                if (retryId != -1) {
+                    Log.d(TAG, "Retry successful, got valid collaborateurId: $retryId")
+                    viewModel.loadEmployeeEvents(retryId)
+                    viewModel.loadEmployeeActivities(retryId)
+                } else {
+                    Log.e(TAG, "Retry failed, still invalid collaborateurId")
+                    Toast.makeText(requireContext(), "Erreur: ID utilisateur invalide", Toast.LENGTH_LONG).show()
+                }
+            }, 1000) // Wait 1 second before retrying
         }
     }
 

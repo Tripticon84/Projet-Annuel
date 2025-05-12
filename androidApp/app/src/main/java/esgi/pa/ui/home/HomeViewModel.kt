@@ -42,6 +42,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _activities = MutableLiveData<List<Activity>>()
     val activities: LiveData<List<Activity>> = _activities
 
+    // Initialize data loading as soon as ViewModel is created
+    init {
+        loadCurrentUserData()
+    }
+
     fun loadEmployeeEvents(collaborateurId: Int) {
         _isLoading.value = true
         Log.d(TAG, "Loading events for collaborateur: $collaborateurId")
@@ -75,6 +80,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadEmployeeActivities(collaborateurId: Int) {
+        // Set loading state for activities as well
+        _isLoading.value = true
         Log.d(TAG, "Loading activities for collaborateur: $collaborateurId")
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -83,15 +90,20 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     Log.d(TAG, "Activities API call successful")
                     if (response.data == null) {
                         Log.e(TAG, "Activities response data is null")
+                        _error.postValue("Données des activités nulles")
                     } else {
                         val filteredActivities = filterUpcomingActivities(response.data)
                         Log.d(TAG, "Total activities: ${response.data.size}, Upcoming activities: ${filteredActivities.size}")
                         _activities.postValue(filteredActivities)
                     }
+                    // Only update loading state if events are also loaded
+                    _isLoading.postValue(false)
                 }
 
                 is Resource.Error -> {
                     Log.e(TAG, "Error getting activities: ${response.message}")
+                    _error.postValue(response.message ?: "Impossible de récupérer les activités")
+                    _isLoading.postValue(false)
                 }
 
                 is Resource.Loading -> {
