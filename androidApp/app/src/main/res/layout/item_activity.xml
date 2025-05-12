@@ -37,6 +37,14 @@
             android:layout_marginTop="4dp"
             android:textSize="14sp"
             tools:text="20/04/2025" />
+
+        <Button
+            android:id="@+id/btn_activity_register"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:text="S'inscrire" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

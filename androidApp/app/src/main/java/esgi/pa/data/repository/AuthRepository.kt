@@ -8,6 +8,9 @@ import esgi.pa.data.model.Event
 import esgi.pa.util.Resource
 import android.util.Log
 import esgi.pa.data.model.Activity
+import esgi.pa.data.model.RegisterToActivityRequest
+import esgi.pa.data.model.RegisterToAnythingResponse
+import esgi.pa.data.model.RegisterToEventRequest
 import java.io.IOException
 
 class AuthRepository {
@@ -74,6 +77,92 @@ class AuthRepository {
         } catch (e: Exception) {
             Log.e("AuthRepository", "Exception getting activities", e)
             Resource.Error("Erreur: ${e.message}")
+        }
+    }
+
+    suspend fun registerToEvent(collaborateurId: Int, eventId: Int): Resource<RegisterToAnythingResponse> {
+        return try {
+            val response = apiService.registerToEvent(
+                RegisterToEventRequest(collaborateurId, eventId, "event")
+            )
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: RegisterToAnythingResponse(false, "Empty response"))
+            } else {
+                Resource.Error("Registration failed: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error: ${e.message}")
+        }
+    }
+
+    suspend fun unregisterFromEvent(collaborateurId: Int, eventId: Int): Resource<RegisterToAnythingResponse> {
+        return try {
+            val response = apiService.unregisterToEvent(
+                RegisterToEventRequest(collaborateurId, eventId, "event")
+            )
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: RegisterToAnythingResponse(false, "Empty response"))
+            } else {
+                Resource.Error("Unregistration failed: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error: ${e.message}")
+        }
+    }
+
+    suspend fun registerToActivity(collaborateurId: Int, activityId: Int): Resource<RegisterToAnythingResponse> {
+        return try {
+            val response = apiService.registerToActivity(
+                RegisterToActivityRequest(collaborateurId, activityId, "activite")
+            )
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: RegisterToAnythingResponse(false, "Empty response"))
+            } else {
+                Resource.Error("Registration failed: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error: ${e.message}")
+        }
+    }
+
+    suspend fun unregisterFromActivity(collaborateurId: Int, activityId: Int): Resource<RegisterToAnythingResponse> {
+        return try {
+            val response = apiService.unregisterToActivity(
+                RegisterToActivityRequest(collaborateurId, activityId, "activite")
+            )
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: RegisterToAnythingResponse(false, "Empty response"))
+            } else {
+                Resource.Error("Unregistration failed: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error: ${e.message}")
+        }
+    }
+
+    suspend fun getAllEvents(): Resource<List<Event>> {
+        return try {
+            val response = apiService.getAllEvent()
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: emptyList())
+            } else {
+                Resource.Error("Failed to fetch events: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error: ${e.message}")
+        }
+    }
+
+    suspend fun getAllActivities(): Resource<List<Activity>> {
+        return try {
+            val response = apiService.getAllActivity()
+            if (response.isSuccessful) {
+                Resource.Success(response.body() ?: emptyList())
+            } else {
+                Resource.Error("Failed to fetch activities: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Error: ${e.message}")
         }
     }
 }

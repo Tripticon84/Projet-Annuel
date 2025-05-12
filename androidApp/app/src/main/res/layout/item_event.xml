@@ -37,5 +37,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp" />
+
+        <Button
+            android:id="@+id/btn_event_register"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:text="S'inscrire" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -8,12 +8,13 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import esgi.pa.data.model.Event
+import esgi.pa.data.repository.AuthRepository
 import esgi.pa.databinding.FragmentEventsListBinding
 import esgi.pa.util.Resource
+import esgi.pa.util.SessionManager
 import kotlinx.coroutines.launch
 
 class EventsListFragment : Fragment() {
@@ -21,7 +22,15 @@ class EventsListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: EventListViewModel by viewModels { EventViewModelFactory() }
-    private lateinit var adapter: esgi.pa.ui.home.EventAdapter
+    private val authRepository = AuthRepository()
+    private var userId: Int = -1
+    private lateinit var sessionManager: SessionManager
+
+    private val adapter = EventAdapter(
+        onRegisterClick = { event, isRegistered ->
+            handleEventRegistration(event, isRegistered)
+        }
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,6 +38,8 @@ class EventsListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEventsListBinding.inflate(inflater, container, false)
+        sessionManager = SessionManager(requireContext())
+        userId = sessionManager.getUserId()
         return binding.root
     }
 
@@ -36,33 +47,70 @@ class EventsListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
-        observeViewModel()
-        viewModel.loadAllEvents()
+        loadData()
     }
 
     private fun setupRecyclerView() {
-        adapter = esgi.pa.ui.home.EventAdapter()
         binding.recyclerViewEvents.adapter = adapter
         binding.recyclerViewEvents.layoutManager = LinearLayoutManager(requireContext())
     }
 
-    private fun observeViewModel() {
+    private fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.events.collect { resource ->
-                    when (resource) {
-                        is Resource.Loading -> binding.progressBar.isVisible = true
-                        is Resource.Success -> {
-                            binding.progressBar.isVisible = false
-                            adapter.submitList(resource.data)
-                        }
-                        is Resource.Error -> {
-                            binding.progressBar.isVisible = false
-                            Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
-                        }
-                    }
+            binding.progressBar.isVisible = true
+
+            // Load all events
+            when (val eventsResult = authRepository.getAllEvents()) {
+                is Resource.Success -> {
+                    adapter.updateEvents(eventsResult.data ?: emptyList())
                 }
+                is Resource.Error -> {
+                    Toast.makeText(context, eventsResult.message, Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Loading -> {}
             }
+
+            // Get registered events
+            when (val userEventsResult = authRepository.getEmployeeEvents(userId)) {
+                is Resource.Success -> {
+                    adapter.updateRegisteredEvents(userEventsResult.data ?: emptyList())
+                }
+                is Resource.Error -> {
+                    Toast.makeText(context, userEventsResult.message, Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Loading -> {}
+            }
+
+            binding.progressBar.isVisible = false
+        }
+    }
+
+    private fun handleEventRegistration(event: Event, isRegistered: Boolean) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.progressBar.isVisible = true
+
+            val result = if (isRegistered) {
+                authRepository.unregisterFromEvent(userId, event.evenement_id)
+            } else {
+                authRepository.registerToEvent(userId, event.evenement_id)
+            }
+
+            when (result) {
+                is Resource.Success -> {
+                    Toast.makeText(
+                        context,
+                        if (isRegistered) "Désinscription réussie" else "Inscription réussie",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    loadData() // Refresh data to update UI
+                }
+                is Resource.Error -> {
+                    Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Loading -> {}
+            }
+
+            binding.progressBar.isVisible = false
         }
     }
 

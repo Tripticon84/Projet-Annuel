@@ -6,10 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import esgi.pa.databinding.FragmentHomeBinding
+import esgi.pa.util.Resource
 import esgi.pa.util.SessionManager
 
 class HomeFragment : Fragment() {
@@ -18,9 +20,10 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var viewModel: HomeViewModel
-    private lateinit var eventsAdapter: EventAdapter
-    private lateinit var activitiesAdapter: ActivityAdapter
     private lateinit var sessionManager: SessionManager
+
+    private val eventAdapter = HomeEventAdapter()
+    private val activityAdapter = HomeActivityAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,81 +37,75 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize ViewModel and SessionManager
         viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
         sessionManager = SessionManager(requireContext())
 
         setupRecyclerViews()
         setupObservers()
-        loadData()
+        loadData() // Load data as soon as view is created
     }
 
     private fun setupRecyclerViews() {
-        // Setup events RecyclerView
-        eventsAdapter = EventAdapter()
         binding.eventsRecyclerView.apply {
-            adapter = eventsAdapter
+            adapter = eventAdapter
             layoutManager = LinearLayoutManager(requireContext())
         }
 
-        // Setup activities RecyclerView
-        activitiesAdapter = ActivityAdapter()
         binding.activitiesRecyclerView.apply {
-            adapter = activitiesAdapter
+            adapter = activityAdapter
             layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
     private fun setupObservers() {
-        // Observe loading state
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            Log.d(TAG, "Loading state changed to: $isLoading")
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-        }
-
-        // Observe events
-        viewModel.events.observe(viewLifecycleOwner) { events ->
-            if (events.isNotEmpty()) {
-                eventsAdapter.submitList(events)
+        viewModel.events.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Success -> {
+                    binding.progressBar.isVisible = false
+                    eventAdapter.updateEvents(resource.data ?: emptyList())
+                    Log.d(TAG, "Events loaded: ${resource.data?.size ?: 0}")
+                }
+                is Resource.Error -> {
+                    binding.progressBar.isVisible = false
+                    Log.e(TAG, "Error loading events: ${resource.message}")
+                    Toast.makeText(context, "Erreur: ${resource.message}", Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Loading -> {
+                    binding.progressBar.isVisible = true
+                }
             }
         }
 
-        // Observe activities
-        viewModel.activities.observe(viewLifecycleOwner) { activities ->
-            if (activities.isNotEmpty()) {
-                activitiesAdapter.submitList(activities)
-            }
-        }
-
-        // Observe errors
-        viewModel.error.observe(viewLifecycleOwner) { errorMsg ->
-            if (errorMsg.isNotEmpty()) {
-                Log.e(TAG, "Error received: $errorMsg")
-                Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_LONG).show()
+        viewModel.activities.observe(viewLifecycleOwner) { resource ->
+            when (resource) {
+                is Resource.Success -> {
+                    binding.progressBar.isVisible = false
+                    activityAdapter.updateActivities(resource.data ?: emptyList())
+                    Log.d(TAG, "Activities loaded: ${resource.data?.size ?: 0}")
+                }
+                is Resource.Error -> {
+                    binding.progressBar.isVisible = false
+                    Log.e(TAG, "Error loading activities: ${resource.message}")
+                    Toast.makeText(context, "Erreur: ${resource.message}", Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Loading -> {
+                    binding.progressBar.isVisible = true
+                }
             }
         }
     }
 
     private fun loadData() {
-        val collaborateurId = sessionManager.getCollaborateurId()
-        if (collaborateurId != -1) {
-            Log.d(TAG, "Loading events for valid collaborateurId: $collaborateurId")
-            viewModel.loadEmployeeEvents(collaborateurId)
-            viewModel.loadEmployeeActivities(collaborateurId)
+        val userId = sessionManager.getUserId()
+        Log.d(TAG, "Loading data for user ID: $userId")
+
+        if (userId > 0) {
+            binding.progressBar.isVisible = true
+            viewModel.loadUserEvents(userId)
+            viewModel.loadUserActivities(userId)
         } else {
-            Log.e(TAG, "Invalid collaborateurId, will retry after delay")
-            // Retry after a short delay to allow login process to complete
-            view?.postDelayed({
-                val retryId = sessionManager.getCollaborateurId()
-                if (retryId != -1) {
-                    Log.d(TAG, "Retry successful, got valid collaborateurId: $retryId")
-                    viewModel.loadEmployeeEvents(retryId)
-                    viewModel.loadEmployeeActivities(retryId)
-                } else {
-                    Log.e(TAG, "Retry failed, still invalid collaborateurId")
-                    Toast.makeText(requireContext(), "Erreur: ID utilisateur invalide", Toast.LENGTH_LONG).show()
-                }
-            }, 1000) // Wait 1 second before retrying
+            Log.e(TAG, "Invalid user ID: $userId")
+            Toast.makeText(context, "ID utilisateur non valide", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -119,6 +116,7 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        loadData()  // Recharge les données à chaque affichage du fragment
+        // Reload data when returning to fragment
+        loadData()
     }
 }
