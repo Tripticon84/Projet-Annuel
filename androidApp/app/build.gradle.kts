@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "esgi.pa"
-        minSdk = 21
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -66,8 +66,6 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Calendar
-    implementation("com.github.kizitonwose:CalendarView:1.0.4")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
