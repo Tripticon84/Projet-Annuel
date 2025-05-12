@@ -29,4 +29,12 @@
                 android:title="Déconnexion" />
         </menu>
     </item>
+    <item
+        android:id="@+id/nav_activities"
+        android:icon="@drawable/ic_activities"
+        android:title="Activités" />
+    <item
+        android:id="@+id/nav_events"
+        android:icon="@drawable/ic_events"
+        android:title="Événements" />
 </menu>

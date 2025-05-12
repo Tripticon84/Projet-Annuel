@@ -23,4 +23,16 @@
         android:name="esgi.pa.ui.planning.PlanningFragment"
         android:label="Planning"
         tools:layout="@layout/fragment_planning" />
+
+    <fragment
+        android:id="@+id/nav_activities"
+        android:name="esgi.pa.ui.activities.ActivitiesListFragment"
+        android:label="Activités"
+        tools:layout="@layout/fragment_activities_list" />
+
+    <fragment
+        android:id="@+id/nav_events"
+        android:name="esgi.pa.ui.events.EventsListFragment"
+        android:label="Événements"
+        tools:layout="@layout/fragment_events_list" />
 </navigation>

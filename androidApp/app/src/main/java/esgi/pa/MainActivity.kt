@@ -59,12 +59,13 @@ class MainActivity : AppCompatActivity() {
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_main)
 
-        // Update AppBarConfiguration to include the planning fragment
+        // Updated AppBarConfiguration to include the activities fragment
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_profile, R.id.navigation_planning
+                R.id.nav_home, R.id.nav_profile, R.id.navigation_planning, R.id.nav_activities, R.id.nav_events
             ), drawerLayout
         )
+
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 

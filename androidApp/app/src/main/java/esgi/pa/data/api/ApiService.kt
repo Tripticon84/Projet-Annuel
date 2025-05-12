@@ -34,4 +34,11 @@ interface ApiService {
         @Query("collaborateur_id") collaborateur_id: Int
     ): Response<List<Activity>>
 
+    @GET("activity/getAll.php")
+    suspend fun getAllActivity(
+    ): Response<List<Activity>>
+
+    @GET("event/getALl.php")
+    suspend fun getAllEvent(
+    ): Response<List<Event>>
 }
