@@ -159,11 +159,11 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Check if we need to reload due to potential login state changes
+        // Always reload data when returning to the fragment
         val userId = sessionManager.getUserId()
-        if (userId > 0 && !dataLoaded) {
-            Log.d(TAG, "Reloading data on resume with user ID: $userId")
-            checkUserAndLoadData()
+        if (userId > 0) {
+            Log.d(TAG, "Reloading activities on resume")
+            viewModel.loadUserActivities(userId)
         }
     }
 

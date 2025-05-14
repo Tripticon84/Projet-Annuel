@@ -49,10 +49,10 @@ class ActivityAdapter(
             }
         }
 
-        // Add normalized names to the set
-        registeredActivityNames.addAll(
-            registeredNames.map { it.trim().lowercase() }
-        )
+        // Add normalized names to the set - both from directly passed activities and from additional names
+        val normalizedActivityNames = registeredActivities.map { it.nom.trim().lowercase() }
+        registeredActivityNames.addAll(normalizedActivityNames)
+        registeredActivityNames.addAll(registeredNames)
 
         Log.d(TAG, "Registered activity IDs: $registeredActivityIds")
         Log.d(TAG, "Registered activity names: $registeredActivityNames")
@@ -72,17 +72,14 @@ class ActivityAdapter(
         // Normalize the activity name for comparison
         val normalizedName = activity.nom.trim().lowercase()
 
-        // Check if user is registered for this activity
-        // - Check by ID first
-        // - Then check by normalized name directly
-        // - Then check if the normalized name maps to a registered name
-        // - Finally check if a registered name maps to this activity's name
+        // Check if user is registered for this activity using multiple criteria
+        // 1. Check by ID directly
+        // 2. Check by normalized name directly
+        // 3. Check using name mapping in both directions
         val isRegistered = registeredActivityIds.contains(activity.activity_id) ||
                 registeredActivityNames.contains(normalizedName) ||
-                registeredActivityNames.contains(nameMapping[normalizedName]) ||
-                nameMapping.any { (key, value) ->
-                    value == normalizedName && registeredActivityNames.contains(key)
-                }
+                nameMapping[normalizedName]?.let { registeredActivityNames.contains(it) } ?: false ||
+                nameMapping.entries.any { (key, value) -> value == normalizedName && registeredActivityNames.contains(key) }
 
         Log.d(TAG, "Binding activity: ${activity.nom}, ID: ${activity.activity_id}, isRegistered: $isRegistered")
 
@@ -101,14 +98,15 @@ class ActivityAdapter(
             nameTextView.text = activity.nom
             typeTextView.text = activity.type
 
-            // Format the date for better display
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-
+            // Format date for better readability
             try {
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
                 val date = inputFormat.parse(activity.date)
-                dateTextView.text = date?.let { outputFormat.format(it) } ?: activity.date
+                dateTextView.text = if (date != null) outputFormat.format(date) else activity.date
             } catch (e: Exception) {
+                // Fall back to raw date if parsing fails
                 dateTextView.text = activity.date
             }
 
