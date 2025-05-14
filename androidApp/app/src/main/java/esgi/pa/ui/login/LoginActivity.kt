@@ -57,10 +57,7 @@ class LoginActivity : AppCompatActivity() {
                         sessionManager.saveSession(
                             token = response.token
                         )
-
-                        // Navigate to main activity
-                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                        finish()
+                        // Navigation removed from here - no longer navigating after token
                     }
                     is Resource.Error -> {
                         Toast.makeText(this@LoginActivity, state.message, Toast.LENGTH_SHORT).show()
@@ -69,7 +66,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        // Observe authentication state
         // Observe employee data state
         lifecycleScope.launch {
             viewModel.employeeState.collect { state ->
@@ -82,6 +78,10 @@ class LoginActivity : AppCompatActivity() {
                             username = employeeData.username,
                             userId = employeeData.collaborateur_id
                         )
+
+                        // Navigation moved here - only navigate after getting complete user data
+                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                        finish()
 
                         // Show success message with user details
                         Toast.makeText(
