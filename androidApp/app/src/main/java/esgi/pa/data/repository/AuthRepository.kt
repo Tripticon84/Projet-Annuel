@@ -7,6 +7,8 @@ import esgi.pa.data.model.LoginResponse
 import esgi.pa.data.model.Event
 import esgi.pa.util.Resource
 import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import esgi.pa.data.model.Activity
 import esgi.pa.data.model.RegisterToActivityRequest
 import esgi.pa.data.model.RegisterToAnythingResponse
@@ -115,10 +117,20 @@ class AuthRepository {
             val response = apiService.registerToActivity(
                 RegisterToActivityRequest(collaborateurId, activityId, "activite")
             )
+
             if (response.isSuccessful) {
                 Resource.Success(response.body() ?: RegisterToAnythingResponse(false, "Empty response"))
             } else {
-                Resource.Error("Registration failed: ${response.message()}")
+                // Try to extract error message from response body
+                val errorBody = response.errorBody()?.string()
+                val errorMessage = try {
+                    val json = Gson().fromJson(errorBody, JsonObject::class.java)
+                    json.get("error")?.asString ?: response.message()
+                } catch (e: Exception) {
+                    response.message()
+                }
+
+                Resource.Error("$errorMessage")
             }
         } catch (e: Exception) {
             Resource.Error("Error: ${e.message}")
@@ -165,6 +177,8 @@ class AuthRepository {
             Resource.Error("Error: ${e.message}")
         }
     }
+
+
 
 
 }

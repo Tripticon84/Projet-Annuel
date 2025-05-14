@@ -11,7 +11,16 @@ class ActivityRepository {
     suspend fun getAllActivities(): Resource<List<Activity>> {
         return try {
             val response = apiService.getAllActivity()
-            Log.d("ActivityRepository", "Raw API response: ${response.body()}")
+            val rawBody = response.body()
+            Log.d("ActivityRepository", "Raw API response: $rawBody")
+
+            // Debug each activity
+            rawBody?.forEach { activity ->
+                Log.d(
+                    "ActivityRepository",
+                    "Activity ID: ${activity.activity_id}, Name: ${activity.nom}"
+                )
+            }
 
             if (response.isSuccessful) {
                 Resource.Success(response.body() ?: emptyList())
