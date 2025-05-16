@@ -44,7 +44,7 @@ if (validateMandatoryParams($data, ['nom', 'prenom', 'username', 'role', 'email'
         return;
     }
 
-    $newEmployeeId = createEmployee($data['nom'], $data['prenom'], $data['username'], $data['role'], $data['email'], hashPassword($data['password']), $data['telephone'], $data['id_societe']);
+    $newEmployeeId = createEmployee($data['nom'], $data['prenom'], $data['username'], $data['role'], $data['email'], $data['password'], $data['telephone'], $data['id_societe']);
 
     if (!$newEmployeeId) {
         returnError(500, 'Could not create the employee');

@@ -15,11 +15,10 @@ if (!validateMandatoryParams($data, ['username', 'password'])) {
     returnError(400, 'Mandatory parameters : username, password');
 }
 
-$username = trim($data['username']);
-$password = trim($data['password']);
-$passwordHashed = hashPassword($password); 
+$username = $data['username'];
+$password = $data['password'];
 
-$employee = findEmployeeByCredentials($username, $passwordHashed);
+$employee = findEmployeeByCredentials($username, $password);
 if (!$employee) {
     returnError(401, 'Invalid credentials');
 }

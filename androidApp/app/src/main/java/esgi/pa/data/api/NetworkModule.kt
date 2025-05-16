@@ -1,6 +1,6 @@
-// NetworkModule.kt
 package esgi.pa.data.api
 
+import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -22,10 +22,15 @@ object NetworkModule {
         .addInterceptor(loggingInterceptor)
         .build()
 
+    // Create a custom Gson instance to ensure SerializedName annotations work
+    private val gson = GsonBuilder()
+        .setLenient()
+        .create()
+
     val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(GsonConverterFactory.create(gson)) // Use custom Gson
         .build()
 
     val apiService: ApiService by lazy {

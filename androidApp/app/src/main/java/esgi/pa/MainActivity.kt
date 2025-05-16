@@ -1,45 +1,62 @@
 package esgi.pa
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.navigation.NavigationView
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
+import esgi.pa.data.repository.AuthRepository
 import esgi.pa.databinding.ActivityMainBinding
 import esgi.pa.ui.login.LoginActivity
 import esgi.pa.util.SessionManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import android.content.Intent
+import android.view.Menu
+import android.widget.TextView
+import android.widget.Toast
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
-
+    private val TAG = "MainActivity"
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private lateinit var sessionManager: SessionManager
+    private val authRepository = AuthRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         sessionManager = SessionManager(this)
         val token = sessionManager.getToken()
+        val userId = sessionManager.getUserId()
+
+        Log.d(TAG, "Token value: $token")
+        Log.d(TAG, "User ID value: $userId")
 
         // Check if user is logged in
         if (token == null) {
-            // Redirect to login if not logged in
+            Log.d(TAG, "No token found, redirecting to LoginActivity")
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
             finish()
             return
         }
 
+
+        Log.d(TAG, "Token found, continuing to MainActivity")
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Continue with the rest of MainActivity setup...
         setSupportActionBar(binding.appBarMain.toolbar)
 
         binding.appBarMain.fab.setOnClickListener { view ->
@@ -51,13 +68,48 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_main)
+
+        // Updated AppBarConfiguration to include the activities fragment
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
+                R.id.nav_home, R.id.nav_profile, R.id.navigation_planning, R.id.nav_activities, R.id.nav_events
             ), drawerLayout
         )
+
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        try {
+            // Display user information in navigation header
+            val headerView = navView.getHeaderView(0)
+            val usernameTextView = headerView.findViewById<TextView>(R.id.text_username)
+            val userIdTextView = headerView.findViewById<TextView>(R.id.text_user_id)
+
+            // Set user information from session
+            val username = sessionManager.getUsername()
+            val currentUserId = sessionManager.getUserId()
+
+            if (usernameTextView != null && userIdTextView != null) {
+                if (username != null && currentUserId > 0) {
+                    usernameTextView.text = username
+                    userIdTextView.text = "ID: $currentUserId"
+
+                    // Optional Toast message
+                    Toast.makeText(
+                        this,
+                        "Connecté en tant que: $username (ID: $currentUserId)",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    usernameTextView.text = "Utilisateur"
+                    userIdTextView.text = "Données incomplètes"
+                }
+            } else {
+                Log.e(TAG, "TextView elements not found in navigation header")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting up navigation header", e)
+        }
 
         // Set up logout functionality
         navView.menu.findItem(R.id.nav_logout)?.setOnMenuItemClickListener {
@@ -72,6 +124,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)

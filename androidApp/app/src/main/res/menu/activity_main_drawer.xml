@@ -6,24 +6,35 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
-            android:icon="@android:drawable/ic_menu_compass"
+            android:icon="@drawable/ic_menu_home"
             android:title="@string/menu_home" />
+
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@android:drawable/ic_menu_gallery"
-            android:title="@string/menu_gallery" />
+            android:id="@+id/navigation_planning"
+            android:icon="@drawable/ic_calendar_black_24dp"
+            android:title="Planning" />
+
         <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@android:drawable/ic_menu_slideshow"
-            android:title="@string/menu_slideshow" />
+            android:id="@+id/nav_profile"
+            android:icon="@drawable/ic_menu_profile"
+            android:title="Mon profil" />
+
     </group>
 
     <item android:title="Compte">
         <menu>
             <item
                 android:id="@+id/nav_logout"
-                android:icon="@android:drawable/ic_lock_power_off"
-                android:title="Se déconnecter" />
+                android:icon="@drawable/ic_logout"
+                android:title="Déconnexion" />
         </menu>
     </item>
+    <item
+        android:id="@+id/nav_activities"
+        android:icon="@drawable/ic_activities"
+        android:title="Activités" />
+    <item
+        android:id="@+id/nav_events"
+        android:icon="@drawable/ic_events"
+        android:title="Événements" />
 </menu>

@@ -31,12 +31,14 @@ class LoginActivity : AppCompatActivity() {
         val viewModelFactory = LoginViewModelFactory(authRepository)
         viewModel = ViewModelProvider(this, viewModelFactory)[LoginViewModel::class.java]
 
-        // Set up login button click listener
+        // Check if user is already logged in
         binding.loginButton.setOnClickListener {
             val username = binding.usernameEditText.text.toString().trim()
             val password = binding.passwordEditText.text.toString().trim()
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
+                // Store password for API calls
+                sessionManager.savePassword(password)
                 viewModel.login(username, password)
             } else {
                 Toast.makeText(this, "Veuillez entrer votre nom d'utilisateur et mot de passe", Toast.LENGTH_SHORT).show()
@@ -53,17 +55,50 @@ class LoginActivity : AppCompatActivity() {
                     is Resource.Success -> {
                         val response = state.data!!
                         sessionManager.saveSession(
-                            token = response.token,
-                            username = response.username ?: "", // Use empty string if null
-                            userId = response.userId
+                            token = response.token
                         )
-
-                        // Navigate to main activity
-                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                        finish()
+                        // Navigation removed from here - no longer navigating after token
                     }
                     is Resource.Error -> {
                         Toast.makeText(this@LoginActivity, state.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
+        // Observe employee data state
+        lifecycleScope.launch {
+            viewModel.employeeState.collect { state ->
+                when (state) {
+                    is Resource.Success -> {
+                        val employeeData = state.data!!
+                        // Update session with user ID and username
+                        sessionManager.saveSession(
+                            token = sessionManager.getToken()!!,
+                            username = employeeData.username,
+                            userId = employeeData.collaborateur_id
+                        )
+
+                        // Navigation moved here - only navigate after getting complete user data
+                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                        finish()
+
+                        // Show success message with user details
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Connecté en tant que: ${employeeData.username} (ID: ${employeeData.collaborateur_id})",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    is Resource.Error -> {
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Échec récupération données utilisateur: ${state.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is Resource.Loading -> {
+                        // Optional: Show loading state
                     }
                 }
             }
