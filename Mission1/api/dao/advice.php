@@ -144,4 +144,40 @@ function deleteAdvice($id)
         return false;
     }
 }
+
+/**
+ * Recherche des conseils similaires à une question donnée
+ * @param string $query La question à rechercher
+ * @return array Liste des conseils similaires
+ */
+function findSimilarAdvices($query)
+{
+    try {
+        $db = getDatabaseConnection();
+        
+        // Nettoyer la requête pour la recherche
+        $cleanQuery = '%' . trim($query) . '%';
+        
+        // Recherche par mots clés dans les questions et les réponses
+        $sql = "SELECT c.*, col.nom AS collaborateur_nom, col.prenom AS collaborateur_prenom, 
+                a.username AS admin_username 
+                FROM conseil c 
+                LEFT JOIN collaborateur col ON c.id_collaborateur = col.collaborateur_id 
+                LEFT JOIN admin a ON c.id_admin = a.admin_id
+                WHERE c.question LIKE :query OR c.reponse LIKE :query
+                ORDER BY 
+                    CASE WHEN c.reponse IS NOT NULL THEN 1 ELSE 0 END DESC, 
+                    c.date_creation DESC
+                LIMIT 5";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute(['query' => $cleanQuery]);
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+    } catch (PDOException $e) {
+        error_log("Erreur lors de la recherche de conseils similaires: " . $e->getMessage());
+        return [];
+    }
+}
 ?>

@@ -1,10 +1,13 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/employee.php';
-session_start();
+// La ligne session_start() est supprimée car déjà présente dans head.php
 
-// Vérifier si l'employé est connecté
+// Inclure l'en-tête
+require_once 'includes/head.php';
+
+
 if (!isset($_SESSION['collaborateur_id'])) {
-    header('Location: login/login.php');
+    header('Location: /login.php');
     exit;
 }
 

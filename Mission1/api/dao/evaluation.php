@@ -164,3 +164,56 @@ function newEvaluationInNote_prestataire($id_evaluation,$id_prestataire){
     }
     return null;
 }
+
+function getEvaluationsByProviderId(int $prestataire_id){
+    $db = getDatabaseConnection();
+    $sql = "SELECT e.evaluation_id, e.note, e.commentaire, e.date_creation, 
+                   c.nom as collaborateur_nom, c.prenom as collaborateur_prenom 
+            FROM evaluation e
+            JOIN note_prestataire np ON e.evaluation_id = np.id_evaluation
+            JOIN collaborateur c ON e.id_collaborateur = c.collaborateur_id
+            WHERE np.id_prestataire = :prestataire_id AND e.desactivate = 0
+            ORDER BY e.date_creation DESC";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'prestataire_id' => $prestataire_id
+    ]);
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return [];
+}
+
+function getAverageRatingByProviderId(int $prestataire_id){
+    $db = getDatabaseConnection();
+    $sql = "SELECT AVG(e.note) as average_rating, COUNT(e.evaluation_id) as total_evaluations
+            FROM evaluation e
+            JOIN note_prestataire np ON e.evaluation_id = np.id_evaluation
+            WHERE np.id_prestataire = :prestataire_id AND e.desactivate = 0";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'prestataire_id' => $prestataire_id
+    ]);
+    if ($res) {
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    return ['average_rating' => 0, 'total_evaluations' => 0];
+}
+
+function getRatingDistributionByProviderId(int $prestataire_id){
+    $db = getDatabaseConnection();
+    $sql = "SELECT e.note, COUNT(e.evaluation_id) as count
+            FROM evaluation e
+            JOIN note_prestataire np ON e.evaluation_id = np.id_evaluation
+            WHERE np.id_prestataire = :prestataire_id AND e.desactivate = 0
+            GROUP BY e.note
+            ORDER BY e.note DESC";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'prestataire_id' => $prestataire_id
+    ]);
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return [];
+}

@@ -1,6 +1,5 @@
 <?php
 
-// Inclure l'en-tête
 require_once 'includes/head.php';
 require_once 'includes/header.php';
 
@@ -43,8 +42,71 @@ if (!isset($_SESSION['collaborateur_id'])) {
     </div>
 </div>
 
+
+<div class="modal fade" id="evaluationModal" tabindex="-1" aria-labelledby="evaluationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="evaluationModalLabel">Évaluer le prestataire</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="evaluationForm">
+                    <input type="hidden" id="prestataireId" name="prestataireId">
+                    <input type="hidden" id="collaborateurId" name="collaborateurId">
+                    
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Note</label>
+                        <div class="rating">
+                            <span class="star" data-value="1">★</span>
+                            <span class="star" data-value="2">★</span>
+                            <span class="star" data-value="3">★</span>
+                            <span class="star" data-value="4">★</span>
+                            <span class="star" data-value="5">★</span>
+                        </div>
+                        <input type="hidden" id="ratingValue" name="note" value="0">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="commentaire" class="form-label">Commentaire</label>
+                        <textarea class="form-control" id="commentaire" name="commentaire" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="submitEvaluation">Soumettre</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- affichage évaluations -->
+<div class="modal fade" id="viewEvaluationsModal" tabindex="-1" aria-labelledby="viewEvaluationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewEvaluationsModalLabel">Évaluations</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="evaluationsList">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-// Ajouter avant le reste du code JavaScript
+
 const collaborateurId = document.querySelector('[data-collaborateur-id]')?.dataset?.collaborateurId;
 if (!collaborateurId) {
     window.location.href = '/login.php';
@@ -53,55 +115,78 @@ if (!collaborateurId) {
 document.addEventListener('DOMContentLoaded', function() {
     loadAvailableServices();
 
-    // Ajout de l'event listener pour la recherche
+    // Ajout du listener pour la recherche - filtre dynamique
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('input', filterServices);
+    
+    // Système d'évaluation par étoiles - clique sur les étoiles pour noter
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = parseInt(this.dataset.value);
+            document.getElementById('ratingValue').value = value;
+            
+            // Mise à jour visuelle des étoiles (remplies ou non)
+            document.querySelectorAll('.star').forEach(s => {
+                if (parseInt(s.dataset.value) <= value) {
+                    s.classList.add('selected');
+                } else {
+                    s.classList.remove('selected');
+                }
+            });
+        });
+    });
+    
+    // Event listener pour la soumission d'une évaluation
+    document.getElementById('submitEvaluation').addEventListener('click', submitEvaluation);
 });
 
-// Chargement des services
+// Charge tous les services (activités + événements) disponibles
 async function loadAvailableServices() {
     try {
         const loadingElement = document.getElementById('loading');
         if (loadingElement) loadingElement.style.display = 'block';
 
+        // Promise.all pour faire plusieurs requêtes en parallèle - plus rapide
         const [activitiesResponse, eventsResponse, registrationsResponse] = await Promise.all([
             fetch('/api/activity/getAll.php'),
             fetch('/api/event/getAll.php'),
             fetch(`/api/employee/registrations.php?collaborateur_id=${collaborateurId}`)
         ]);
 
-        // Log les réponses brutes
+        // Log les réponses brutes pour debug
         console.log('Activities Response:', await activitiesResponse.clone().text());
         console.log('Events Response:', await eventsResponse.clone().text());
         console.log('Registrations Response:', await registrationsResponse.clone().text());
 
-        // Vérifier chaque réponse
+        // Vérification des réponses HTTP
         if (!activitiesResponse.ok) throw new Error('Erreur lors du chargement des activités');
         if (!eventsResponse.ok) throw new Error('Erreur lors du chargement des événements');
         if (!registrationsResponse.ok) throw new Error('Erreur lors du chargement des inscriptions');
 
+        // Parse les réponses JSON en parallèle (encore du Promise.all)
         const [activities, events, registrations] = await Promise.all([
             activitiesResponse.json(),
             eventsResponse.json(),
             registrationsResponse.json()
         ]);
 
-        // Filtrer uniquement les services à venir
+        // Filtre les services passés - on n'affiche que ceux à venir
         const now = new Date();
         const upcomingActivities = activities.filter(activity => new Date(activity.date) >= now);
         const upcomingEvents = events.filter(event => new Date(event.date) >= now);
 
+        // Stock tous les services dans une variable globale pour la recherche
         window.allServices = [
             ...formatActivities(upcomingActivities, registrations),
             ...formatEvents(upcomingEvents, registrations)
         ];
 
-        // Log les services formatés
+        // Log les services formatés pour debug
         console.log('Formatted Services:', window.allServices);
 
         if (loadingElement) loadingElement.style.display = 'none';
         
-        // Vérifier si des services sont disponibles
+        // Vérif qu'on a bien des services à afficher
         if (window.allServices.length === 0) {
             console.warn('Aucun service n\'a été chargé');
         }
@@ -135,7 +220,7 @@ function formatActivities(activities, registrations) {
             parseInt(r.service_id) === parseInt(activity.id)
         );
         
-        console.log(`Activity ${activity.id} isRegistered:`, isRegistered); // Debug
+        //console.log(`Activity ${activity.id} isRegistered:`, isRegistered); // Debug
         
         return {
             ...activity,
@@ -143,7 +228,8 @@ function formatActivities(activities, registrations) {
             serviceType: 'activite',
             displayType: getDisplayType(activity.type),
             formattedDate: new Date(activity.date).toLocaleDateString('fr-FR'),
-            isRegistered: isRegistered
+            isRegistered: isRegistered,
+            prestataire_id: activity.id_prestataire 
         };
     });
 }
@@ -161,7 +247,7 @@ function formatEvents(events, registrations) {
             parseInt(r.service_id) === parseInt(event.evenement_id)
         );
         
-        console.log(`Event ${event.evenement_id} isRegistered:`, isRegistered); // Debug
+        //console.log(`Event ${event.evenement_id} isRegistered:`, isRegistered); // Debug
         
         return {
             id: parseInt(event.evenement_id),
@@ -188,7 +274,7 @@ function getDisplayType(type) {
     return typeMapping[type.toLowerCase()] || type;
 }
 
-// Affichage des services modifié
+// Affichage des services modifié pour ajouter les boutons d'évaluation
 function displayServices(services) {
     const servicesGrid = document.getElementById('services-grid');
     document.getElementById('loading')?.remove();
@@ -211,15 +297,35 @@ function displayServices(services) {
                         <small class="text-muted">Date: ${service.formattedDate}</small>
                     </p>
                     ${service.isRegistered ? `
-                        <button class="btn btn-danger" 
+                        <div class="mb-2">
+                            <button class="btn btn-danger" 
                                 onclick="unregisterFrom('${service.serviceType}', ${service.id})">
-                            Se désinscrire
-                        </button>
+                                Se désinscrire
+                            </button>
+                        </div>
+                        ${service.serviceType === 'activite' && service.prestataire_id ? `
+                            <div class="btn-group w-100 mt-2">
+                                <button class="btn btn-outline-primary btn-sm" 
+                                    onclick="openEvaluationModal(${service.prestataire_id})">
+                                    <i class="fas fa-star me-1"></i> Évaluer
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" 
+                                    onclick="viewEvaluations(${service.prestataire_id})">
+                                    <i class="fas fa-eye me-1"></i> Voir les évaluations
+                                </button>
+                            </div>
+                        ` : ''}
                     ` : `
                         <button class="btn btn-primary" 
                                 onclick="registerFor('${service.serviceType}', ${service.id})">
                             S'inscrire
                         </button>
+                        ${service.serviceType === 'activite' && service.prestataire_id ? `
+                            <button class="btn btn-outline-secondary btn-sm mt-2 w-100" 
+                                onclick="viewEvaluations(${service.prestataire_id})">
+                                <i class="fas fa-eye me-1"></i> Voir les évaluations
+                            </button>
+                        ` : ''}
                     `}
                 </div>
             </div>
@@ -250,21 +356,21 @@ async function registerFor(type, id) {
             return;
         }
 
-        // Construct request data with the correct field names
+        
         const requestData = {
             type: type,
             collaborateur_id: collaborateurId
         };
 
-        // Add the appropriate ID field based on type
+        
         if (type === 'event') {
             requestData.id_evenement = id;
         } else if (type === 'activite') {
             requestData.id_activite = id;
         }
 
-        // Log pour déboguer
-        console.log('Sending request with data:', requestData);
+        
+        //console.log('Sending request with data:', requestData);
 
         const response = await fetch('/api/employee/register.php', {
             method: 'POST',
@@ -272,7 +378,7 @@ async function registerFor(type, id) {
             body: JSON.stringify(requestData)
         });
 
-        // Log la réponse pour le débogage
+        
         const responseText = await response.clone().text();
         console.log('Register Response:', responseText);
 
@@ -308,21 +414,21 @@ async function unregisterFrom(type, id) {
             return;
         }
 
-        // Construct request data with the correct field names
+        
         const requestData = {
             type: type,
             collaborateur_id: collaborateurId
         };
 
-        // Add the appropriate ID field based on type
+        
         if (type === 'event') {
             requestData.id_evenement = id;
         } else if (type === 'activite') {
             requestData.id_activite = id;
         }
 
-        // Log pour déboguer
-        console.log('Sending request with data:', requestData);
+        
+        //console.log('Sending request with data:', requestData);
 
         const response = await fetch('/api/employee/unregister.php', {
             method: 'POST',
@@ -330,7 +436,7 @@ async function unregisterFrom(type, id) {
             body: JSON.stringify(requestData)
         });
 
-        // Log la réponse pour le débogage
+        
         const responseText = await response.clone().text();
         console.log('Unregister Response:', responseText);
 
@@ -372,6 +478,227 @@ function showErrorMessage(message) {
     `;
     document.querySelector('.container').insertAdjacentElement('afterbegin', alertDiv);
 }
+
+// évaluation
+function openEvaluationModal(prestataireId) {
+    // Réinitialiser le formulaire
+    document.getElementById('evaluationForm').reset();
+    document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+    document.getElementById('ratingValue').value = 0;
+    
+    // Définir les ID nécessaires
+    document.getElementById('prestataireId').value = prestataireId;
+    document.getElementById('collaborateurId').value = collaborateurId;
+    
+    
+    const modal = new bootstrap.Modal(document.getElementById('evaluationModal'));
+    modal.show();
+}
+
+// Soumettre une évaluation via l'API
+async function submitEvaluation() {
+    try {
+        const prestataireId = document.getElementById('prestataireId').value;
+        const note = document.getElementById('ratingValue').value;
+        const commentaire = document.getElementById('commentaire').value;
+        
+        // Validation côté client
+        if (note <= 0) {
+            alert("Veuillez sélectionner une note en cliquant sur les étoiles.");
+            return;
+        }
+        
+        if (!commentaire.trim()) {
+            alert("Veuillez entrer un commentaire.");
+            return;
+        }
+        
+        // Log des données avant envoi pour debug
+        console.log("Envoi des données d'évaluation:", {
+            note: parseInt(note),
+            commentaire: commentaire,
+            collaborateur_id: collaborateurId,
+            prestataire_id: prestataireId
+        });
+        
+        // Envoi des données à l'API via fetch et JSON
+        const response = await fetch('/api/evaluation/create.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                note: parseInt(note),
+                commentaire: commentaire,
+                collaborateur_id: collaborateurId,
+                prestataire_id: prestataireId
+            })
+        });
+        
+        // Vérification de la réponse - important de tout logger pour debug
+        const responseText = await response.clone().text();
+        console.log("Réponse brute du serveur:", responseText);
+        
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error("Erreur de parsing JSON:", e);
+            throw new Error("Réponse invalide du serveur: " + responseText);
+        }
+        
+        if (!response.ok) {
+            throw new Error(data.error || data.message || "Une erreur est survenue lors de la soumission de l'évaluation.");
+        }
+        
+        // Ferme la modal si tout s'est bien passé
+        bootstrap.Modal.getInstance(document.getElementById('evaluationModal')).hide();
+        
+        // Affiche un message de succès
+        showSuccessMessage("Votre évaluation a été soumise avec succès !");
+        
+    } catch (error) {
+        console.error("Erreur lors de la soumission de l'évaluation:", error);
+        showErrorMessage(`Erreur: ${error.message}`);
+    }
+}
+
+// Voir les évaluations d'un prestataire
+async function viewEvaluations(prestataireId) {
+    try {
+        
+        const modal = new bootstrap.Modal(document.getElementById('viewEvaluationsModal'));
+        modal.show();
+        
+        const evaluationsListElement = document.getElementById('evaluationsList');
+        evaluationsListElement.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+            </div>
+        `;
+        
+        // Récupérer les évaluations pour ce prestataire
+        const response = await fetch(`/api/evaluation/getAll.php`);
+        let evaluations = await response.json();
+        
+        if (!response.ok) {
+            throw new Error("Erreur lors de la récupération des évaluations.");
+        }
+        
+        
+        // Afficher les évaluations
+        if (evaluations.length === 0) {
+            evaluationsListElement.innerHTML = `
+                <div class="alert alert-info">
+                    Aucune évaluation pour ce prestataire pour le moment.
+                </div>
+            `;
+            return;
+        }
+        
+        // Calculer la moyenne des notes
+        const averageRating = evaluations.reduce((sum, eval) => sum + parseInt(eval.note), 0) / evaluations.length;
+        
+        let content = `
+            <div class="mb-3">
+                <h4>Note moyenne: ${averageRating.toFixed(1)}/5</h4>
+                <div class="big-stars">
+                    ${displayStars(averageRating)}
+                </div>
+                <p class="text-muted">${evaluations.length} évaluation(s)</p>
+            </div>
+            <hr>
+        `;
+        
+        content += evaluations.map(evaluation => `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="stars">
+                                ${displayStars(evaluation.note)}
+                            </div>
+                            <p class="mb-0">${evaluation.commentaire}</p>
+                        </div>
+                        <small class="text-muted">${new Date(evaluation.date_creation).toLocaleDateString()}</small>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        evaluationsListElement.innerHTML = content;
+        
+    } catch (error) {
+        console.error("Erreur lors de l'affichage des évaluations:", error);
+        document.getElementById('evaluationsList').innerHTML = `
+            <div class="alert alert-danger">
+                Erreur lors du chargement des évaluations: ${error.message}
+            </div>
+        `;
+    }
+}
+
+// Fonction auxiliaire pour afficher les étoiles
+function displayStars(rating) {
+    const fullStar = '★';
+    const emptyStar = '☆';
+    const ratingRounded = Math.round(rating);
+    
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= ratingRounded) {
+            stars += `<span class="star filled">${fullStar}</span>`;
+        } else {
+            stars += `<span class="star empty">${emptyStar}</span>`;
+        }
+    }
+    
+    return stars;
+}
 </script>
+
+<style>
+/* Style pour le système d'évaluation par étoiles */
+.rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.star {
+    color: #ddd;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.star:hover, .star:hover ~ .star, .star.selected, .star.selected ~ .star {
+    color: #ffb900;
+}
+
+.stars {
+    margin-bottom: 8px;
+}
+
+.stars .star {
+    font-size: 18px;
+    cursor: default;
+    margin-right: 2px;
+}
+
+.stars .star.filled {
+    color: #ffb900;
+}
+
+.stars .star.empty {
+    color: #ddd;
+}
+
+.big-stars .star {
+    font-size: 28px;
+    cursor: default;
+    margin-right: 3px;
+}
+</style>
 
 <?php include 'includes/footer.php'; ?>

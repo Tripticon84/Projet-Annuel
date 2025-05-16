@@ -3,12 +3,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/hashPassword.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/server.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 
-
+// Crée un nouveau prestataire dans la BDD 
 function createProvider($email, $nom, $prenom, $type, $description, $tarif, $date_debut_disponibilite, $date_fin_disponibilite, $est_candidat, $password)
 {
-    $db = getDatabaseConnection();
+    $db = getDatabaseConnection(); 
     $sql = "INSERT INTO prestataire (email, nom, prenom, type, description, tarif, date_debut_disponibilite, date_fin_disponibilite, est_candidat, password) VALUES (:email, :nom, :prenom, :type, :description, :tarif, :date_debut_disponibilite, :date_fin_disponibilite, :est_candidat, :password)";
-    $stmt = $db->prepare($sql);
+    $stmt = $db->prepare($sql); // Prépare la requête pour éviter les injections SQL
     $res = $stmt->execute([
         'email' => $email,
         'nom' => $nom,
@@ -19,12 +19,12 @@ function createProvider($email, $nom, $prenom, $type, $description, $tarif, $dat
         'date_debut_disponibilite' => $date_debut_disponibilite,
         'date_fin_disponibilite' => $date_fin_disponibilite,
         'est_candidat' => $est_candidat,
-        'password' => hashPassword($password)
+        'password' => hashPassword($password) // On hashe toujours le mdp, jamais en clair!!!
     ]);
     if ($res) {
-        return $db->lastInsertId();
+        return $db->lastInsertId(); // Renvoie l'ID du nouveau prestataire
     }
-    return null;
+    return null; // En cas d'échec
 }
 
 function updateProvider($prestataire_id, $firstname, $name, $type, $est_candidat, $tarif, $email, $date_debut_disponibilite, $date_fin_disponibilite, $password = null, $description = null)
@@ -228,15 +228,19 @@ function updateCandidateStatus($prestataire_id,$value){
     return null;
 }
 
-
+// Récupère toutes les activités d'un prestataire 
 function getAllActivities(int $limit = null, int $offset = null, $providerId)  {
     $db = getDatabaseConnection();
-    $sql = "SELECT activite_id, nom, date, id_lieu, type, id_devis FROM activite WHERE id_prestataire = :id";
+    // Join pour récupérer les infos de lieu en une seule requête 
+    $sql = "SELECT a.activite_id, a.nom, a.date, a.type, a.id_devis, a.id_lieu, l.adresse, l.ville, l.code_postal 
+            FROM activite a 
+            LEFT JOIN lieu l ON a.id_lieu = l.lieu_id 
+            WHERE a.id_prestataire = :id";
     $params = [
         'id'=> $providerId
     ];
 
-    // Gestion des paramètres LIMIT et OFFSET
+    // Gestion de la pagination 
     if ($limit !== null) {
         $sql .= " LIMIT " . (string) $limit;
 
@@ -249,26 +253,35 @@ function getAllActivities(int $limit = null, int $offset = null, $providerId)  {
     $res = $stmt->execute($params);  // Seuls les paramètres username seront utilisés
 
     if ($res) {
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC); // Récupère tous les résultats dans un tableau
     }
     return null;
 }
 
 /* Authentification */
 
+// Trouve un prestataire avec son email et mdp 
 function findProviderByCredentials($email, $password)
 {
     $connection = getDatabaseConnection();
-    $hashedPassword = hashPassword($password);
     $sql = "SELECT prestataire_id FROM prestataire WHERE email = :email AND password = :password";
     $query = $connection->prepare($sql);
     $res = $query->execute([
         'email' => $email,
-        'password' => $hashedPassword
+        'password' => $password // Le mot de passe doit déjà être haché avant l'appel
     ]);
+
+    // Debug: check si on a trouvé qqch
     if ($res) {
-        return $query->fetch(PDO::FETCH_ASSOC);
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        if (!$result) {
+            // Pratique pour debug, on écrit dans les logs du serveur
+            error_log("Aucun prestataire trouvé avec cet email et mot de passe.");
+        }
+        return $result;
     }
+
+    error_log("Erreur dans la requête SQL de login.");
     return null;
 }
 
@@ -336,6 +349,73 @@ function activateProvider($prestataire_id) {
 
     if ($res) {
         return $stmt->rowCount();
+    }
+    return null;
+}
+
+
+function getProviderInvoices($prestataire_id) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT f.facture_id, f.date_emission, f.date_echeance, f.montant, f.montant_tva, 
+                   f.montant_ht, f.statut, f.methode_paiement, f.fichier, d.devis_id, 
+                   s.nom AS nom_societe, s.siret
+            FROM facture f
+            LEFT JOIN devis d ON f.id_devis = d.devis_id
+            LEFT JOIN societe s ON d.id_societe = s.societe_id
+            WHERE f.id_prestataire = :prestataire_id
+            ORDER BY f.date_emission DESC";
+            
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'prestataire_id' => $prestataire_id
+    ]);
+    
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return [];
+}
+
+
+function updateActivity($activityId, $date) {
+    $db = getDatabaseConnection();
+    $sql = "UPDATE activite SET date = :date WHERE activite_id = :activite_id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute([
+        'activite_id' => $activityId,
+        'date' => $date
+    ]);
+
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
+}
+
+
+function getAllLocations() {
+    $db = getDatabaseConnection();
+    $sql = "SELECT lieu_id, adresse, ville, code_postal FROM lieu ORDER BY ville";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute();
+    
+    if ($res) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return [];
+}
+
+function getActivityById($activityId) {
+    $db = getDatabaseConnection();
+    $sql = "SELECT a.activite_id, a.nom, a.date, a.type, a.id_lieu, l.adresse, l.ville, l.code_postal 
+            FROM activite a 
+            LEFT JOIN lieu l ON a.id_lieu = l.lieu_id 
+            WHERE a.activite_id = :id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['id' => $activityId]);
+    
+    if ($res) {
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     return null;
 }

@@ -317,7 +317,8 @@ CREATE TABLE `prestataire` (
   `est_candidat` boolean  NOT NULL,
   `token` varchar(255) DEFAULT NULL,
   `expiration` datetime DEFAULT NULL,
-  `desactivate` boolean DEFAULT 0
+  `desactivate` boolean DEFAULT 0,
+  `date_activite` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

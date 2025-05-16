@@ -11,7 +11,6 @@ if (!methodIsAllowed('read')) {
 
 acceptedTokens(true, true, true, true);
 
-
 $limit = null;
 $offset = null;
 $providerId = $_GET['id'];
@@ -20,7 +19,6 @@ if (!isset($providerId)) {
     returnError(400, 'Missing id');
     return;
 }
-
 
 $provider = getProviderById($providerId);
 if (!$provider) {
@@ -45,14 +43,30 @@ $activities = getAllActivities($limit, $offset, $providerId);
 
 $result = []; // Initialize the result array
 
-foreach ($activities as $activitie) {
+foreach ($activities as $activity) {
+    // Construire l'adresse complète
+    $fullAddress = "";
+    if (!empty($activity['adresse'])) {
+        $fullAddress .= $activity['adresse'];
+    }
+    if (!empty($activity['ville'])) {
+        $fullAddress .= (!empty($fullAddress) ? ", " : "") . $activity['ville'];
+    }
+    if (!empty($activity['code_postal'])) {
+        $fullAddress .= (!empty($fullAddress) ? " " : "") . $activity['code_postal'];
+    }
+    
     $result[] = [
-        "activite_id" => $activitie['activite_id'],
-        "name" => $activitie['nom'],
-        "date" => $activitie['date'],
-        "place" => $activitie['id_lieu'],
-        "type" => $activitie['type'],
-        "id_estimate" => $activitie['id_devis']
+        "activite_id" => $activity['activite_id'],
+        "name" => $activity['nom'],
+        "date" => $activity['date'],
+        "place" => !empty($fullAddress) ? $fullAddress : "Lieu non spécifié",
+        "place_id" => $activity['id_lieu'],
+        "address" => $activity['adresse'] ?? null,
+        "city" => $activity['ville'] ?? null,
+        "postal_code" => $activity['code_postal'] ?? null,
+        "type" => $activity['type'],
+        "id_estimate" => $activity['id_devis']
     ];
 }
 

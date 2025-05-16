@@ -11,19 +11,19 @@ if (!methodIsAllowed('login')) {
 
 $data = getBody();
 
-if (!validateMandatoryParams($data, ['username', 'password'])) {
-    returnError(400, 'Mandatory parameters : username, password');
+if (!validateMandatoryParams($data, ['email', 'password'])) {
+    returnError(400, 'Mandatory parameters : email, password');
 }
 
-$username = trim($data['username']);
+$email = trim($data['email']);
 $password = trim($data['password']);
-$passwordHashed = hashPassword($password);
+$passwordHashed = hashPassword($password); // Hash the password before checking
 
-$provider = findProviderByCredentials($username, $passwordHashed);
+$provider = findProviderByCredentials($email, $passwordHashed);
 if (!$provider) {
     returnError(401, 'Invalid credentials');
 }
-$providerId = $provider['provider_id'];
+$providerId = $provider['prestataire_id']; // Corriger 'provider_id' en 'prestataire_id'
 
 $token = date('d/M/Y h:m:s') . '_' . $providerId . '_' . generateRandomString(100);
 $tokenHashed = hash('md5', $token);

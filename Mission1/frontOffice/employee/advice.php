@@ -33,7 +33,18 @@ $collaborateur_id = $_SESSION['collaborateur_id'];
                 <div class="mb-3">
                     <label for="question" class="form-label">Votre question</label>
                     <textarea class="form-control" id="question" name="question" rows="3" required></textarea>
+                    <div class="form-text">Pendant que vous tapez, nous recherchons des questions similaires...</div>
                 </div>
+                
+                <!-- Zone pour afficher les conseils similaires -->
+                <div id="similarAdvice" class="mb-3 d-none">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-lightbulb me-2"></i>Conseils similaires trouvés</h5>
+                        <p>Des questions similaires existent déjà. Consultez-les avant de soumettre votre question.</p>
+                        <div id="similarAdviceList" class="mt-3"></div>
+                    </div>
+                </div>
+                
                 <button type="submit" class="btn btn-primary">Envoyer ma demande</button>
             </form>
         </div>
@@ -273,6 +284,68 @@ $collaborateur_id = $_SESSION['collaborateur_id'];
         }
     }
     
+    // Fonction pour rechercher des conseils similaires
+    let searchTimeout;
+    async function searchSimilarAdvice(query) {
+        // Attendre que l'utilisateur arrête de taper
+        clearTimeout(searchTimeout);
+        
+        // Ne rechercher que si la requête est suffisamment longue
+        if (query.length < 5) {
+            document.getElementById('similarAdvice').classList.add('d-none');
+            return;
+        }
+        
+        searchTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch('/api/advice/findSimilar.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: query
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la recherche de conseils similaires');
+                }
+                
+                const data = await response.json();
+                const similarAdviceContainer = document.getElementById('similarAdvice');
+                const similarAdviceList = document.getElementById('similarAdviceList');
+                
+                // Afficher les conseils similaires s'il y en a
+                if (data.results && data.results.length > 0) {
+                    similarAdviceList.innerHTML = data.results.map(advice => `
+                        <div class="card mb-2 border-info">
+                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Question similaire</h6>
+                                <small>${formatDate(advice.date_creation)}</small>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Q:</strong> ${advice.question}</p>
+                                ${advice.reponse ? `
+                                    <hr>
+                                    <p class="mb-0"><strong>R:</strong> ${advice.reponse}</p>
+                                ` : '<p class="text-muted mb-0"><i>Pas encore de réponse</i></p>'}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    similarAdviceContainer.classList.remove('d-none');
+                } else {
+                    similarAdviceContainer.classList.add('d-none');
+                }
+                
+            } catch (error) {
+                console.error('Erreur lors de la recherche:', error);
+                document.getElementById('similarAdvice').classList.add('d-none');
+            }
+        }, 500); // Délai avant recherche
+    }
+    
     // Fonction pour formater les dates pour l'affichage
     function formatDate(dateString) {
         if (!dateString) return 'N/A';
@@ -312,6 +385,14 @@ $collaborateur_id = $_SESSION['collaborateur_id'];
             adviceForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 submitAdvicePageRequest();
+            });
+        }
+        
+        // Ajouter l'écouteur d'événement pour détecter les changements dans le champ de question
+        const questionInput = document.getElementById('question');
+        if (questionInput) {
+            questionInput.addEventListener('input', function(e) {
+                searchSimilarAdvice(e.target.value.trim());
             });
         }
     });

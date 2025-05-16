@@ -130,7 +130,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="connexionDropdown">
                             <li><a class="dropdown-item" href="/frontOffice/societe/login/login.php"><i class="fas fa-building me-2"></i>Espace société</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-handshake me-2"></i>Espace prestataire</a></li>
+                            <li><a class="dropdown-item" href="/frontOffice/prestataire/login/login.php"><i class="fas fa-handshake me-2"></i>Espace prestataire</a></li>
                             <li><a class="dropdown-item" href="/frontOffice/employee/login/login.php"><i class="fas fa-user-tie me-2"></i>Espace employé</a></li>
                         </ul>
                     </li>
