@@ -179,10 +179,10 @@ CREATE TABLE `don` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Structure de la table `INCLUT_FRAIS_DEVIS`
+-- Structure de la table `inclut_frais_devis`
 --
 
-CREATE TABLE `INCLUT_FRAIS_DEVIS` (
+CREATE TABLE `inclut_frais_devis` (
   `id_devis` int(11) NOT NULL,
   `id_frais` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -442,9 +442,9 @@ ALTER TABLE `don`
   ADD KEY `id_association` (`id_association`);
 
 --
--- Index pour la table `INCLUT_FRAIS_DEVIS`
+-- Index pour la table `inclut_frais_devis`
 --
-ALTER TABLE `INCLUT_FRAIS_DEVIS`
+ALTER TABLE `inclut_frais_devis`
   ADD PRIMARY KEY (`id_devis`,`id_frais`),
   ADD KEY `id_frais` (`id_frais`);
 
@@ -659,11 +659,11 @@ ALTER TABLE `chatbot`
 
 
 --
--- Contraintes pour la table `INCLUT_FRAIS_DEVIS`
+-- Contraintes pour la table `inclut_frais_devis`
 --
-ALTER TABLE `INCLUT_FRAIS_DEVIS`
-  ADD CONSTRAINT `INCLUT_FRAIS_DEVIS_ibfk_1` FOREIGN KEY (`id_devis`) REFERENCES `devis` (`devis_id`),
-  ADD CONSTRAINT `INCLUT_FRAIS_DEVIS_ibfk_2` FOREIGN KEY (`id_frais`) REFERENCES `frais` (`frais_id`);
+ALTER TABLE `inclut_frais_devis`
+  ADD CONSTRAINT `inclut_frais_devis_ibfk_1` FOREIGN KEY (`id_devis`) REFERENCES `devis` (`devis_id`),
+  ADD CONSTRAINT `inclut_frais_devis_ibfk_2` FOREIGN KEY (`id_frais`) REFERENCES `frais` (`frais_id`);
 
 --
 -- Contraintes pour la table `evenements`
@@ -830,7 +830,7 @@ INSERT INTO frais (nom, montant, description, date_creation, est_abonnement) VAL
 ('Frais de matériel', 100.00, 'Frais standard pour l\'achat de matériel', '2025-01-01', 0);
 
 -- Lien entre les frais et les devis
-INSERT INTO INCLUT_FRAIS_DEVIS (id_devis, id_frais) VALUES
+INSERT INTO inclut_frais_devis (id_devis, id_frais) VALUES
 (1, 1),
 (1, 2),
 (2, 3),
