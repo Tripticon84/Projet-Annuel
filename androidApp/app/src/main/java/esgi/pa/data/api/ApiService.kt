@@ -41,7 +41,7 @@ interface ApiService {
     suspend fun getAllActivity(
     ): Response<List<Activity>>
 
-    @GET("event/getALl.php")
+    @GET("event/getAll.php")
     suspend fun getAllEvent(
     ): Response<List<Event>>
 
