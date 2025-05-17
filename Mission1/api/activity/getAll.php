@@ -9,7 +9,9 @@ if (!methodIsAllowed('read')) {
     return;
 }
 
-acceptedTokens(true, true, true, true);
+
+
+//acceptedTokens(true, true, true, true);
 
 
 $limit = null;
@@ -41,7 +43,6 @@ if (isset($_GET['offset'])) {
 if (isset($_GET['search']) && !empty($_GET['search'])) {
     $search = $_GET['search'];
 }
-
 $activities = getAllActivity($desactivate, $limit, $offset, $search);
 
 if (!$activities) {
