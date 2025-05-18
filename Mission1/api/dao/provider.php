@@ -393,6 +393,28 @@ function updateActivity($activityId, $date) {
 }
 
 
+function refuseActivity($activityId) {
+    
+    $db = getDatabaseConnection();
+    
+    
+    $sql = "UPDATE activite SET refusee = 1 WHERE activite_id = :activite_id";
+    
+    
+    $stmt = $db->prepare($sql);
+    
+    
+    $res = $stmt->execute([
+        'activite_id' => $activityId
+    ]);
+    
+    
+    if ($res) {
+        return $stmt->rowCount(); 
+    }
+    return null; 
+}
+
 function getAllLocations() {
     $db = getDatabaseConnection();
     $sql = "SELECT lieu_id, adresse, ville, code_postal FROM lieu ORDER BY ville";
@@ -418,4 +440,90 @@ function getActivityById($activityId) {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     return null;
+}
+
+function getProviderCompletedActivitiesCount($prestataire_id) {
+    $db = getDatabaseConnection();
+    // Modifié pour s'assurer de compter correctement les activités
+    // Vérifions si la colonne refusee existe bien dans la table activite
+    $sql = "SELECT COUNT(*) as total FROM activite 
+            WHERE id_prestataire = :prestataire_id 
+            AND date < CURDATE()";
+    // Si vous êtes sûr que la colonne refusee existe, alors laissez la ligne ci-dessous
+    // AND refusee = 0";
+    
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['prestataire_id' => $prestataire_id]);
+    
+    if ($res) {
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ? $result['total'] : 0;
+    }
+    return 0;
+}
+
+function getProviderAverageRating($prestataire_id) {
+    $db = getDatabaseConnection();
+    // Ajout d'un système de débogage pour voir les évaluations trouvées
+    $debugSql = "SELECT COUNT(*) as count FROM evaluation WHERE id_prestataire = :prestataire_id";
+    $debugStmt = $db->prepare($debugSql);
+    $debugStmt->execute(['prestataire_id' => $prestataire_id]);
+    $debugCount = $debugStmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0;
+    
+    // Si aucune évaluation n'est trouvée, vérifiez la structure et les noms de colonnes
+    if ($debugCount == 0) {
+        error_log("Aucune évaluation trouvée pour le prestataire ID: $prestataire_id");
+        
+        // Vérifiez si l'ID de prestataire est peut-être stocké dans une colonne avec un nom différent
+        $checkSql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                     WHERE TABLE_NAME = 'evaluation' 
+                     AND COLUMN_NAME LIKE '%prestataire%'";
+        $checkStmt = $db->prepare($checkSql);
+        $checkStmt->execute();
+        $columns = $checkStmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        if (!empty($columns) && $columns[0] != 'id_prestataire') {
+            $columnName = $columns[0];
+            $sql = "SELECT AVG(note) as moyenne FROM evaluation 
+                   WHERE $columnName = :prestataire_id";
+        } else {
+            $sql = "SELECT AVG(note) as moyenne FROM evaluation 
+                   WHERE id_prestataire = :prestataire_id";
+        }
+    } else {
+        $sql = "SELECT AVG(note) as moyenne FROM evaluation 
+               WHERE id_prestataire = :prestataire_id";
+    }
+    
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['prestataire_id' => $prestataire_id]);
+    
+    if ($res) {
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['moyenne'] ? round($result['moyenne'], 1) : 0;
+    }
+    return 0;
+}
+
+function getProviderSatisfactionRate($prestataire_id) {
+    $db = getDatabaseConnection();
+    // Simplification pour éviter les erreurs de division par zéro
+    $sql = "SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN note >= 4 THEN 1 ELSE 0 END) as satisfaits
+            FROM evaluation 
+            WHERE id_prestataire = :prestataire_id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['prestataire_id' => $prestataire_id]);
+    
+    if ($res) {
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($result['total'] > 0) {
+            return round(($result['satisfaits'] / $result['total']) * 100);
+        } else {
+            // Si pas d'évaluations, retournez un taux par défaut (100% ou 0%)
+            return 0;
+        }
+    }
+    return 0;
 }

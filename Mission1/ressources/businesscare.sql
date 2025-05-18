@@ -44,7 +44,8 @@ CREATE TABLE `activite` (
   `id_devis` int(11) DEFAULT NULL,
   `desactivate` boolean DEFAULT 0,
   `id_prestataire` int(11)  DEFAULT NULL,
-  `id_lieu` int(11)  DEFAULT NULL
+  `id_lieu` int(11)  DEFAULT NULL,
+  `refusee` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
