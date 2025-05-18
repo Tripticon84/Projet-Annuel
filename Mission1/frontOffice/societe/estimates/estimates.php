@@ -1,4 +1,5 @@
 <?php
+
 $title = "Gestion des Devis";
 
 include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php';
@@ -170,6 +171,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
 <script>
     // Variables globales
+
     let societyId = <?php echo $_SESSION['societe_id']; ?>;
 
     // Fonction d'initialisation
@@ -227,6 +229,164 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
             document.getElementById('montant_tva').value = montantTVA.toFixed(2);
             document.getElementById('montant').value = montantTTC.toFixed(2);
+        }
+
+        // Fonction pour charger les devis
+        function loadEstimates(societyId) {
+            // Afficher le spinner pendant le chargement
+            document.getElementById('estimates-table').innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement des devis...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            
+            // Appel AJAX pour récupérer les devis
+            fetch(`/api/company/getEstimate.php?societe_id=${societyId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Cas spécial pour l'erreur "Estimates not found" - afficher simplement "Aucun devis"
+                    if (data && data.error === "Estimates not found") {
+                        document.getElementById('estimates-table').innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="alert alert-info mb-0" role="alert">
+                                        Aucun devis
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    if (data && Array.isArray(data)) {
+                        if (data.length > 0) {
+                            // Si des devis sont trouvés, les afficher
+                            let html = '';
+                            data.forEach(estimate => {
+                                html += `
+                                    <tr>
+                                        <td>${estimate.id}</td>
+                                        <td>${estimate.date_debut}</td>
+                                        <td>${estimate.date_fin}</td>
+                                        <td><span class="badge bg-${getStatusBadgeColor(estimate.status)}">${estimate.status}</span></td>
+                                        <td>${estimate.montant_ttc} €</td>
+                                        <td>${estimate.montant_ht} €</td>
+                                        <td>${estimate.montant_tva} €</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info view-estimate" data-id="${estimate.id}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-warning edit-estimate" data-id="${estimate.id}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger delete-estimate" data-id="${estimate.id}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            });
+                            document.getElementById('estimates-table').innerHTML = html;
+                            
+                            // Ajouter les écouteurs d'événements pour les actions
+                            addEstimateEventListeners();
+                        } else {
+                            // Si aucun devis n'est trouvé, afficher un message simple
+                            document.getElementById('estimates-table').innerHTML = `
+                                <tr>
+                                    <td colspan="8" class="text-center">
+                                        <div class="alert alert-info mb-0" role="alert">
+                                            Aucun devis
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    } else {
+                        // En cas d'erreur de format de données (autres erreurs)
+                        document.getElementById('estimates-table').innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="alert alert-warning mb-0" role="alert">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Une erreur est survenue lors du chargement des devis.
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des devis:', error);
+                    document.getElementById('estimates-table').innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="alert alert-warning mb-0" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Une erreur est survenue lors du chargement des devis. Veuillez réessayer.
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+
+        // Fonction pour obtenir la couleur du badge en fonction du statut
+        function getStatusBadgeColor(status) {
+            switch (status) {
+                case 'brouillon': return 'secondary';
+                case 'envoyé': return 'primary';
+                case 'accepté': return 'success';
+                case 'refusé': return 'danger';
+                default: return 'info';
+            }
+        }
+
+        // Fonction pour ajouter les écouteurs d'événements aux boutons d'actions
+        function addEstimateEventListeners() {
+            // Boutons pour visualiser un devis
+            document.querySelectorAll('.view-estimate').forEach(button => {
+                button.addEventListener('click', function() {
+                    const estimateId = this.getAttribute('data-id');
+                    viewEstimateDetails(estimateId);
+                });
+            });
+
+            // Boutons pour modifier un devis
+            document.querySelectorAll('.edit-estimate').forEach(button => {
+                button.addEventListener('click', function() {
+                    const estimateId = this.getAttribute('data-id');
+                    editEstimateDetails(estimateId);
+                });
+            });
+
+            // Boutons pour supprimer un devis
+            document.querySelectorAll('.delete-estimate').forEach(button => {
+                button.addEventListener('click', function() {
+                    const estimateId = this.getAttribute('data-id');
+                    deleteEstimate(estimateId);
+                });
+            });
+        }
+
+        // Fonction pour appliquer les filtres
+        function applyEstimateFilters(societyId) {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateStartFilter = document.getElementById('dateStartFilter').value;
+            const dateEndFilter = document.getElementById('dateEndFilter').value;
+            
+            console.log('Filtres appliqués:', { statusFilter, dateStartFilter, dateEndFilter });
+            loadEstimates(societyId); // Recharger avec les filtres
+        }
+
+        // Fonction pour réinitialiser les filtres
+        function resetEstimateFilters(societyId) {
+            document.getElementById('estimateFilterForm').reset();
+            loadEstimates(societyId);
         }
 
         // Simuler la création d'un nouveau devis
