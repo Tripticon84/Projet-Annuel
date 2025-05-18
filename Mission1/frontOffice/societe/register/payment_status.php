@@ -103,6 +103,8 @@ try {
                 'telephone' => $company_data['telephone'],
                 'siret' => $company_data['siret'],
                 'desactivate' => 0,
+                'plan' => $company_data['plan'],
+                'employee_count' => $company_data['employee_count']
             ];
             
             logDebug("Données pour la création de société", array_merge(
@@ -246,6 +248,122 @@ try {
 
             $estimate_id = $estimateResponseData['id'];
             logDebug("Devis créé avec succès, ID: " . $estimate_id);
+
+
+            // enregistrement de l'abonnement dans la base de donnees
+            $url = 'http://' . $_SERVER['HTTP_HOST'] . '/api/fees/create.php';
+            logDebug("Préparation de l'appel API pour créer l'abonnement dans la table frais: " . $url);
+
+            $feesData = [
+                'nom' => 'Abonnement ' . $company_data['plan'] . ' - ' . $company_data['employee_count'] . ' employes',
+                'montant' => $payment->amount / 100,
+                'description' => 'Abonnement Business Care - ' . $company_data['plan'] . ' - ' . $company_data['employee_count'] . ' employes',
+                'est_abonnement' => 1,
+            ];
+            logDebug("Données pour la création de l'abonnement", $feesData);
+            // Initialize cURL for fees creation
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT"); // Méthode correcte
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($feesData)); // Correction: utiliser $feesData au lieu de $data
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Désactiver la vérification SSL
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); // Désactiver également la vérification de l'hôte
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Accept: application/json'
+            ]);
+            // Execute cURL request avec débogage
+            logDebug("Exécution de la requête API pour créer l'abonnement");
+            $feesResponse = curl_exec($ch);
+            $curlError = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            logDebug("Réponse API de création d'abonnement (HTTP Code: {$httpCode})", $feesResponse);
+            if ($curlError) {
+                logDebug("ERREUR CURL lors de la création de l'abonnement", $curlError);
+            }
+            curl_close($ch);
+            // Decode the response avec extraction d'un JSON valide si nécessaire
+            $feesResponseData = json_decode($feesResponse, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                // Essayer d'extraire un JSON valide de la réponse
+                $feesResponseData = extractLastValidJson($feesResponse);
+                
+                if ($feesResponseData === null) {
+                    logDebug("ERREUR: Impossible de décoder la réponse JSON de l'abonnement", [
+                        'error' => json_last_error_msg(),
+                        'raw_response' => $feesResponse
+                    ]);
+                    throw new Exception('Erreur lors du décodage de la réponse API d\'abonnement: ' . json_last_error_msg());
+                } else {
+                    logDebug("JSON abonnement malformé détecté, mais extraction réussie d'un objet valide", $feesResponseData);
+                }
+            }
+
+            if (isset($feesResponseData['error'])) {
+                logDebug("ERREUR API lors de la création de l'abonnement", $feesResponseData);
+                throw new Exception('Erreur lors de la création de l\'abonnement: ' . $feesResponseData['error']);
+            }
+
+            // Vérifier l'ID de l'abonnement
+            if (!isset($feesResponseData['frais_id'])) {
+                logDebug("ERREUR: ID d'abonnement manquant dans la réponse", $feesResponseData);
+                throw new Exception("L'API n'a pas renvoyé d'ID d'abonnement");
+            }
+            $frais_id = $feesResponseData['frais_id'];
+            logDebug("Abonnement créé avec succès, ID: " . $frais_id);
+
+            // link abonnement et devis
+            $url = 'http://' . $_SERVER['HTTP_HOST'] . '/api/fees/link-devis.php';
+            logDebug("Préparation de l'appel API pour lier l'abonnement et le devis: " . $url);
+            $linkData = [
+                'frais_id' => $frais_id,
+                'devis_id' => $estimate_id
+            ];
+
+            logDebug("Données pour lier l'abonnement et le devis", $linkData);
+            // Initialize cURL for linking fees and estimate
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT"); // Méthode correcte
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($linkData)); // Correction: utiliser $linkData au lieu de $data
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Désactiver la vérification SSL
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); // Désactiver également la vérification de l'hôte
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Accept: application/json'
+            ]);
+            // Execute cURL request avec débogage
+            logDebug("Exécution de la requête API pour lier l'abonnement et le devis");
+            $linkResponse = curl_exec($ch);
+            $curlError = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            logDebug("Réponse API de liaison d'abonnement et de devis (HTTP Code: {$httpCode})", $linkResponse);
+            if ($curlError) {
+                logDebug("ERREUR CURL lors de la liaison de l'abonnement et du devis", $curlError);
+            }
+            curl_close($ch);
+            // Decode the response avec extraction d'un JSON valide si nécessaire
+            $linkResponseData = json_decode($linkResponse, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                // Essayer d'extraire un JSON valide de la réponse
+                $linkResponseData = extractLastValidJson($linkResponse);
+                
+                if ($linkResponseData === null) {
+                    logDebug("ERREUR: Impossible de décoder la réponse JSON de liaison", [
+                        'error' => json_last_error_msg(),
+                        'raw_response' => $linkResponse
+                    ]);
+                    throw new Exception('Erreur lors du décodage de la réponse API de liaison: ' . json_last_error_msg());
+                } else {
+                    logDebug("JSON liaison malformé détecté, mais extraction réussie d'un objet valide", $linkResponseData);
+                }
+            }
+            if (isset($linkResponseData['error'])) {
+                logDebug("ERREUR API lors de la liaison de l'abonnement et du devis", $linkResponseData);
+                throw new Exception('Erreur lors de la liaison de l\'abonnement et du devis: ' . $linkResponseData['error']);
+            }
+            logDebug("Liaison de l'abonnement et du devis réussie");
+            
 
             // Enregistrer la facture dans la base de données
             $url = 'http://' . $_SERVER['HTTP_HOST'] . '/api/invoice/create.php';

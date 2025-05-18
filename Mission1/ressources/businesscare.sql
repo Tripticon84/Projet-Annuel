@@ -366,6 +366,8 @@ CREATE TABLE `societe` (
   `token` varchar(255) DEFAULT NULL,
   `expiration` datetime NULL,
   `siret` varchar(255) DEFAULT NULL,
+  `plan` ENUM('starter', 'basic', 'premium') DEFAULT 'starter',
+  `employee_count` int(11) DEFAULT 0,
   `desactivate` boolean DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
