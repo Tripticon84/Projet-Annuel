@@ -3,7 +3,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/company.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/hashPassword.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/siret.php';
-
+// Ajouter en haut du fichier api/company/create.php, juste après les require_once
+error_log("HTTP Method détectée: " . $_SERVER['REQUEST_METHOD']);
 header('Content-Type: application/json');
 
 if (!methodIsAllowed('create')) {

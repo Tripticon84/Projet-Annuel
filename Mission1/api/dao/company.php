@@ -7,9 +7,6 @@ function createSociety($nom, $email, $adresse, $contact_person, $password, $tele
 {
     $db = getDatabaseConnection();
 
-    // Hasher le mot de passe
-    $password = hashPassword($password);
-
     $sql = "INSERT INTO societe (nom, email, adresse, contact_person, password, telephone, date_creation, siret, desactivate) VALUES (:nom, :email, :adresse, :contact_person, :password, :telephone, :date_creation, :siret, :desactivate)";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
