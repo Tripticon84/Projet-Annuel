@@ -8,7 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object NetworkModule {
-    private const val BASE_URL = "http://10.0.2.2:80/api/"
+    private const val BASE_URL = "http://51.255.78.213:80/api/"
     private const val TIMEOUT = 30L
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {

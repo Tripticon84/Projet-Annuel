@@ -3,14 +3,11 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/database.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/api/utils/hashPassword.php";
 
 
-function createSociety($nom, $email, $adresse, $contact_person, $password, $telephone, $siret, $desactivate )
+function createSociety($nom, $email, $adresse, $contact_person, $password, $telephone, $siret, $desactivate, $employee_count , $plan)
 {
     $db = getDatabaseConnection();
 
-    // Hasher le mot de passe
-    $password = hashPassword($password);
-
-    $sql = "INSERT INTO societe (nom, email, adresse, contact_person, password, telephone, date_creation, siret, desactivate) VALUES (:nom, :email, :adresse, :contact_person, :password, :telephone, :date_creation, :siret, :desactivate)";
+    $sql = "INSERT INTO societe (nom, email, adresse, contact_person, password, telephone, date_creation, siret, desactivate, employee_count, plan) VALUES (:nom, :email, :adresse, :contact_person, :password, :telephone, :date_creation, :siret, :desactivate, :employee_count, :plan)";
     $stmt = $db->prepare($sql);
     $res = $stmt->execute([
         'nom' => $nom,
@@ -21,7 +18,9 @@ function createSociety($nom, $email, $adresse, $contact_person, $password, $tele
         'telephone' => $telephone,
         'date_creation' => date('Y-m-d H:i:s'),
         'siret' => $siret,
-        'desactivate' => $desactivate
+        'desactivate' => $desactivate,
+        'employee_count' => $employee_count,
+        'plan' => $plan
     ]);
     if ($res) {
         return $db->lastInsertId("societe_id");

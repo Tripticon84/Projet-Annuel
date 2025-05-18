@@ -162,7 +162,8 @@ class HomeFragment : Fragment() {
         // Always reload data when returning to the fragment
         val userId = sessionManager.getUserId()
         if (userId > 0) {
-            Log.d(TAG, "Reloading activities on resume")
+            Log.d(TAG, "Reloading data on resume")
+            viewModel.loadUserEvents(userId)  // Add this to reload events
             viewModel.loadUserActivities(userId)
         }
     }

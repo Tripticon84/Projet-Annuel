@@ -35,4 +35,9 @@
         android:name="esgi.pa.ui.events.EventsListFragment"
         android:label="Événements"
         tools:layout="@layout/fragment_events_list" />
+    <fragment
+        android:id="@+id/navigation_nfc_writer"
+        android:name="esgi.pa.ui.nfc.NfcWriterFragment"
+        android:label="Carte d'accès"
+        tools:layout="@layout/fragment_nfc_writer" />
 </navigation>

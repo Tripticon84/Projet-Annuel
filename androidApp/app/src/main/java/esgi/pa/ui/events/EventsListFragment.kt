@@ -57,31 +57,57 @@ class EventsListFragment : Fragment() {
 
     private fun loadData() {
         viewLifecycleOwner.lifecycleScope.launch {
-            binding.progressBar.isVisible = true
+            try {
+                binding.progressBar.isVisible = true
 
-            // Load all events
-            when (val eventsResult = authRepository.getAllEvents()) {
-                is Resource.Success -> {
-                    adapter.updateEvents(eventsResult.data ?: emptyList())
+                // Load all events using the ViewModel (which filters by date)
+                viewModel.loadAllEvents()
+
+                // Create a variable to track if we've loaded the main event data
+                var eventsLoaded = false
+
+                // Collect events from ViewModel
+                launch {
+                    viewModel.events.collect { resource ->
+                        when (resource) {
+                            is Resource.Success -> {
+                                adapter.updateEvents(resource.data ?: emptyList())
+                                eventsLoaded = true
+
+                                // If we've loaded events data but still waiting for registered events,
+                                // show at least the events we have
+                                if (binding.progressBar.isVisible && eventsLoaded) {
+                                    binding.progressBar.isVisible = false
+                                }
+                            }
+                            is Resource.Error -> {
+                                Toast.makeText(context, resource.message, Toast.LENGTH_SHORT).show()
+                                binding.progressBar.isVisible = false
+                            }
+                            is Resource.Loading -> {
+                                // Keep progress bar visible
+                            }
+                        }
+                    }
                 }
-                is Resource.Error -> {
-                    Toast.makeText(context, eventsResult.message, Toast.LENGTH_SHORT).show()
+
+                // Get registered events
+                when (val userEventsResult = authRepository.getEmployeeEvents(userId)) {
+                    is Resource.Success -> {
+                        adapter.updateRegisteredEvents(userEventsResult.data ?: emptyList())
+                        binding.progressBar.isVisible = false
+                    }
+                    is Resource.Error -> {
+                        Toast.makeText(context, userEventsResult.message, Toast.LENGTH_SHORT).show()
+                        binding.progressBar.isVisible = false
+                    }
+                    is Resource.Loading -> {}
                 }
-                is Resource.Loading -> {}
+            } catch (e: Exception) {
+                // Ensure we always hide the progress bar if an exception occurs
+                Toast.makeText(context, "Error loading events: ${e.message}", Toast.LENGTH_SHORT).show()
+                binding.progressBar.isVisible = false
             }
-
-            // Get registered events
-            when (val userEventsResult = authRepository.getEmployeeEvents(userId)) {
-                is Resource.Success -> {
-                    adapter.updateRegisteredEvents(userEventsResult.data ?: emptyList())
-                }
-                is Resource.Error -> {
-                    Toast.makeText(context, userEventsResult.message, Toast.LENGTH_SHORT).show()
-                }
-                is Resource.Loading -> {}
-            }
-
-            binding.progressBar.isVisible = false
         }
     }
 
