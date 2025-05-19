@@ -522,6 +522,113 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         }
     }
 
+    // Fonction pour charger les collaborateurs
+    function loadEmployees(societyId) {
+        // Afficher le spinner pendant le chargement
+        document.getElementById('employees-table').innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement des collaborateurs...</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+        
+        // Add a timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        
+        // Appel AJAX pour récupérer les collaborateurs
+        fetch(`/api/company/getEmployees.php?societe_id=${societyId}&_t=${timestamp}`)
+            .then(response => response.json())
+            .then(data => {
+                // Cas spécial pour l'erreur "Employees not found" - afficher simplement "Aucun collaborateur"
+                if (data && data.error === "Employees not found") {
+                    document.getElementById('employees-table').innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="alert alert-info mb-0" role="alert">
+                                    Aucun collaborateur
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                if (data && Array.isArray(data)) {
+                    if (data.length > 0) {
+                        // Si des collaborateurs sont trouvés, les afficher
+                        let html = '';
+                        data.forEach(employee => {
+                            // Utiliser les propriétés correctes avec vérification
+                            const employeeId = employee.id || employee.employee_id || '';
+                            const role = employee.role || employee.poste || 'inconnu';
+                            
+                            html += `
+                                <tr>
+                                    <td>${employeeId}</td>
+                                    <td>${employee.nom || ''}</td>
+                                    <td>${employee.prenom || ''}</td>
+                                    <td>${employee.username || ''}</td>
+                                    <td>${role}</td>
+                                    <td>${employee.email || ''}</td>
+                                    <td>${employee.telephone || ''}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning edit-employee" data-id="${employeeId}" data-bs-toggle="modal" data-bs-target="#editEmployeeModal">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger delete-employee" data-id="${employeeId}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        document.getElementById('employees-table').innerHTML = html;
+                        
+                        // Ajouter les écouteurs d'événements pour les actions
+                        addEmployeeEventListeners();
+                    } else {
+                        // Si aucun collaborateur n'est trouvé, afficher un message simple
+                        document.getElementById('employees-table').innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="alert alert-info mb-0" role="alert">
+                                        Aucun collaborateur
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                } else {
+                    // En cas d'erreur de format de données (autres erreurs), afficher également "Aucun collaborateur"
+                    document.getElementById('employees-table').innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="alert alert-info mb-0" role="alert">
+                                    Aucun collaborateur
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des collaborateurs:', error);
+                // Même en cas d'erreur réseau, afficher "Aucun collaborateur" en bleu
+                document.getElementById('employees-table').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center">
+                            <div class="alert alert-info mb-0" role="alert">
+                                Aucun collaborateur
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+
     // Autres fonctions (loadContracts, loadEmployees, etc.)
     // ...
 

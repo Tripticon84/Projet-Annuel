@@ -259,6 +259,14 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
     // Fonction d'initialisation
     document.addEventListener('DOMContentLoaded', function() {
+        // Intercepter toutes les erreurs globales et les transformer en messages bleus
+        window.addEventListener('error', function(event) {
+            event.preventDefault();
+            console.error('Erreur capturée:', event.error || event.message);
+            showBlueMessage(currentEmployeeStatus === 'active' ? 'actif' : 'désactivé');
+            return false;
+        });
+
         // Charger les collaborateurs actifs par défaut
         loadActiveEmployees(societyId);
 
@@ -326,6 +334,183 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             loadInactiveEmployees(societyId);
         });
     });
+
+    // Fonction utilitaire pour afficher le message bleu
+    function showBlueMessage(type) {
+        document.getElementById('employees-table').innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center">
+                    <div class="alert alert-info mb-0" role="alert">
+                        Aucun collaborateur ${type}
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+
+    // Fonction pour charger les collaborateurs actifs
+    function loadActiveEmployees(societyId) {
+        // Afficher le spinner pendant le chargement
+        document.getElementById('employees-table').innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement des collaborateurs...</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+        
+        // Add a timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        
+        // Appel AJAX pour récupérer les collaborateurs actifs
+        fetch(`/api/company/getEmployees.php?societe_id=${societyId}&status=active&_t=${timestamp}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Vérification spécifique pour l'erreur "No employees found"
+                if (data && data.error === "No employees found") {
+                    showBlueMessage('actif');
+                    return;
+                }
+                
+                // Pour les autres types d'erreurs ou absence de données
+                if (!data || data.error || !Array.isArray(data) || data.length === 0) {
+                    showBlueMessage('actif');
+                    return;
+                }
+                
+                // Si des collaborateurs sont trouvés, les afficher
+                let html = '';
+                data.forEach(employee => {
+                    // Utiliser les propriétés correctes avec vérification
+                    const employeeId = employee.id || employee.employee_id || '';
+                    const role = employee.role || employee.poste || 'inconnu';
+                    
+                    html += `
+                        <tr>
+                            <td>${employeeId}</td>
+                            <td>${employee.nom || ''}</td>
+                            <td>${employee.prenom || ''}</td>
+                            <td>${employee.username || ''}</td>
+                            <td>${role}</td>
+                            <td>${employee.email || ''}</td>
+                            <td>${employee.telephone || ''}</td>
+                            <td>${employee.date_ajout || ''}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info view-employee" data-id="${employeeId}" data-bs-toggle="modal" data-bs-target="#viewEmployeeModal">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning edit-employee" data-id="${employeeId}" data-bs-toggle="modal" data-bs-target="#editEmployeeModal">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger deactivate-employee" data-id="${employeeId}">
+                                    <i class="fas fa-user-slash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('employees-table').innerHTML = html;
+                
+                // Ajouter les écouteurs d'événements pour les actions
+                addEmployeeEventListeners();
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des collaborateurs:', error);
+                showBlueMessage('actif');
+            });
+    }
+
+    // Fonction pour charger les collaborateurs inactifs
+    function loadInactiveEmployees(societyId) {
+        // Afficher le spinner pendant le chargement
+        document.getElementById('employees-table').innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement des collaborateurs...</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+        
+        // Add a timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        
+        // Appel AJAX pour récupérer les collaborateurs inactifs
+        fetch(`/api/company/getEmployees.php?societe_id=${societyId}&status=inactive&_t=${timestamp}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Vérification spécifique pour l'erreur "No employees found"
+                if (data && data.error === "No employees found") {
+                    showBlueMessage('désactivé');
+                    return;
+                }
+                
+                // Pour les autres types d'erreurs ou absence de données
+                if (!data || data.error || !Array.isArray(data) || data.length === 0) {
+                    showBlueMessage('désactivé');
+                    return;
+                }
+                
+                // Si des collaborateurs sont trouvés, les afficher
+                let html = '';
+                data.forEach(employee => {
+                    // Utiliser les propriétés correctes avec vérification
+                    const employeeId = employee.id || employee.employee_id || '';
+                    const role = employee.role || employee.poste || 'inconnu';
+                    
+                    html += `
+                        <tr>
+                            <td>${employeeId}</td>
+                            <td>${employee.nom || ''}</td>
+                            <td>${employee.prenom || ''}</td>
+                            <td>${employee.username || ''}</td>
+                            <td>${role}</td>
+                            <td>${employee.email || ''}</td>
+                            <td>${employee.telephone || ''}</td>
+                            <td>${employee.date_ajout || ''}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info view-employee" data-id="${employeeId}" data-bs-toggle="modal" data-bs-target="#viewEmployeeModal">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-success reactivate-employee" data-id="${employeeId}">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('employees-table').innerHTML = html;
+                
+                // Ajouter les écouteurs d'événements pour les actions
+                addEmployeeEventListeners();
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des collaborateurs désactivés:', error);
+                showBlueMessage('désactivé');
+            });
+    }
+
+    // Fonction pour actualiser la liste des employés en fonction de l'onglet actif
+    function refreshEmployeeList() {
+        if (currentEmployeeStatus === 'active') {
+            loadActiveEmployees(societyId);
+        } else {
+            loadInactiveEmployees(societyId);
+        }
+    }
 </script>
 
 <!-- Ajouter le script societe.js qui contient toutes les fonctions nécessaires -->
