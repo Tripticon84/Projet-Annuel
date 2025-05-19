@@ -280,7 +280,7 @@ include_once "../includes/head.php";
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" href="#" onclick="viewActivities(${provider.id}); return false;"><i class="fas fa-calendar-alt me-2"></i>Voir activités</a></li>
-                                            <li><a class="dropdown-item" href="modify.php?id=${provider.id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
+                                            <li><a class="dropdown-item" href="modify.php?prestataire_id=${provider.id}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li><a class="dropdown-item text-danger" href="#" onclick="deactivateProvider(${provider.id}); return false;"><i class="fas fa-user-slash me-2"></i>Désactiver</a></li>
                                         </ul>

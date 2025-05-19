@@ -18,8 +18,8 @@ if (!isset($_GET['prestataire_id'])) {
     return;
 }
 
-$providerId = intval($_GET['prestataire_id']);
-$provider = getProviderById($providerId);
+$id = intval($_GET['prestataire_id']);
+$provider = getProviderById($id);
 
 // Vérifier si le prestataire existe
 if (!$provider) {
