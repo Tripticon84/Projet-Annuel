@@ -138,7 +138,7 @@ include_once "../includes/head.php";
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                     <button type="button" class="btn btn-primary" id="saveChangesBtn">Enregistrer les modifications</button>
-                    <button type="button" class="btn btn-danger" id="deleteAssociationBtn">Supprimer l'association</button>
+                    <button type="button" class="btn btn-danger" id="deleteAssociationBtn">Désactiver l'association</button>
                 </div>
             </div>
         </div>
@@ -361,7 +361,7 @@ include_once "../includes/head.php";
         function deleteAssociation() {
             const associationId = document.getElementById('modal-association-id').textContent;
             
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cette association ?')) {
+            if (!confirm('Êtes-vous sûr de vouloir désactiver cette association ?')) {
                 return;
             }
             
@@ -376,23 +376,43 @@ include_once "../includes/head.php";
                 })
             })
             .then(response => {
+                // First check response status
                 if (!response.ok) {
-                    throw new Error('Erreur réseau: ' + response.status);
+                    return response.text().then(text => {
+                        console.error('Server response:', text);
+                        try {
+                            // Try to parse as JSON
+                            return JSON.parse(text);
+                        } catch (e) {
+                            // Not JSON, throw with the raw text for debugging
+                            throw new Error(`Invalid response (${response.status}): ${text.substring(0, 150)}...`);
+                        }
+                    });
                 }
-                return response.json();
+                
+                // For successful responses, try to parse as JSON with fallback
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON response:', text);
+                        throw new Error('Invalid JSON response from server');
+                    }
+                });
             })
             .then(data => {
-                if (data.success) {
-                    alert('Association supprimée avec succès');
+                if (data && data.success) {
+                    alert('Association désactivée avec succès');
                     currentModal.hide();
                     fetchAssociations(currentPage);
                 } else {
-                    alert('Erreur lors de la suppression de l\'association');
+                    alert('Erreur lors de la désactivation de l\'association: ' + 
+                          (data && data.message ? data.message : 'Erreur inconnue'));
                 }
             })
             .catch(error => {
-                console.error('Erreur:', error);
-                alert('Erreur lors de la suppression de l\'association: ' + error.message);
+                console.error('Erreur complète:', error);
+                alert('Erreur lors de la désactivation de l\'association: ' + error.message);
             });
         }
     </script>

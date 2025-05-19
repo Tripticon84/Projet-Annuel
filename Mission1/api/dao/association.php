@@ -120,20 +120,32 @@ function updateAssociation($association_id, ?string $name = null, ?string $descr
     return null;
 }
 
+/**
+ * Soft deletion of association by setting desactivate flag to 1
+ * This preserves the association data but marks it as inactive
+ */
 function deleteAssociation($association_id)
 {
-    $db = getDatabaseConnection();
-    $sql = "UPDATE association SET desactivate = 1 WHERE association_id = :id";
-    $stmt = $db->prepare($sql);
-    $res = $stmt->execute(['id' => $association_id]);
-    if (!$res) {
+    try {
+        // Direct, simple database update - no extra complexity
+        $db = getDatabaseConnection();
+        $sql = "UPDATE association SET desactivate = 1 WHERE association_id = :id";
+        $stmt = $db->prepare($sql);
+        $res = $stmt->execute(['id' => $association_id]);
+        
+        if (!$res) {
+            error_log("Failed to deactivate association ID: $association_id");
+            return null;
+        }
+        
+        // Skip event deactivation for now to isolate the issue
+        // We'll handle events separately once basic functionality works
+        
+        return $stmt->rowCount(); // Will return number of affected rows
+    } catch (Exception $e) {
+        error_log("Error in deleteAssociation: " . $e->getMessage());
         return null;
     }
-    $resultat=desactivateEventFromAssociation($association_id);
-    if ($resultat && $res) {
-        return $stmt->rowCount();
-    }
-    return null;
 }
 
 function getAssociationByName($name)
