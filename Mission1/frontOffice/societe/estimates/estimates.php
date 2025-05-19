@@ -228,13 +228,14 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                // Cas spécial pour l'erreur "Estimates not found" - afficher simplement "Aucun devis"
-                if (data && data.error === "Estimates not found") {
+                // Check for both error formats
+                if (data && (data.error === "Estimates not found" || 
+                    (data.error === true && data.message === "Estimates not found"))) {
                     document.getElementById('estimates-table').innerHTML = `
                         <tr>
                             <td colspan="8" class="text-center">
                                 <div class="alert alert-info mb-0" role="alert">
-                                    Aucun devis
+                                    Aucun devis pour l'instant
                                 </div>
                             </td>
                         </tr>

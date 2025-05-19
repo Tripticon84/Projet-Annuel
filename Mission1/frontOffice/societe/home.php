@@ -24,8 +24,11 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 
             <!-- Company Info -->
             <div class="card mb-4">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5>Informations de la société</h5>
+                    <button type="button" class="btn btn-sm btn-primary" id="editCompanyInfo" data-bs-toggle="modal" data-bs-target="#editCompanyModal">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
                 </div>
                 <div class="card-body" id="company-info">
                     <p class="placeholder-glow">
@@ -315,6 +318,62 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
     </div>
 </div>
 
+<!-- Modal pour modifier les informations de la société -->
+<div class="modal fade" id="editCompanyModal" tabindex="-1" aria-labelledby="editCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCompanyModalLabel">Modifier les informations de la société</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editCompanyForm">
+                    <input type="hidden" id="company_id" name="id" value="">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="company_nom" class="form-label">Nom de la société</label>
+                            <input type="text" class="form-control" id="company_nom" name="nom" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="company_email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="company_email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="company_telephone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="company_telephone" name="telephone">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="company_contact_person" class="form-label">Personne à contacter</label>
+                            <input type="text" class="form-control" id="company_contact_person" name="contact_person">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="company_adresse" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="company_adresse" name="adresse" rows="2"></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="company_siret" class="form-label">SIRET</label>
+                            <input type="text" class="form-control" id="company_siret" name="siret">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="company_password" class="form-label">Nouveau mot de passe (optionnel)</label>
+                        <input type="password" class="form-control" id="company_password" name="password" minlength="12">
+                        <div class="form-text">Laissez vide pour conserver le mot de passe actuel. Le mot de passe doit comporter au moins 12 caractères.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="updateCompany">Enregistrer les modifications</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // Variables globales
     let societyId = <?php echo $_SESSION['societe_id']; ?>;
@@ -344,6 +403,15 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         });
         document.getElementById('updateEmployee').addEventListener('click', function() {
             updateEmployee(societyId);
+        });
+        // Ajouter l'événement du bouton de mise à jour des infos de la société
+        document.getElementById('updateCompany').addEventListener('click', function() {
+            updateCompanyInfo();
+        });
+
+        // Préremplir le formulaire quand on clique sur le bouton d'édition
+        document.getElementById('editCompanyInfo').addEventListener('click', function() {
+            fillCompanyForm(societyId);
         });
     });
 
@@ -423,20 +491,24 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             </tr>
         `;
         
+        // Add a timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        
         // Appel AJAX pour récupérer les devis
-        fetch(`/api/company/getEstimate.php?societe_id=${societyId}`)
+        fetch(`/api/company/getEstimate.php?societe_id=${societyId}&_t=${timestamp}`)
             .then(response => response.json())
             .then(data => {
                 // Pour déboguer, affiche la structure des données en console
                 console.log('Données des devis reçues:', data);
                 
-                // Cas spécial pour l'erreur "Estimates not found" - afficher simplement "Aucun devis"
-                if (data && data.error === "Estimates not found") {
+                // Vérifier les deux formats d'erreur possibles
+                if (data && (data.error === "Estimates not found" || 
+                    (data.error === true && data.message === "Estimates not found"))) {
                     document.getElementById('estimates-table').innerHTML = `
                         <tr>
                             <td colspan="6" class="text-center">
                                 <div class="alert alert-info mb-0" role="alert">
-                                    Aucun devis
+                                    Aucun devis pour l'instant
                                 </div>
                             </td>
                         </tr>
@@ -627,6 +699,212 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                     </tr>
                 `;
             });
+    }
+
+    // Fonction pour charger les autres frais
+    function loadOtherCosts(societyId) {
+        // Afficher le spinner pendant le chargement
+        document.getElementById('costs-table').innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement des frais...</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+        
+        // Add timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        
+        // API call to get all fees
+        fetch(`/api/company/getFees.php?societe_id=${societyId}&_t=${timestamp}`)
+            .then(response => response.json())
+            .then(data => {
+                // Case for when there are no fees or an error occurred
+                if (!data || data.error || data.length === 0) {
+                    document.getElementById('costs-table').innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center">
+                                <div class="alert alert-info mb-0" role="alert">
+                                    Aucun frais trouvé
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Display the fees
+                let html = '';
+                data.forEach(cost => {
+                    const costId = cost.frais_id || cost.id || '';
+                    const costName = cost.nom || 'Non spécifié';
+                    const costAmount = parseFloat(cost.montant).toFixed(2) || '0.00';
+                    const costInvoiceId = cost.facture_id || 'N/A';
+                    
+                    html += `
+                        <tr>
+                            <td>${costId}</td>
+                            <td>${costName}</td>
+                            <td>${costAmount}€</td>
+                            <td>${costInvoiceId}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info view-cost" data-id="${costId}" title="Voir les détails">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                document.getElementById('costs-table').innerHTML = html;
+                
+                // Add event listeners for the view buttons
+                document.querySelectorAll('.view-cost').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const costId = this.getAttribute('data-id');
+                        showCostDetails(costId);
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des frais:', error);
+                document.getElementById('costs-table').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            <div class="alert alert-warning mb-0" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Erreur lors du chargement des frais
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+
+    // Fonction pour afficher les détails d'un frais spécifique (à implémenter si nécessaire)
+    function showCostDetails(costId) {
+        // Créer une modal ou utiliser une modal existante pour afficher les détails
+        // Cela serait similaire à l'implémentation dans fees_and_subscription.php
+        alert(`Détails du frais #${costId} - Fonctionnalité à implémenter`);
+        
+        // Pour une implémentation complète, vous pourriez récupérer les détails spécifiques du frais
+        // et les afficher dans une modal similaire à fees_and_subscription.php
+    }
+
+    // Fonction pour remplir le formulaire avec les informations actuelles
+    function fillCompanyForm(societyId) {
+        fetch(`/api/company/getOne.php?societe_id=${societyId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && !data.error) {
+                    // Remplir le formulaire avec les données existantes
+                    document.getElementById('company_id').value = societyId;
+                    document.getElementById('company_nom').value = data.nom || '';
+                    document.getElementById('company_email').value = data.email || '';
+                    document.getElementById('company_telephone').value = data.telephone || '';
+                    document.getElementById('company_contact_person').value = data.contact_person || '';
+                    document.getElementById('company_adresse').value = data.adresse || '';
+                    document.getElementById('company_siret').value = data.siret || '';
+                    // Le mot de passe reste vide car on ne reçoit pas le mot de passe actuel
+                } else {
+                    console.error('Erreur lors de la récupération des données:', data.error || 'Erreur inconnue');
+                    alert('Impossible de récupérer les informations de la société.');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de la récupération des informations.');
+            });
+    }
+
+    // Fonction pour mettre à jour les informations de la société
+    function updateCompanyInfo() {
+        const form = document.getElementById('editCompanyForm');
+        const formData = new FormData(form);
+        
+        // Convertir FormData en objet JSON
+        const data = {};
+        formData.forEach((value, key) => {
+            // Ne pas inclure les champs vides, notamment le mot de passe s'il est vide
+            if (value !== '') {
+                data[key] = value;
+            }
+        });
+        
+        console.log('Données envoyées:', data); // Pour le débogage
+        
+        // Envoyer la requête de mise à jour avec PATCH
+        fetch('/api/company/update.php', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            // Tenter de parser la réponse JSON
+            return response.text().then(text => {
+                try {
+                    // Parser le texte de réponse en JSON
+                    const jsonResponse = text ? JSON.parse(text) : {};
+                    
+                    // Vérifier si la réponse contient un ID (succès) malgré des erreurs éventuelles
+                    if (jsonResponse.id) {
+                        return { success: true, id: jsonResponse.id };
+                    }
+                    
+                    // Si pas d'ID mais une erreur, renvoyer l'erreur
+                    if (jsonResponse.error) {
+                        throw new Error(jsonResponse.message || 'Erreur serveur');
+                    }
+                    
+                    // Si aucun ID et pas d'erreur explicite, vérifier le status HTTP
+                    if (!response.ok) {
+                        throw new Error(response.statusText || 'Erreur lors de la mise à jour');
+                    }
+                    
+                    return jsonResponse;
+                } catch (e) {
+                    // Si on ne peut pas parser le JSON mais qu'il y a "id" dans le texte
+                    if (text.includes('"id"')) {
+                        return { success: true };
+                    }
+                    throw new Error('Réponse invalide du serveur');
+                }
+            });
+        })
+        .then(result => {
+            if (result.success || result.id) {
+                alert('Les informations de la société ont été mises à jour avec succès!');
+                // Fermer la modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editCompanyModal'));
+                modal.hide();
+                // Recharger les infos de la société
+                loadCompanyInfo(societyId);
+            } else {
+                throw new Error('Mise à jour échouée');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            
+            // Si le message contient un signe que l'opération a réussi malgré l'erreur
+            if (error.message && (error.message.includes('certificate') || error.message.includes('SSL'))) {
+                // Proposer à l'utilisateur de vérifier si la mise à jour a fonctionné malgré l'erreur
+                if (confirm('Il y a eu un problème de certificat SSL, mais la mise à jour a peut-être réussi. Voulez-vous vérifier en rechargeant les données?')) {
+                    // Fermer la modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editCompanyModal'));
+                    modal.hide();
+                    // Recharger les infos de la société
+                    loadCompanyInfo(societyId);
+                    return;
+                }
+            }
+            
+            alert(`Erreur lors de la mise à jour: ${error.message || 'Une erreur est survenue'}`);
+        });
     }
 
     // Autres fonctions (loadContracts, loadEmployees, etc.)

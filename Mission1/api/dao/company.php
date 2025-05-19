@@ -589,3 +589,28 @@ function getCompanySubscriptions($societe_id)
     $stmt->execute(['societe_id' => $societe_id]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+
+function addEmployeeToEmployeeCount($societe_id, $amout_to_add)
+{
+    $db = getDatabaseConnection();
+    $sql = "UPDATE societe SET employee_count = employee_count + :amout_to_add WHERE societe_id = :societe_id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['societe_id' => $societe_id, 'amout_to_add' => $amout_to_add]);
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
+}
+
+function updateCompanyPlan($societe_id, $plan)
+{
+    $db = getDatabaseConnection();
+    $sql = "UPDATE societe SET plan = :plan WHERE societe_id = :societe_id";
+    $stmt = $db->prepare($sql);
+    $res = $stmt->execute(['societe_id' => $societe_id, 'plan' => $plan]);
+    if ($res) {
+        return $stmt->rowCount();
+    }
+    return null;
+}

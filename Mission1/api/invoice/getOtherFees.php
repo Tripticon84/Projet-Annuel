@@ -19,7 +19,7 @@ if (!isset($_GET['facture_id'])) {
 }
 
 $invoiceId = intval($_GET['facture_id']);
-$fees = GetOtherFeesByInvoiceId($invoiceId);
+$fees = getFeesByInvoiceID($invoiceId);
 
 if (!$fees) {
     returnError(404, 'no additional fees found for this invoice');

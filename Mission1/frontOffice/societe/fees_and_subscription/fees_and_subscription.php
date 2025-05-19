@@ -196,8 +196,8 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         fetch(`/api/company/getFees.php?societe_id=${societyId}`)
             .then(response => response.json())
             .then(data => {
-                // Filtrer pour ne garder que les frais non-abonnements
-                const otherCosts = data.filter(fee => fee.est_abonnement === '0' || fee.est_abonnement === 0);
+                // Filtrer pour garder tous les frais qui ne sont PAS des abonnements (est_abonnement != 1)
+                const otherCosts = data.filter(fee => fee.est_abonnement !== 1 && fee.est_abonnement !== '1');
                 
                 if (!otherCosts || otherCosts.length === 0) {
                     document.getElementById('costs-table').innerHTML = `
