@@ -198,4 +198,70 @@ function getEmployeesByAssociation($association_id, $limit = null, $offset = nul
     }
 }
 
+function getDonationsByAssociationId($association_id)
+{
+    try {
+        $db = getDatabaseConnection();
+        $sql = "SELECT d.don_id, d.montant, d.date, d.id_collaborateur,
+                c.collaborateur_id, c.nom, c.prenom, c.email 
+                FROM don d
+                LEFT JOIN collaborateur c ON d.id_collaborateur = c.collaborateur_id 
+                WHERE d.id_association = :association_id
+                ORDER BY d.date DESC";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':association_id', $association_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error getting donations: " . $e->getMessage());
+        return []; // Return empty array on error
+    }
+}
+
+function getTotalDonationsByAssociationId($association_id) 
+{
+    try {
+        $db = getDatabaseConnection();
+        $sql = "SELECT COUNT(*) as donation_count, SUM(montant) as total_amount 
+                FROM don 
+                WHERE id_association = :association_id";
+                
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':association_id', $association_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error getting donation totals: " . $e->getMessage());
+        return ['donation_count' => 0, 'total_amount' => 0];
+    }
+}
+
+function diagnosticDonationsByAssociation($association_id = null) 
+{
+    try {
+        $db = getDatabaseConnection();
+        $sql = "SELECT d.*, a.name as association_name, c.nom, c.prenom 
+                FROM don d
+                LEFT JOIN association a ON d.id_association = a.association_id
+                LEFT JOIN collaborateur c ON d.id_collaborateur = c.collaborateur_id";
+                
+        if ($association_id !== null) {
+            $sql .= " WHERE d.id_association = :association_id";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':association_id', $association_id, PDO::PARAM_INT);
+        } else {
+            $stmt = $db->prepare($sql);
+        }
+        
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error in diagnostic: " . $e->getMessage());
+        return [];
+    }
+}
+
 

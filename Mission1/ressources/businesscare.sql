@@ -808,6 +808,10 @@ INSERT INTO devis (date_debut, date_fin, montant, montant_ht, montant_tva, is_co
 ('2025-05-01', '2025-08-31', 9750.00, 8125.00, 1625.00, 1, 4),
 ('2025-03-10', '2025-12-31', 15300.00, 12750.00, 2550.00, 0, 5);
 
+-- Don
+INSERT INTO don (don_id, montant, date, id_collaborateur, id_association) VALUES
+(1, 10.00, '2025-05-19', 1, 2);
+
 
 -- Prestataires de services
 INSERT INTO prestataire (email, nom, prenom, type, description, tarif, date_debut_disponibilite, date_fin_disponibilite, est_candidat, password) VALUES
