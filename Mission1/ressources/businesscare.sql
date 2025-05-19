@@ -759,6 +759,10 @@ ALTER TABLE `signalement`
 COMMIT;
 
 /* Ajout de données */
+-- Administrateurs système
+INSERT INTO admin (username, password, token, expiration) VALUES
+('admin', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL),
+
 
 INSERT INTO lieu (adresse, ville, code_postal) VALUES
 ('13 Quai Alphonse Le Gallo', 'Boulogne-Billancourt', 92100),
@@ -775,10 +779,7 @@ INSERT INTO societe (nom, adresse, email, contact_person,telephone,password,date
 ('BNP Paribas', '16 Boulevard des Italiens, 75009 Paris', 'entreprise@bnpparibas.com', 'Philippe Martin', '0456789012', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 44040',false),
 ('LOréal Paris', '14 Rue Royale, 75008 Paris', 'contact@loreal.fr', 'Claire Lefevre', '0567890123', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NOW(),'123 422 555 44040',false);
 
--- Administrateurs système
-INSERT INTO admin (username, password, token, expiration) VALUES
-('admin', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL),
-('superadmin', '3c534fd5e3dce4a0a207354c5a41a4670490f1661aea86d0db72915b939346a5', NULL, NULL);
+
 
 INSERT INTO association (name, description, date_creation, banniere, logo, desactivate) VALUES
 ('Les Restos du Cœur', 'Association caritative d\'aide alimentaire et d\'insertion sociale', '2025-01-01', 'restos_banniere.jpg', 'restos_logo.jpg', 0),
