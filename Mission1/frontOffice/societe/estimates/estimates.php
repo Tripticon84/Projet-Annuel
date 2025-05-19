@@ -391,8 +391,8 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Le devis a été accepté avec succès!');
-                    loadEstimates(societyId); // Reload the estimates list
+                    // Rediriger vers le script qui traitera les opérations post-acceptation
+                    window.location.href = `process_accepted_estimate.php?devis_id=${estimateId}&societe_id=${societyId}`;
                 } else {
                     alert('Erreur: ' + (data.error || 'Une erreur est survenue'));
                 }

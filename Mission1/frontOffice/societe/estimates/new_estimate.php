@@ -1,5 +1,6 @@
 <?php
 $title = "Demande de devis";
+session_start();
 include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php';
 include_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/company.php';
 
