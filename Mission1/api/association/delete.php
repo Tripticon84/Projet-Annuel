@@ -1,38 +1,44 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/dao/association.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/api/utils/server.php';
 
 header('Content-Type: application/json');
 
-if (!methodIsAllowed('update')) {
-    returnError(405, 'Method not allowed');
-    return;
-}
+try {
+    if (!methodIsAllowed('delete')) {
+        returnError(405, 'Method not allowed');
+        return;
+    }
 
-$data = getBody();
+    // Only admins can delete associations
+    try {
+        acceptedTokens(true, false, false, false);
+    } catch (Exception $e) {
+        returnError(401, 'Unauthorized: ' . $e->getMessage());
+        return;
+    }
 
-acceptedTokens(true, false, false, false);
+    // Get JSON data from request
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
 
+    if (!isset($data['association_id'])) {
+        returnError(400, 'Association ID is required');
+        return;
+    }
 
-if (!isset($data['association_id'])) {
-    returnError(400, 'Missing id');
-    return;
-}
+    $result = deleteAssociation($data['association_id']);
 
-//verify if the admin exists
-$association = getAssociationById($data['association_id']);
+    if ($result === null) {
+        returnError(500, 'Failed to delete association');
+        return;
+    }
 
-if (!$association) {
-    returnError(404, 'Association not found');
-    return;
-}
-
-$deleted = deleteAssociation($data['association_id']);
-
-if ($deleted) {
-    echo json_encode(['message' => 'Association deleted']);
-    return http_response_code(200);
-} else {
-    returnError(500, 'association already deleted or error in the database');
+    echo json_encode(['success' => true, 'message' => 'Association deleted successfully']);
+} catch (Exception $e) {
+    returnError(500, 'Server error: ' . $e->getMessage());
 }
 

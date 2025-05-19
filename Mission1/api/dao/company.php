@@ -478,21 +478,114 @@ function getCompanyBySiret($siret)
 
 function getCompanyActualSubscription($societe_id)
 {
+    try {
+        $db = getDatabaseConnection();
+        if (!$db) {
+            error_log("getCompanyActualSubscription: Database connection failed");
+            return null;
+        }
+        
+        $sql = "SELECT f.frais_id, f.nom, f.montant, f.date_creation, f.description, 
+                d.date_debut, d.date_fin, d.devis_id
+                FROM frais f
+                JOIN INCLUT_FRAIS_DEVIS ifd ON f.frais_id = ifd.id_frais
+                JOIN devis d ON ifd.id_devis = d.devis_id
+                WHERE f.est_abonnement = 1 
+                AND d.id_societe = :societe_id
+                AND d.is_contract = 1
+                ORDER BY d.date_debut DESC
+                LIMIT 1";
+                
+        $stmt = $db->prepare($sql);
+        $success = $stmt->execute(['societe_id' => $societe_id]);
+        
+        if (!$success) {
+            $errorInfo = $stmt->errorInfo();
+            error_log("getCompanyActualSubscription: Query execution failed: " . json_encode($errorInfo));
+            return null;
+        }
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Log the result for debugging
+        if (!$result) {
+            error_log("getCompanyActualSubscription: No subscription found for societe_id: $societe_id");
+        } else {
+            error_log("getCompanyActualSubscription: Found subscription for societe_id: $societe_id - " . json_encode($result));
+        }
+        
+        return $result;
+    } catch (Exception $e) {
+        error_log("getCompanyActualSubscription Exception: " . $e->getMessage());
+        return null;
+    }
+}
+
+// Fonction pour compter les employés actifs d'une société
+function countActiveEmployees($societe_id) {
+    try {
+        $db = getDatabaseConnection();
+        $sql = "SELECT COUNT(*) as employee_count FROM collaborateur WHERE id_societe = :societe_id AND desactivate = 0";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(['societe_id' => $societe_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Ensure we return an integer (not a string)
+        return intval($result['employee_count']);
+    } catch (Exception $e) {
+        // Log error but don't crash
+        error_log("Error counting active employees: " . $e->getMessage());
+        return 0;
+    }
+}
+
+// Fonction pour vérifier si une société peut ajouter un nouvel employé
+function canAddEmployee($societe_id) {
     $db = getDatabaseConnection();
-    $sql = "SELECT f.frais_id, f.nom, f.montant, f.date_creation, f.description, 
-            d.date_debut, d.date_fin, d.devis_id
-            FROM frais f
-            JOIN INCLUT_FRAIS_DEVIS ifd ON f.frais_id = ifd.id_frais
-            JOIN devis d ON ifd.id_devis = d.devis_id
-            WHERE f.est_abonnement = 1 
-            AND f.desactivate = 0
-            AND d.id_societe = :societe_id
-            AND d.is_contract = 1
-            ORDER BY d.date_debut DESC
-            LIMIT 1";
+    
+    // Récupérer d'abord les données de la société pour connaître sa limite actuelle
+    $sql = "SELECT employee_count FROM societe WHERE societe_id = :societe_id";
     $stmt = $db->prepare($sql);
     $stmt->execute(['societe_id' => $societe_id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    $society = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$society) {
+        return ['status' => false, 'message' => 'Société non trouvée'];
+    }
+    
+    $maxEmployees = intval($society['employee_count']);
+    
+    // Compter le nombre actuel d'employés actifs
+    $currentEmployees = countActiveEmployees($societe_id);
+    
+    // Vérifier si la société a déjà atteint sa limite
+    if ($currentEmployees >= $maxEmployees) {
+        return [
+            'status' => false, 
+            'message' => 'Vous avez atteint votre limite de '.$maxEmployees.' collaborateurs. Veuillez mettre à niveau votre abonnement pour ajouter plus de collaborateurs.',
+            'current' => $currentEmployees,
+            'max' => $maxEmployees
+        ];
+    }
+    
+    return [
+        'status' => true, 
+        'message' => 'Vous pouvez ajouter un nouvel employé',
+        'current' => $currentEmployees,
+        'max' => $maxEmployees,
+        'remaining' => $maxEmployees - $currentEmployees
+    ];
+}
+
+// Fonction pour obtenir les détails de l'abonnement et des limites de la société
+function getCompanySubscriptionDetails($societe_id) {
+    $subscription = getCompanyActualSubscription($societe_id);
+    $employeeLimit = canAddEmployee($societe_id);
+    
+    return [
+        'subscription' => $subscription,
+        'employee_limit' => $employeeLimit
+    ];
 }
 
 

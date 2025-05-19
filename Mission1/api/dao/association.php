@@ -24,12 +24,13 @@ function getAllAssociations()
 {
     try {
         $db = getDatabaseConnection();
-        $sql = "SELECT association_id, name,description,banniere,logo,date_creation,desactivate FROM association";
+        $sql = "SELECT association_id, name, description, banniere, logo, date_creation, desactivate FROM association";
         $stmt = $db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        echo "Erreur lors de la recuperation des associations : " . $e->getMessage();
-        return [];
+        // Log error instead of echoing it
+        error_log("Error getting associations: " . $e->getMessage());
+        return []; // Return empty array on error
     }
 }
 
@@ -42,11 +43,16 @@ function getAssociationById($association_id)
         $stmt = $db->prepare($sql);
         $res = $stmt->execute(['association_id' => $association_id]);
         if (!$res) {
+            error_log("Execute failed in getAssociationById for ID: $association_id");
             return null;
         }
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$result) {
+            error_log("No association found with ID: $association_id");
+        }
+        return $result;
     } catch (PDOException $e) {
-        echo "Erreur lors de la récupération de l'association: " . $e->getMessage();
+        error_log("Error in getAssociationById: " . $e->getMessage());
         return null;
     }
 }
@@ -174,8 +180,9 @@ function getEmployeesByAssociation($association_id, $limit = null, $offset = nul
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        echo "Erreur lors de la récupération des employés de l'association: " . $e->getMessage();
-        return [];
+        // Log error instead of echoing it
+        error_log("Error getting employees: " . $e->getMessage());
+        return []; // Return empty array on error
     }
 }
 
