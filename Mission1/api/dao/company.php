@@ -475,3 +475,24 @@ function getCompanyBySiret($siret)
     $stmt->execute(['siret' => $siret]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
+function getCompanyActualSubscription($societe_id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT f.frais_id, f.nom, f.montant, f.date_creation, f.description, 
+            d.date_debut, d.date_fin, d.devis_id
+            FROM frais f
+            JOIN INCLUT_FRAIS_DEVIS ifd ON f.frais_id = ifd.id_frais
+            JOIN devis d ON ifd.id_devis = d.devis_id
+            WHERE f.est_abonnement = 1 
+            AND f.desactivate = 0
+            AND d.id_societe = :societe_id
+            AND d.is_contract = 1
+            ORDER BY d.date_debut DESC
+            LIMIT 1";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['societe_id' => $societe_id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+

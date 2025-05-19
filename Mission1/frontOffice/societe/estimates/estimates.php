@@ -19,9 +19,9 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshData">
                             <i class="fas fa-sync-alt"></i> Actualiser
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addEstimateModal">
-                            <i class="fas fa-plus"></i> Nouveau devis
-                        </button>
+                        <a href="new_estimate.php" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus"></i> Demander un nouveau devis
+                        </a>
                     </div>
                 </div>
             </div>
@@ -96,58 +96,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
     </div>
 </div>
 
-<!-- Modal pour ajouter un devis -->
-<div class="modal fade" id="addEstimateModal" tabindex="-1" aria-labelledby="addEstimateModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addEstimateModalLabel">Ajouter un devis</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addEstimateForm">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="start_date" class="form-label">Date de début</label>
-                            <input type="date" class="form-control" id="start_date" name="start_date" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="end_date" class="form-label">Date de fin</label>
-                            <input type="date" class="form-control" id="end_date" name="end_date" required>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="montant_ht" class="form-label">Montant HT</label>
-                            <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" id="montant_ht" name="montant_ht" required>
-                                <span class="input-group-text">€</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="montant_tva" class="form-label">Montant TVA</label>
-                            <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" id="montant_tva" name="montant_tva" readonly>
-                                <span class="input-group-text">€</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="montant" class="form-label">Montant TTC</label>
-                            <div class="input-group">
-                                <input type="number" step="0.01" class="form-control" id="montant" name="montant" readonly>
-                                <span class="input-group-text">€</span>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" id="saveEstimate">Enregistrer</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <!-- Modal pour visualiser/modifier un devis -->
 <div class="modal fade" id="viewEstimateModal" tabindex="-1" aria-labelledby="viewEstimateModalLabel" aria-hidden="true">
@@ -267,23 +216,33 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                             // Si des devis sont trouvés, les afficher
                             let html = '';
                             data.forEach(estimate => {
+                                // Débogage pour voir la structure exacte
+                                console.log('Structure du devis:', estimate);
+                                
+                                // Utiliser les propriétés correctes avec vérification
+                                const estimateId = estimate.id || estimate.devis_id || estimate.id_devis || '';
+                                const status = estimate.status || estimate.statut || 'inconnu';
+                                const montantTTC = estimate.montant_ttc || estimate.montant || 0;
+                                const montantHT = estimate.montant_ht || 0;
+                                const montantTVA = estimate.montant_tva || 0;
+                                
                                 html += `
                                     <tr>
-                                        <td>${estimate.id}</td>
-                                        <td>${estimate.date_debut}</td>
-                                        <td>${estimate.date_fin}</td>
-                                        <td><span class="badge bg-${getStatusBadgeColor(estimate.status)}">${estimate.status}</span></td>
-                                        <td>${estimate.montant_ttc} €</td>
-                                        <td>${estimate.montant_ht} €</td>
-                                        <td>${estimate.montant_tva} €</td>
+                                        <td>${estimateId}</td>
+                                        <td>${estimate.date_debut || ''}</td>
+                                        <td>${estimate.date_fin || ''}</td>
+                                        <td><span class="badge bg-${getStatusBadgeColor(status)}">${status}</span></td>
+                                        <td>${montantTTC} €</td>
+                                        <td>${montantHT} €</td>
+                                        <td>${montantTVA} €</td>
                                         <td>
-                                            <button class="btn btn-sm btn-info view-estimate" data-id="${estimate.id}">
+                                            <button class="btn btn-sm btn-info view-estimate" data-id="${estimateId}">
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-warning edit-estimate" data-id="${estimate.id}">
+                                            <button class="btn btn-sm btn-warning edit-estimate" data-id="${estimateId}">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-danger delete-estimate" data-id="${estimate.id}">
+                                            <button class="btn btn-sm btn-danger delete-estimate" data-id="${estimateId}">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </td>

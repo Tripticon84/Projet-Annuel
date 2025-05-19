@@ -22,8 +22,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                 </div>
             </div>
 
-
-
             <!-- Company Info -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -36,9 +34,8 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                 </div>
             </div>
 
-
-                        <!-- Recent Invoices Section -->
-                        <section id="invoices" class="mb-4">
+            <!-- Recent Invoices Section -->
+            <section id="invoices" class="mb-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h2>Dernières factures</h2>
                     <a href="/frontOffice/societe/factures.php" class="btn btn-sm btn-outline-primary">
@@ -71,7 +68,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                     </table>
                 </div>
             </section>
-
 
             <!-- Contracts Section -->
             <section id="contracts" class="mb-4">
@@ -322,13 +318,11 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
 <script>
     // Variables globales
     let societyId = <?php echo $_SESSION['societe_id']; ?>;
-    let companyData = loadCompanyInfo(societyId);
 
     // Fonction d'initialisation
     document.addEventListener('DOMContentLoaded', function() {
-
         // Charger les données
-        // loadCompanyInfo(societyId);
+        loadCompanyInfo(societyId);
         loadContracts(societyId);
         loadEstimates(societyId);
         loadEmployees(societyId);
@@ -353,8 +347,182 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         });
     });
 
+    // Fonction pour charger les informations de l'entreprise
+    function loadCompanyInfo(societyId) {
+        // Afficher un état de chargement
+        document.getElementById('company-info').innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement des informations...</span>
+                </div>
+            </div>
+        `;
+        
+        // Appel AJAX pour récupérer les informations de la société
+        // Utiliser getOne.php qui existe déjà dans l'API
+        fetch(`/api/company/getOne.php?societe_id=${societyId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Pour déboguer, afficher les données dans la console
+                console.log('Données de la société:', data);
+                
+                if (data && !data.error) {
+                    // Mettre à jour le nom de l'entreprise dans le titre
+                    document.getElementById('company-name').textContent = data.nom || 'Tableau de bord';
+                    
+                    // Construire l'affichage des informations de la société
+                    let html = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Nom:</strong> ${data.nom || 'Non spécifié'}</p>
+                                <p><strong>Email:</strong> ${data.email || 'Non spécifié'}</p>
+                                <p><strong>Téléphone:</strong> ${data.telephone || 'Non spécifié'}</p>
+                                <p><strong>Adresse:</strong> ${data.adresse || 'Non spécifiée'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>SIRET:</strong> ${data.siret || 'Non spécifié'}</p>
+                                <p><strong>Date de création:</strong> ${data.date_creation ? new Date(data.date_creation).toLocaleDateString() : 'Non spécifiée'}</p>
+                                <p><strong>Contact:</strong> ${data.contact_person || 'Non spécifié'}</p>
+                                <p><strong>Statut:</strong> <span class="badge ${data.desactivate == 1 ? 'bg-danger' : 'bg-success'}">${data.desactivate == 1 ? 'Désactivé' : 'Actif'}</span></p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('company-info').innerHTML = html;
+                } else {
+                    // Afficher un message d'erreur
+                    document.getElementById('company-info').innerHTML = `
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Impossible de récupérer les informations de la société. ${data.error || 'Erreur inconnue.'}
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des informations de la société:', error);
+                document.getElementById('company-info').innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Une erreur s'est produite lors de la récupération des informations de la société.
+                    </div>
+                `;
+            });
+    }
+
+    // Fonction pour charger les devis
+    function loadEstimates(societyId) {
+        // Afficher le spinner pendant le chargement
+        document.getElementById('estimates-table').innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement des devis...</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+        
+        // Appel AJAX pour récupérer les devis
+        fetch(`/api/company/getEstimate.php?societe_id=${societyId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Pour déboguer, affiche la structure des données en console
+                console.log('Données des devis reçues:', data);
+                
+                // Cas spécial pour l'erreur "Estimates not found" - afficher simplement "Aucun devis"
+                if (data && data.error === "Estimates not found") {
+                    document.getElementById('estimates-table').innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="alert alert-info mb-0" role="alert">
+                                    Aucun devis
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                if (data && Array.isArray(data)) {
+                    if (data.length > 0) {
+                        // Si des devis sont trouvés, les afficher
+                        let html = '';
+                        data.forEach(estimate => {
+                            // Utiliser différentes alternatives pour les propriétés qui peuvent avoir différents noms
+                            const estimateId = estimate.devis_id || estimate.id_devis || estimate.id || '';
+                            const estimateStatus = estimate.statut || estimate.status || 'inconnu';
+                            const estimateMontant = estimate.montant || estimate.montant_ttc || estimate.montant_ht || 0;
+                            
+                            html += `
+                                <tr>
+                                    <td>${estimateId}</td>
+                                    <td>${estimate.date_debut || ''}</td>
+                                    <td>${estimate.date_fin || ''}</td>
+                                    <td><span class="badge bg-${getStatusBadgeColor(estimateStatus)}">${estimateStatus}</span></td>
+                                    <td>${estimateMontant} €</td>
+                                    <td>
+                                        <a href="/frontOffice/societe/estimates/view.php?id=${estimateId}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        document.getElementById('estimates-table').innerHTML = html;
+                    } else {
+                        // Si aucun devis n'est trouvé, afficher un message simple
+                        document.getElementById('estimates-table').innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <div class="alert alert-info mb-0" role="alert">
+                                        Aucun devis
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                } else {
+                    // En cas d'erreur de format de données (autres erreurs)
+                    document.getElementById('estimates-table').innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="alert alert-warning mb-0" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Une erreur est survenue lors du chargement des devis.
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des devis:', error);
+                document.getElementById('estimates-table').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <div class="alert alert-warning mb-0" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Une erreur est survenue lors du chargement des devis. Veuillez réessayer.
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+
+    // Fonction pour obtenir la couleur du badge en fonction du statut
+    function getStatusBadgeColor(status) {
+        switch (status.toLowerCase()) {
+            case 'brouillon': return 'secondary';
+            case 'envoyé': return 'primary';
+            case 'accepté': return 'success';
+            case 'refusé': return 'danger';
+            default: return 'info';
+        }
+    }
+
+    // Autres fonctions (loadContracts, loadEmployees, etc.)
+    // ...
 
 </script>
-
-</body>
-</html>
