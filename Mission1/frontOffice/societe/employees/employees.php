@@ -18,9 +18,24 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshData">
                             <i class="fas fa-sync-alt"></i> Actualiser
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="addEmployeeBtn">
                             <i class="fas fa-plus"></i> Nouveau collaborateur
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Affichage de la limite d'employés -->
+            <div class="alert alert-info mb-4" id="employee-limit-info">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-users me-2"></i>
+                        <span id="employee-count-message">Chargement des informations sur votre abonnement...</span>
+                    </div>
+                    <div>
+                        <a href="/frontOffice/societe/estimates/new_estimate.php" class="btn btn-sm btn-primary" id="upgrade-subscription-btn" style="display: none;">
+                            <i class="fas fa-arrow-up"></i> Augmenter votre limite
+                        </a>
                     </div>
                 </div>
             </div>
@@ -256,6 +271,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
     // Variables globales
     let societyId = <?php echo $_SESSION['societe_id']; ?>;
     let currentEmployeeStatus = 'active'; // Pour suivre quel type d'employés est affiché
+    let employeeLimitInfo = null; // Pour stocker les informations sur la limite d'employés
 
     // Fonction d'initialisation
     document.addEventListener('DOMContentLoaded', function() {
@@ -265,6 +281,29 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             console.error('Erreur capturée:', event.error || event.message);
             showBlueMessage(currentEmployeeStatus === 'active' ? 'actif' : 'désactivé');
             return false;
+        });
+
+        // Charger les informations sur la limite d'employés
+        checkEmployeeLimit();
+
+        // Remplacer l'événement direct par une vérification de la limite
+        document.getElementById('addEmployeeBtn').addEventListener('click', function() {
+            if (employeeLimitInfo && employeeLimitInfo.status) {
+                // Si la société peut ajouter un employé, ouvrir le modal
+                const modal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
+                modal.show();
+            } else if (employeeLimitInfo) {
+                // Sinon, afficher un message d'erreur
+                alert(employeeLimitInfo.message);
+                // Mettre en évidence le bouton de mise à niveau
+                document.getElementById('upgrade-subscription-btn').classList.add('btn-animate');
+                setTimeout(() => {
+                    document.getElementById('upgrade-subscription-btn').classList.remove('btn-animate');
+                }, 2000);
+            } else {
+                // Si les informations ne sont pas encore chargées
+                alert("Chargement des informations sur votre limite d'employés. Veuillez réessayer dans un instant.");
+            }
         });
 
         // Charger les collaborateurs actifs par défaut
@@ -364,8 +403,8 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         // Add a timestamp to prevent caching
         const timestamp = new Date().getTime();
         
-        // Appel AJAX pour récupérer les collaborateurs actifs
-        fetch(`/api/company/getEmployees.php?societe_id=${societyId}&status=active&_t=${timestamp}`)
+        // Corrected API endpoint - change getEmployees.php to getAllEmployee.php
+        fetch(`/api/company/getAllEmployee.php?societe_id=${societyId}&desactivate=0&_t=${timestamp}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Erreur réseau');
@@ -443,8 +482,8 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
         // Add a timestamp to prevent caching
         const timestamp = new Date().getTime();
         
-        // Appel AJAX pour récupérer les collaborateurs inactifs
-        fetch(`/api/company/getEmployees.php?societe_id=${societyId}&status=inactive&_t=${timestamp}`)
+        // Corrected API endpoint - change getEmployees.php to getAllEmployee.php
+        fetch(`/api/company/getAllEmployee.php?societe_id=${societyId}&desactivate=1&_t=${timestamp}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Erreur réseau');
@@ -503,6 +542,118 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             });
     }
 
+    // Fonction pour vérifier la limite d'employés
+    function checkEmployeeLimit() {
+        fetch(`/api/company/checkEmployeeLimit.php?societe_id=${societyId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            employeeLimitInfo = data;
+            
+            // Mettre à jour l'affichage de la limite
+            const limitInfoElement = document.getElementById('employee-count-message');
+            const upgradeButton = document.getElementById('upgrade-subscription-btn');
+            
+            if (data.status) {
+                // Si la société peut ajouter des employés
+                limitInfoElement.innerHTML = `Vous avez actuellement <strong>${data.current}</strong> collaborateurs actifs sur un maximum de <strong>${data.max}</strong> (${data.remaining} restants).`;
+                upgradeButton.style.display = data.remaining < 3 ? 'inline-block' : 'none'; // Afficher le bouton si moins de 3 places restantes
+            } else {
+                // Si la limite est atteinte
+                limitInfoElement.innerHTML = `<strong>Limite atteinte :</strong> ${data.message}`;
+                upgradeButton.style.display = 'inline-block';
+                document.getElementById('employee-limit-info').classList.remove('alert-info');
+                document.getElementById('employee-limit-info').classList.add('alert-warning');
+            }
+            
+            // Afficher les informations sur l'abonnement si disponibles
+            if (data.subscription) {
+                const subscriptionInfo = `<br><small>Abonnement actuel : ${data.subscription.nom} - Validité : ${new Date(data.subscription.date_debut).toLocaleDateString('fr-FR')} au ${new Date(data.subscription.date_fin).toLocaleDateString('fr-FR')}</small>`;
+                limitInfoElement.innerHTML += subscriptionInfo;
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la vérification de la limite d\'employés:', error);
+            document.getElementById('employee-count-message').innerHTML = 'Erreur lors du chargement des informations sur votre limite d\'employés.';
+        });
+    }
+
+    // Fonction pour ajouter un employé avec vérification de la limite
+    function addEmployee(societyId) {
+        // Vérifier d'abord si la société peut ajouter un employé
+        fetch(`/api/company/checkEmployeeLimit.php?societe_id=${societyId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.status) {
+                alert(data.message);
+                return;
+            }
+            
+            // Si la limite n'est pas atteinte, continuer avec l'ajout de l'employé
+            const formData = {
+                nom: document.getElementById("nom").value,
+                prenom: document.getElementById("prenom").value,
+                username: document.getElementById("username").value,
+                role: document.getElementById("role").value,
+                email: document.getElementById("email").value,
+                telephone: document.getElementById("telephone").value,
+                password: document.getElementById("password").value,
+                id_societe: societyId,
+            };
+
+            fetch("/api/employee/create.php", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + getToken(),
+                },
+                body: JSON.stringify(formData),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.id) {
+                    // Succès
+                    const modal = bootstrap.Modal.getInstance(
+                        document.getElementById("addEmployeeModal")
+                    );
+                    modal.hide();
+
+                    // Réinitialiser le formulaire
+                    document.getElementById("addEmployeeForm").reset();
+
+                    // Recharger la liste des employés
+                    loadActiveEmployees(societyId);
+                    
+                    // Mettre à jour les informations sur la limite
+                    checkEmployeeLimit();
+
+                    // Afficher un message de succès
+                    alert("Collaborateur ajouté avec succès!");
+                } else {
+                    // Erreur
+                    alert(`Erreur: ${data.message || "Une erreur est survenue"}`);
+                }
+            })
+            .catch((error) => {
+                console.error("Erreur lors de l'ajout du collaborateur:", error);
+                alert("Une erreur est survenue lors de l'ajout du collaborateur");
+            });
+        })
+        .catch(error => {
+            console.error('Erreur lors de la vérification de la limite d\'employés:', error);
+            alert('Erreur lors de la vérification de votre limite d\'employés.');
+        });
+    }
+
     // Fonction pour actualiser la liste des employés en fonction de l'onglet actif
     function refreshEmployeeList() {
         if (currentEmployeeStatus === 'active') {
@@ -511,7 +662,56 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/frontOffice/societe/includes/head.php
             loadInactiveEmployees(societyId);
         }
     }
+
+    // Add the missing addEmployeeEventListeners function
+    function addEmployeeEventListeners() {
+        // Add event listeners to view buttons
+        document.querySelectorAll('.view-employee').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                viewEmployeeDetails(id);
+            });
+        });
+        
+        // Add event listeners to edit buttons
+        document.querySelectorAll('.edit-employee').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                fetchEmployeeDetails(id);
+            });
+        });
+        
+        // Add event listeners to deactivate buttons
+        document.querySelectorAll('.deactivate-employee').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                confirmDeactivateEmployee(id);
+            });
+        });
+        
+        // Add event listeners to reactivate buttons
+        document.querySelectorAll('.reactivate-employee').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                reactivateEmployee(id);
+            });
+        });
+    }
 </script>
+
+<!-- Ajouter le style pour animer le bouton de mise à niveau -->
+<style>
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .btn-animate {
+        animation: pulse 0.5s infinite;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
+    }
+</style>
 
 <!-- Ajouter le script societe.js qui contient toutes les fonctions nécessaires -->
 <script src="/data/static/js/societe.js"></script>

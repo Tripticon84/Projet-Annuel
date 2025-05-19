@@ -132,16 +132,45 @@ function getProviderByUsername(string $username)
 
 function getProviderById($id)
 {
-    $connection = getDatabaseConnection();
-    $sql = "SELECT prestataire_id, email, nom, prenom, description, tarif,  date_debut_disponibilite, date_fin_disponibilite, est_candidat FROM prestataire WHERE prestataire_id = :id";
-    $query = $connection->prepare($sql);
-    $res = $query->execute(['id' => $id]);
-    if ($res) {
-        return $query->fetch(PDO::FETCH_ASSOC);
+    $db = getDatabaseConnection();
+    $sql = "SELECT prestataire_id, nom, prenom, email, type, tarif, date_debut_disponibilite, date_fin_disponibilite, description 
+            FROM prestataire 
+            WHERE prestataire_id = :id";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    
+    if ($stmt->rowCount() == 0) {
+        return false;
     }
-    return null;
+    
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+/**
+ * Récupère tous les prestataires
+ * @param int $limit Limite le nombre de résultats
+ * @param int $offset Décalage pour la pagination
+ * @return array|false Liste des prestataires ou false en cas d'échec
+ */
+function getAllProviders($limit = null, $offset = null)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT prestataire_id, nom, prenom, email, type, tarif, date_debut_disponibilite, date_fin_disponibilite
+            FROM prestataire";
+    
+    // Ajout de la pagination si requise
+    if ($limit !== null) {
+        $sql .= " LIMIT " . intval($limit);
+        if ($offset !== null) {
+            $sql .= " OFFSET " . intval($offset);
+        }
+    }
+    
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 function getProviderByEmail($email){
     $connection = getDatabaseConnection();
     $sql = "SELECT prestataire_id, email  FROM prestataire WHERE email = :email";
