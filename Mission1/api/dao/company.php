@@ -485,14 +485,41 @@ function getCompanyActualSubscription($societe_id)
             JOIN INCLUT_FRAIS_DEVIS ifd ON f.frais_id = ifd.id_frais
             JOIN devis d ON ifd.id_devis = d.devis_id
             WHERE f.est_abonnement = 1 
-            AND f.desactivate = 0
             AND d.id_societe = :societe_id
-            AND d.is_contract = 1
+            AND d.is_contract = 1 AND d.date_fin >= NOW()
             ORDER BY d.date_debut DESC
             LIMIT 1";
     $stmt = $db->prepare($sql);
     $stmt->execute(['societe_id' => $societe_id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function getCompanyFees($societe_id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT f.frais_id, f.nom, f.montant, f.date_creation, f.description, 
+            d.date_debut, d.date_fin, d.devis_id
+            FROM frais f
+            JOIN INCLUT_FRAIS_DEVIS ifd ON f.frais_id = ifd.id_frais
+            JOIN devis d ON ifd.id_devis = d.devis_id
+            WHERE d.id_societe = :societe_id AND f.est_abonnement = 0";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['societe_id' => $societe_id]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getCompanySubscriptions($societe_id)
+{
+    $db = getDatabaseConnection();
+    $sql = "SELECT f.frais_id, f.nom, f.montant, f.date_creation, f.description, 
+            d.date_debut, d.date_fin, d.devis_id
+            FROM frais f
+            JOIN INCLUT_FRAIS_DEVIS ifd ON f.frais_id = ifd.id_frais
+            JOIN devis d ON ifd.id_devis = d.devis_id
+            WHERE d.id_societe = :societe_id AND f.est_abonnement = 1";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['societe_id' => $societe_id]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 
